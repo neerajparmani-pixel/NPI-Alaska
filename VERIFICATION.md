@@ -18,10 +18,16 @@ Deployable Phase 1 demonstration, with navy/silver/gold branding and blue action
 
 ## Static-auditor limitation
 
-The premium strict auditor was run and reports nine `affordance.actionless-button` findings in `premium-audit.json`. It does not recognize the external event bindings in app.js `bind()`. Findings are preserved, not suppressed. Browser tests instrument listener registration and confirm enabled buttons have click handlers or form-submit behavior on worker list/detail and supervisor review; primary actions have workflow coverage. This is not a clean strict-audit result or a complete accessibility compliance claim.
+The premium strict auditor was run and reports ten `affordance.actionless-button` findings in `premium-audit.json`. It does not recognize the external event bindings in app.js `bind()`. Findings are preserved, not suppressed. Browser tests instrument listener registration and confirm enabled buttons have click handlers or form-submit behavior on worker list/detail and supervisor review; primary actions have workflow coverage. This is not a clean strict-audit result or a complete accessibility compliance claim.
 
 ## Not verified or implemented
 
 Exact-logo integration (file unavailable), live Firebase project/accounts, runtime identity credentials, provisioning and administrator password-reset/MFA workflows, Google Sheets/Drive work API, role/contractor/site enforcement on work data, multi-device synchronization, quota/load testing, field evidence rules, retention, production backups/restoration and actual Cloudflare deployment. Backend schema tests use a mock SpreadsheetApp; auth tests use mocked provider responses. No live authentication or work-data readiness claim.
 
 The initial Wrangler local preview failed because its config cache path was unwritable; setting XDG_CONFIG_HOME to a workspace cache fixed it. Wrangler also warned that Cloudflare Request.cf metadata could not be fetched and used its documented placeholder; the local runtime and internal checks subsequently passed.
+
+## Spreadsheet-first addition — 2026-10-28
+
+The separate spreadsheet-first/Code.gs backend and Index.html frontend support an owner-only bound-script test, with real Sheets/Drive calls in the implementation. Unit tests execute the actual backend against mocked Apps Script services. Browser tests connect the actual HTML to that backend mock and exercise the full lifecycle on desktop and phone, including separation of unsaved worker drafts from reviewer records and app-owned discard confirmation. Owner checks reject empty/different identities. Signature/size/private-folder checks, idempotency, stale versions, pagination, headers and formula safety are covered. No real Google account execution has occurred; the user's live spreadsheet test is still required. This is not company worker authentication or public deployment.
+
+Spreadsheet-first delivery checks: 14 unit tests pass, including five tests of the new backend. The full browser suite passed 20 tests; four spreadsheet-specific desktop/phone tests also passed after hardening the create response to avoid follow-up-fetch retry ambiguity. Formatting passes. The existing frontend and Pages worker still compile. The three-file spreadsheet ZIP passes archive integrity and credential-pattern checks. Real Apps Script authorization/execution remains to be tested in the user's private Google account.

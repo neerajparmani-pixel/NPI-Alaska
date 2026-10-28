@@ -32,3 +32,7 @@ Cloudflare Pages PWA, Google Apps Script backend, one management-only spreadshee
 ## Branding and delivery
 
 User selected silver lion/navy wings/gold stars. Color theme applied, exact logo image file pending. Deployable demonstration and source archives are provided; no live Google Sheets/Drive or production authorization claim. See DEPLOYMENT.md and backend/AUTH.md.
+
+## Spreadsheet-first review stage — 2026-10-28
+
+User requested frontend and Apps Script code to inspect inside Google Sheets before Cloudflare. `spreadsheet-first/` is an isolated owner-only test with actual sheet/file write operations: assignment → start → tasks/evidence → submit → correction/resubmission → approval. Preview views do not represent authenticated workers. Owner identity is checked at each server call; employee passwords are not stored in Sheets. Cloudflare/Firebase app remains separate and unchanged. GPS/snowfall, real user accounts, final per-site policy and production deployment are deferred, explicitly documented.

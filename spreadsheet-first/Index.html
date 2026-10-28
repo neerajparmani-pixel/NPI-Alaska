@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <base target="_top" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NPI Alaska — Spreadsheet test</title>
+    <style>
+      :root {
+        --navy: #102c50;
+        --blue: #185adb;
+        --gold: #cfab55;
+        --ink: #182b40;
+        --muted: #52657a;
+        --line: #d9e2ec;
+        --paper: #f3f6fa;
+        font-family: Arial, sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+        scrollbar-color: #8a9ba7 var(--paper);
+        scrollbar-width: thin;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      header {
+        background: var(--navy);
+        color: white;
+        border-bottom: 3px solid var(--gold);
+        padding: 20px 26px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+      }
+      header strong {
+        font-size: 23px;
+        letter-spacing: 1px;
+      }
+      header small {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 2px;
+        margin-top: 6px;
+        color: #cedae7;
+      }
+      main {
+        padding: 22px;
+        max-width: 1060px;
+        margin: auto;
+      }
+      .banner {
+        background: #fff4df;
+        color: #6d4c1b;
+        border: 1px solid #e3c789;
+        padding: 14px;
+        border-radius: 9px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin: 24px 0;
+      }
+      .toolbar h1 {
+        font-size: 28px;
+        margin: 0 0 8px;
+      }
+      p {
+        line-height: 1.6;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .card {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 22px;
+        margin-bottom: 16px;
+        min-width: 0;
+      }
+      .card h2 {
+        font-size: 20px;
+        margin: 0 0 12px;
+      }
+      .card p {
+        font-size: 14px;
+        margin: 10px 0;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 12px;
+        padding: 7px 10px;
+        border-radius: 6px;
+        background: #e9eff7;
+        margin-bottom: 15px;
+      }
+      .badge.approved {
+        background: #e7f3ec;
+        color: #246248;
+      }
+      .badge.correction {
+        background: #fceced;
+        color: #a42e35;
+      }
+      .button,
+      button {
+        font: inherit;
+        cursor: pointer;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        color: var(--ink);
+        min-height: 50px;
+        padding: 12px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .primary {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: white;
+      }
+      .success {
+        background: #246248;
+        border-color: #246248;
+        color: white;
+      }
+      .full {
+        width: 100%;
+      }
+      button:hover:not(:disabled),
+      a.button:hover {
+        filter: brightness(0.94);
+      }
+      button:active:not(:disabled) {
+        filter: brightness(0.86);
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      :focus-visible {
+        outline: 3px solid #1479b7;
+        outline-offset: 3px;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 18px 0 0;
+      }
+      .field {
+        margin: 18px 0;
+      }
+      .field label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      input,
+      select,
+      textarea {
+        font: inherit;
+        background: white;
+        color: var(--ink);
+        border: 1px solid #aebfce;
+        border-radius: 8px;
+        padding: 12px;
+        max-width: 100%;
+        min-height: 48px;
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+      }
+      textarea {
+        resize: none;
+        min-height: 110px;
+      }
+      .task {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        min-height: 56px;
+        margin: 10px 0;
+        cursor: pointer;
+      }
+      .task input {
+        width: 23px;
+        height: 23px;
+        min-height: 0;
+        accent-color: var(--blue);
+      }
+      .error {
+        background: #fff0f0;
+        color: #8a2630;
+        border: 1px solid #e1a8ad;
+        border-radius: 8px;
+        padding: 14px;
+        line-height: 1.5;
+        margin: 15px 0;
+      }
+      .notice {
+        background: #fff4df;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 18px 0;
+      }
+      .summary span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+      .summary b {
+        font-size: 14px;
+        overflow-wrap: anywhere;
+      }
+      .photos {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .photo img {
+        width: 100%;
+        height: 110px;
+        object-fit: cover;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .photo a {
+        font-size: 12px;
+        color: var(--blue);
+        display: block;
+        padding: 10px 0;
+        overflow-wrap: anywhere;
+      }
+      .empty {
+        text-align: center;
+        border: 1px dashed #aebfce;
+        background: white;
+        border-radius: 12px;
+        padding: 35px;
+        grid-column: 1/-1;
+      }
+      .pager {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        margin: 16px 0;
+      }
+      .saved {
+        font-size: 13px;
+        color: #246248;
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--navy);
+        color: white;
+        padding: 14px 22px;
+        border-radius: 9px;
+        max-width: 90%;
+        z-index: 20;
+        font-size: 14px;
+      }
+      .history {
+        font-size: 13px;
+        border-left: 2px solid var(--line);
+        padding-left: 15px;
+        overflow-wrap: anywhere;
+      }
+      .history p {
+        margin: 12px 0;
+      }
+      #error[hidden],
+      input[hidden] {
+        display: none;
+      }
+      .busy {
+        color: var(--muted);
+        font-size: 13px;
+        min-height: 22px;
+      }
+      nav {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--paper);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #8a9ba7;
+        border: 2px solid var(--paper);
+        border-radius: 8px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #52657a;
+      }
+      body[aria-busy="true"] {
+        cursor: progress;
+      }
+      a {
+        color: var(--blue);
+      }
+      @media (max-width: 650px) {
+        header {
+          padding: 16px;
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        main {
+          padding: 16px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .card {
+          padding: 18px;
+        }
+        .photos {
+          grid-template-columns: 1fr 1fr;
+        }
+        .button,
+        button {
+          min-height: 54px;
+        }
+        .actions > button {
+          flex: 1;
+        }
+        .toolbar h1 {
+          font-size: 26px;
+        }
+        .summary {
+          gap: 18px 12px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+      @media (forced-colors: active) {
+        * {
+          scrollbar-color: auto;
+        }
+        .button,
+        .badge,
+        .card {
+          border: 1px solid CanvasText;
+        }
+      }
+      dialog {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 26px;
+        max-width: min(90vw, 480px);
+        color: var(--ink);
+      }
+      dialog::backdrop {
+        background: #102c5080;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div><strong>NPI ALASKA</strong><small>SPREADSHEET TEST</small></div>
+      <nav aria-label="Test controls">
+        <label for="view">Preview view</label
+        ><select id="view">
+          <option value="worker">Worker</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="management">Management</option></select
+        ><button id="refresh" type="button">Refresh</button>
+      </nav>
+    </header>
+    <main>
+      <div class="banner">
+        <b>Spreadsheet-owner test.</b> Changes are saved to
+        <b>NPI_Test_Work</b>. The view selector previews the workflow; it is not
+        worker authentication. Use sample information only.
+      </div>
+      <div id="error" role="alert" tabindex="-1" class="error" hidden></div>
+      <div id="busy" class="busy" role="status" aria-live="polite"></div>
+      <div id="screen"><p role="status">Loading spreadsheet records…</p></div>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="discard-dialog" aria-labelledby="discard-title">
+      <form method="dialog" novalidate>
+        <h2 id="discard-title">Discard unsaved drafts?</h2>
+        <p>
+          Refresh will load the spreadsheet records and discard unsaved task and
+          note edits. Uploaded files and saved records will remain.
+        </p>
+        <div class="actions">
+          <button value="cancel" autofocus>Keep editing</button
+          ><button value="discard">Discard drafts and refresh</button>
+        </div>
+      </form>
+    </dialog>
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      let state = { jobs: [], sites: {}, total: 0, page: 0 },
+        view = "worker",
+        selected = null,
+        pending = null,
+        working = false,
+        toastTimer;
+      const drafts = new Map();
+      const labels = {
+        start: "Work started",
+        save: "Draft saved",
+        submit: "Work submitted",
+        approve: "Work approved",
+        return: "Correction requested",
+        upload: "Evidence attached",
+        create: "Assignment created",
+      };
+      function request(payload) {
+        return new Promise((resolve, reject) =>
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .npiTestApi(payload),
+        );
+      }
+      function busy(value, message = "Working…") {
+        working = value;
+        document.body.setAttribute("aria-busy", String(value));
+        $("#busy").textContent = value ? message : "";
+        document
+          .querySelectorAll("button,select,input,textarea")
+          .forEach((el) => {
+            if (!el.dataset.readonly) el.disabled = value;
+          });
+      }
+      function fail(error) {
+        $("#error").hidden = false;
+        $("#error").textContent = error.message || String(error);
+        $("#error").focus();
+      }
+      function notify(message) {
+        $("#toast").textContent = message;
+        $("#toast").hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => ($("#toast").hidden = true), 4000);
+      }
+      const format = (value) =>
+        value
+          ? new Intl.DateTimeFormat("en-US", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "America/Anchorage",
+            }).format(new Date(value))
+          : "Not recorded";
+      const badge = (j) =>
+        `<span class="badge ${j.status === "Approved" ? "approved" : j.status === "Correction requested" ? "correction" : ""}">${esc(j.status)}</span>`;
+      async function refresh() {
+        if (working) return;
+        busy(true, "Reading spreadsheet…");
+        $("#error").hidden = true;
+        try {
+          state = await request({ action: "list", page: state.page });
+          if (selected && !state.jobs.some((j) => j.id === selected))
+            selected = null;
+          render();
+        } catch (e) {
+          fail(e);
+        } finally {
+          busy(false);
+        }
+      }
+      function newRequestId() {
+        return crypto.randomUUID();
+      }
+      async function mutate(action, id, data = {}) {
+        if (working) return;
+        const job = state.jobs.find((j) => j.id === id);
+        const payload = {
+          action,
+          id,
+          version:
+            ["save", "submit"].includes(action) && drafts.has(id)
+              ? drafts.get(id).baseVersion
+              : job?.version,
+          data,
+        };
+        const signature = JSON.stringify(payload);
+        if (!pending || pending.signature !== signature)
+          pending = { signature, requestId: newRequestId() };
+        payload.requestId = pending.requestId;
+        busy(
+          true,
+          action === "upload"
+            ? "Saving evidence to private Drive storage…"
+            : "Saving to spreadsheet…",
+        );
+        $("#error").hidden = true;
+        try {
+          const result = await request(payload);
+          pending = null;
+          if (result.job) {
+            if (!state.jobs.some((j) => j.id === result.job.id)) {
+              state.jobs.unshift(result.job);
+              state.total++;
+            } else
+              state.jobs = state.jobs.map((j) =>
+                j.id === result.job.id ? result.job : j,
+              );
+            if (action !== "upload") drafts.delete(result.job.id);
+            else if (drafts.get(result.job.id)?.baseVersion === payload.version)
+              drafts.get(result.job.id).baseVersion = result.job.version;
+            if (action === "create" && result.list) state = result.list;
+            selected = result.job.id;
+          }
+          render();
+          notify(labels[action]);
+        } catch (e) {
+          fail(e);
+        } finally {
+          busy(false);
+        }
+      }
+      function card(job) {
+        return `<article class="card">${badge(job)}<h2>${esc(job.site)}</h2><p>${esc(job.area)}</p><div class="summary"><div><span>Worker</span><b>${esc(job.worker)}</b></div><div><span>Equipment</span><b>${esc(job.equipment)}</b></div></div><button class="${view === "worker" ? "primary " : ""}full" data-open="${esc(job.id)}">${view === "supervisor" && job.status === "Submitted" ? "Review work" : "Open work"}</button></article>`;
+      }
+      function home() {
+        const jobs =
+          view === "supervisor"
+            ? state.jobs.filter((j) => j.status === "Submitted")
+            : state.jobs;
+        return `<div class="toolbar"><div><h1>${view === "worker" ? "My work" : view === "supervisor" ? "Review work" : "Work overview"}</h1><p class="muted">${view === "worker" ? "Choose an assignment to record test work." : "Follow work from assignment to approval."}</p></div>${view !== "worker" ? '<button id="new-assignment" class="primary">Create assignment</button>' : ""}</div><p class="muted">Spreadsheet page ${state.page + 1} · ${state.total} total records${view === "supervisor" ? " · showing submissions on this page" : ""}</p><div class="grid">${jobs.length ? jobs.map(card).join("") : `<div class="empty"><h2>${view === "supervisor" ? "No submissions on this page" : "No test assignments yet"}</h2><p>${view === "worker" ? "Choose Supervisor view to create an assignment first." : "Try another page or create a test assignment."}</p></div>`}</div><div class="pager"><button id="previous" ${state.page === 0 ? 'data-readonly="true" disabled' : ""}>Previous</button><span>${state.page + 1} / ${Math.max(1, Math.ceil(state.total / 20))}</span><button id="next" ${state.page + 1 >= Math.ceil(state.total / 20) ? 'data-readonly="true" disabled' : ""}>Next</button></div>`;
+      }
+      function detail(job) {
+        const edit =
+          view === "worker" &&
+          ["In progress", "Correction requested"].includes(job.status);
+        const form = (edit && drafts.get(job.id)) || {
+          tasks: job.tasks,
+          notes: job.notes,
+          loads: job.loads,
+        };
+        return `<button id="back">← All work</button><div class="toolbar"><div><h1>${esc(job.site)}</h1><p>${esc(job.area)}</p></div>${badge(job)}</div><section class="card"><h2>Work summary</h2><div class="summary">${[
+          ["Worker", job.worker],
+          ["Equipment", job.equipment],
+          ["Started (Alaska time)", format(job.start)],
+          ["Finished (Alaska time)", format(job.end)],
+        ]
+          .map(
+            ([label, value]) =>
+              `<div><span>${label}</span><b>${esc(value)}</b></div>`,
+          )
+          .join(
+            "",
+          )}</div><small class="muted">${esc(job.id)} · version ${job.version}</small></section>${job.status === "Correction requested" ? `<div class="notice"><b>Correction requested</b><br>${esc(job.correction)}</div>` : ""}${view === "worker" && job.status === "Assigned" ? '<section class="card"><h2>Ready to begin?</h2><p>Start time is recorded when you press the button.</p><button class="primary full" id="start">Start work</button></section>' : ""}${job.status !== "Assigned" ? `<section class="card"><h2>Completed tasks</h2>${state.sites[job.site].map((task) => `<label class="task"><input type="checkbox" data-task="${esc(task)}" ${form.tasks.includes(task) ? "checked" : ""} ${edit ? "" : 'data-readonly="true" disabled'}>${esc(task)}</label>`).join("")}${job.site === "Tote Port" ? `<div class="field"><label for="loads">Completed loads</label><input id="loads" type="number" min="0" step="1" inputmode="numeric" value="${esc(form.loads)}" ${edit ? "" : 'data-readonly="true" readonly'}></div>` : ""}<div class="field"><label for="notes">Work notes</label><textarea id="notes" style="resize:none" maxlength="2000" ${edit ? "" : 'data-readonly="true" readonly'}>${esc(form.notes)}</textarea></div><p id="draft-status" class="saved">${drafts.has(job.id) ? "Changes not saved yet" : "Saved in spreadsheet"}</p>${edit ? '<button id="save">Save draft</button>' : ""}</section><section class="card"><h2>Evidence</h2><p class="muted">JPEG/PNG photos, maximum 6. Timecard: JPEG/PNG/PDF. Up to 2 MB each. Files remain private in the owner’s Drive.</p><div class="photos">${job.files.map((file) => `<div class="photo">${file.kind === "photo" ? `<img data-photo="${esc(file.id)}" alt="Loading work evidence" width="180" height="110">` : ""}<a href="https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view" target="_blank" rel="noopener noreferrer">${esc(file.kind)}: ${esc(file.name)}</a></div>`).join("")}</div>${!job.files.length ? "<p>No evidence attached.</p>" : ""}${edit ? '<div class="actions"><button id="add-photo">Add work photo</button><button id="add-timecard">Add signed timecard</button></div><input id="photo" type="file" accept="image/jpeg,image/png" hidden><input id="timecard" type="file" accept="image/jpeg,image/png,application/pdf" hidden>' : ""}</section>` : ""}${edit ? '<section class="card"><h2>Ready for review?</h2><p>Submission records your finish time. At least one completed task and one work photo are required. Port work also needs loads and a signed timecard.</p><button id="submit" class="primary full">Submit work for review</button></section>' : ""}${view === "supervisor" && job.status === "Submitted" ? '<section class="card"><h2>Review decision</h2><p>Verify the tasks and evidence before approving.</p><div class="field"><label for="reason">Correction instructions (required if returning)</label><textarea id="reason" style="resize:none" maxlength="1000"></textarea></div><div class="actions"><button id="approve" class="success">Approve work</button><button id="return">Request correction</button></div></section>' : ""}<section class="card"><h2>History</h2><div class="history">${job.history
+          .slice()
+          .reverse()
+          .map(
+            (h) =>
+              `<p><b>${esc(labels[h.action] || h.action)}</b><br>${esc(format(h.at))} (Alaska time)<br>${esc(h.actor)}${h.reason ? "<br>" + esc(h.reason) : ""}</p>`,
+          )
+          .join("")}</div></section>`;
+      }
+      function draft(job) {
+        const current = {
+          baseVersion: drafts.get(job.id)?.baseVersion ?? job.version,
+          tasks: [...document.querySelectorAll("[data-task]:checked")].map(
+            (el) => el.dataset.task,
+          ),
+          notes: $("#notes")?.value || "",
+          loads: $("#loads")?.value ?? job.loads,
+        };
+        drafts.set(job.id, current);
+        if ($("#draft-status"))
+          $("#draft-status").textContent = "Changes not saved yet";
+        return current;
+      }
+      function render() {
+        const job = state.jobs.find((j) => j.id === selected);
+        $("#screen").innerHTML = job ? detail(job) : home();
+        bind(job);
+        if (job) loadPhotos(job);
+      }
+      async function loadPhotos(job) {
+        for (const file of job.files.filter((f) => f.kind === "photo")) {
+          try {
+            const result = await request({
+              action: "readFile",
+              id: job.id,
+              fileId: file.id,
+            });
+            if (selected !== job.id) return;
+            const image = [...document.querySelectorAll("[data-photo]")].find(
+              (el) => el.dataset.photo === file.id,
+            );
+            if (image) {
+              image.src = result.data;
+              image.alt = "Work evidence: " + file.name;
+            }
+          } catch {
+            if (selected === job.id) {
+              const image = [...document.querySelectorAll("[data-photo]")].find(
+                (el) => el.dataset.photo === file.id,
+              );
+              if (image)
+                image.alt =
+                  "Preview unavailable. Use the Drive link to review this photo.";
+            }
+          }
+        }
+      }
+      function newAssignment() {
+        selected = null;
+        $("#screen").innerHTML =
+          `<div class="toolbar"><h1>Create assignment</h1><button id="cancel">Cancel</button></div><form id="assignment-form" class="card" novalidate><div class="field"><label for="site">Site</label><select id="site">${Object.keys(
+            state.sites,
+          )
+            .map((site) => `<option>${esc(site)}</option>`)
+            .join("")}</select></div>${[
+            ["area", "Work area"],
+            ["worker", "Worker name"],
+            ["equipment", "Equipment"],
+          ]
+            .map(
+              ([id, label]) =>
+                `<div class="field"><label for="${id}">${label}</label><input id="${id}" name="${id}" required maxlength="${id === "area" ? 120 : 80}"></div>`,
+            )
+            .join(
+              "",
+            )}<button class="primary full" type="submit">Create assignment</button></form>`;
+        $("#cancel").onclick = render;
+        $("#assignment-form").onsubmit = (event) => {
+          event.preventDefault();
+          for (const name of ["area", "worker", "equipment"]) {
+            if (!$("#" + name).value.trim()) {
+              fail(Error("Enter " + name + "."));
+              $("#" + name).setAttribute("aria-invalid", "true");
+              $("#" + name).setAttribute("aria-describedby", "error");
+              $("#" + name).focus();
+              return;
+            }
+          }
+          mutate("create", null, {
+            site: $("#site").value,
+            area: $("#area").value,
+            worker: $("#worker").value,
+            equipment: $("#equipment").value,
+          });
+        };
+      }
+      async function upload(file, kind, job) {
+        if (!file || working) return;
+        const allowed =
+          kind === "photo"
+            ? ["image/jpeg", "image/png"]
+            : ["image/jpeg", "image/png", "application/pdf"];
+        if (
+          !allowed.includes(file.type) ||
+          !file.size ||
+          file.size > 2 * 1024 * 1024
+        ) {
+          fail(Error("Use a supported file up to 2 MB."));
+          return;
+        }
+        busy(true, "Reading file…");
+        try {
+          const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result).split(",")[1]);
+            reader.onerror = () =>
+              reject(Error("Could not read this file. Choose it again."));
+            reader.readAsDataURL(file);
+          });
+          busy(false);
+          await mutate("upload", job.id, {
+            name: file.name,
+            type: file.type,
+            kind,
+            base64,
+          });
+        } catch (e) {
+          busy(false);
+          fail(e);
+        }
+      }
+      function bind(job) {
+        document.querySelectorAll("[data-open]").forEach(
+          (el) =>
+            (el.onclick = () => {
+              selected = el.dataset.open;
+              $("#error").hidden = true;
+              render();
+              window.scrollTo(0, 0);
+            }),
+        );
+        if ($("#new-assignment")) $("#new-assignment").onclick = newAssignment;
+        if ($("#back"))
+          $("#back").onclick = () => {
+            selected = null;
+            render();
+          };
+        if ($("#previous"))
+          $("#previous").onclick = () => {
+            state.page--;
+            refresh();
+          };
+        if ($("#next"))
+          $("#next").onclick = () => {
+            state.page++;
+            refresh();
+          };
+        if (!job) return;
+        for (const id of ["start", "approve"])
+          if ($("#" + id)) $("#" + id).onclick = () => mutate(id, job.id);
+        if ($("#return"))
+          $("#return").onclick = () => {
+            const reason = $("#reason").value;
+            if (!reason.trim()) {
+              fail(Error("Explain what the worker needs to correct."));
+              $("#reason").setAttribute("aria-invalid", "true");
+              $("#reason").setAttribute("aria-describedby", "error");
+              $("#reason").focus();
+              return;
+            }
+            mutate("return", job.id, { reason });
+          };
+        for (const action of ["save", "submit"])
+          if ($("#" + action))
+            $("#" + action).onclick = () => mutate(action, job.id, draft(job));
+        document
+          .querySelectorAll("[data-task]")
+          .forEach((el) => (el.onchange = () => draft(job)));
+        for (const id of ["notes", "loads"])
+          if ($("#" + id) && !$("#" + id).readOnly)
+            $("#" + id).oninput = () => draft(job);
+        for (const kind of ["photo", "timecard"])
+          if ($("#add-" + kind)) {
+            $("#add-" + kind).onclick = () => $("#" + kind).click();
+            $("#" + kind).onchange = (event) =>
+              upload(event.target.files[0], kind, job);
+          }
+      }
+      $("#view").onchange = (event) => {
+        view = event.target.value;
+        selected = null;
+        $("#error").hidden = true;
+        render();
+      };
+      $("#refresh").onclick = () => {
+        if (!working && drafts.size) $("#discard-dialog").showModal();
+        else refresh();
+      };
+      $("#discard-dialog").addEventListener("close", () => {
+        if ($("#discard-dialog").returnValue === "discard") {
+          drafts.clear();
+          refresh();
+        }
+      });
+      window.addEventListener("beforeunload", (event) => {
+        if (drafts.size) {
+          event.preventDefault();
+          event.returnValue = "";
+        }
+      });
+      if (typeof google === "undefined" || !google.script?.run) {
+        $("#screen").innerHTML =
+          '<section class="card"><h1>Open this app from Google Sheets</h1><p>Paste this file into Apps Script as Index.html, then use NPI Alaska Test → Open app. It cannot connect to a spreadsheet when opened as a local HTML file.</p></section>';
+        $("#view").disabled = true;
+        $("#refresh").disabled = true;
+      } else refresh();
+    </script>
+  </body>
+</html>

@@ -49,3 +49,7 @@ See DEPLOYMENT.md. Run `npm run package` for a Cloudflare-ready ZIP and editable
 ## Download from GitHub
 
 For the prebuilt demo, open [`downloads/NPI-Alaska-Deploy.zip`](downloads/NPI-Alaska-Deploy.zip) and click **Download raw file** (download icon). For all editable source, use GitHub's **Code → Download ZIP**. See [DEPLOYMENT.md](DEPLOYMENT.md) before deploying. This is a demo, not the completed live spreadsheet-connected app.
+
+## Test inside Google Sheets first
+
+Use the new [spreadsheet-first instructions](spreadsheet-first/README.md). Paste [Code.gs](spreadsheet-first/Code.gs) and [Index.html](spreadsheet-first/Index.html) into a script bound to a new private test spreadsheet, run `setupNpiTest`, then reload the spreadsheet and open **NPI Alaska Test → Open app**. This test writes records to a separate tab and files to private Drive storage; only the spreadsheet owner can use it. It does not require Cloudflare or Firebase and is not live worker authentication.

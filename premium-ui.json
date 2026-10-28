@@ -1,6 +1,6 @@
 {
   "profile": "product-admin",
-  "sourceRoots": ["src"],
+  "sourceRoots": ["src", "spreadsheet-first"],
   "locale": "en-US",
   "canonicalMap": "UX-CONTRACT.md",
   "requiredCapabilities": [
@@ -10,7 +10,9 @@
     "Toast",
     "CRUD"
   ],
-  "ownership": { "Select/Listbox": "native" },
+  "ownership": {
+    "Select/Listbox": "native"
+  },
   "requiredCommands": ["unit", "e2e", "build"],
   "commands": {
     "unit": "npm test",

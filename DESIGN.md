@@ -71,3 +71,7 @@ Use short action labels, explicit saved-on-device feedback, and actionable error
 ## Approved brand application
 
 Full emblem belongs on login; compact, uncropped emblem in headers. `brandMark()` in src/branding.js owns both variants and the temporary wordmark fallback. scripts/build.mjs detects public/npi-emblem.png/.jpg/.webp and injects the public logo URL. No image regeneration or unapproved simplification. Passwords remain masked, and company login has no role selector.
+
+## Spreadsheet review surface
+
+The user requested a spreadsheet-first review before Cloudflare. `spreadsheet-first/Index.html` mirrors the established navy, blue, gold, white and gray palette in one self-contained HTML file for copy/paste into Apps Script. This is a deliberate isolated-delivery adapter, not a new app-wide token owner. Native controls, large labeled actions, visible test banner and owner-only preview labels take precedence over decorative branding. The full original logo remains pending; no replacement emblem is invented.
