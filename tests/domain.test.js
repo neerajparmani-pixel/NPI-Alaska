@@ -1,0 +1,34 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { seed, transition, submissionError, hours } from "../src/domain.js";
+test("complete worker, correction and supervisor approval lifecycle", () => {
+  let j = transition(seed()[0], "start", "worker", "", "2026-10-27T10:00:00Z");
+  assert.equal(j.status, "In progress");
+  assert.throws(() => transition(j, "approve", "worker"));
+  assert.throws(() => transition(j, "submit", "worker"), /task/);
+  j.tasks = ["Plowing"];
+  assert.match(submissionError(j), /photo/);
+  j.photos = [{ data: "sample" }];
+  j = transition(j, "submit", "worker", "", "2026-10-27T12:00:00Z");
+  assert.equal(hours(j), "2.0");
+  assert.throws(() => transition(j, "return", "supervisor", ""));
+  j = transition(j, "return", "supervisor", "Add sidewalk evidence");
+  assert.equal(j.correction, "Add sidewalk evidence");
+  j = transition(j, "submit", "worker");
+  j = transition(j, "approve", "supervisor");
+  assert.equal(j.status, "Approved");
+  assert.equal(j.history.length, 5);
+  assert.throws(() => transition(j, "submit", "worker"));
+});
+test("port work requires valid loads and signed timecard", () => {
+  const j = { ...seed()[1], tasks: ["Hauling"], photos: [{}], loads: "" };
+  assert.match(submissionError(j), /loads/);
+  j.loads = -1;
+  assert.match(submissionError(j), /loads/);
+  j.loads = 2.5;
+  assert.match(submissionError(j), /loads/);
+  j.loads = 0;
+  assert.match(submissionError(j), /timecard/);
+  j.timecard = { name: "signed.pdf" };
+  assert.equal(submissionError(j), "");
+});

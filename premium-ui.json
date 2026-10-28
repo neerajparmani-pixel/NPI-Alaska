@@ -1,0 +1,24 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["src"],
+  "locale": "en-US",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": [
+    "Select/Listbox",
+    "Form",
+    "Scrollbar",
+    "Toast",
+    "CRUD"
+  ],
+  "ownership": { "Select/Listbox": "native" },
+  "requiredCommands": ["unit", "e2e", "build"],
+  "commands": {
+    "unit": "npm test",
+    "e2e": "npm run test:e2e",
+    "build": "npm run build"
+  },
+  "evidence": {
+    "crudFullFlow": "tests/browser/workflow.spec.js",
+    "failurePaths": "tests/browser/workflow.spec.js"
+  }
+}
