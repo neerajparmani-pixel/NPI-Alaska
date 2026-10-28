@@ -177,3 +177,73 @@ test("test dataset is paginated and incompatible headers are never overwritten",
   assert.equal(app.rows[0][1], "Unexpected header");
   assert.equal(app.rows.length, 26);
 });
+
+test("multi-tab backend preserves original records and projects assignments, evidence and approvals", () => {
+  const app = spreadsheetTest();
+  assert.equal(app.sheets.size, 9);
+  assert.ok(app.sheets.get("NPI_Test_Work").isSheetHidden());
+  let job = change(app, null, "create", assignment);
+  job = change(app, job, "start");
+  job = change(app, job, "upload", {
+    kind: "photo",
+    type: "image/png",
+    name: "photo.png",
+    base64: png,
+  });
+  job = change(app, job, "submit", { tasks: ["Plowing"] });
+  job = change(app, job, "approve");
+  assert.equal(app.sheets.get("NPI_Assignments").rows[1][1], "Courthouse");
+  assert.equal(app.sheets.get("NPI_WorkLogs").rows[1][4], "Approved");
+  assert.equal(app.sheets.get("NPI_Attachments").rows[1][3], "photo");
+  assert.equal(app.sheets.get("NPI_Approvals").rows[1][4], "Approved");
+  assert.equal(app.sheets.get("NPI_AuditLog").getLastRow(), 6);
+  app.setup();
+  assert.equal(app.rows.length, 2);
+  assert.equal(app.api({ action: "list" }).summary.approved, 1);
+});
+test("report failures never undo the saved work record and can be rebuilt from the record store", () => {
+  const app = spreadsheetTest();
+  app.failView("NPI_WorkLogs");
+  const request = { action: "create", requestId: key(), data: assignment };
+  const result = app.api(request);
+  assert.match(result.warning, /record is saved/);
+  assert.equal(app.rows.length, 2);
+  assert.equal(app.api(request).job.id, result.job.id);
+  assert.equal(app.rows.length, 2);
+  app.failView(null);
+  app.rebuild();
+  assert.equal(app.sheets.get("NPI_WorkLogs").rows[1][0], result.job.id);
+  assert.equal(app.properties.get("NPI_VIEW_DIRTY"), undefined);
+});
+test("full-page route loads saved spreadsheet ID and refuses other users", () => {
+  const app = spreadsheetTest();
+  app.setBound(false);
+  assert.match(app.web().getContent(), /Settings & access/);
+  assert.equal(app.web().title, "NPI Alaska | Field operations");
+  assert.equal(app.api({ action: "list" }).appVersion, "2");
+  app.identity("not-owner@example.test");
+  assert.match(
+    app.web().getContent(),
+    /Open with the spreadsheet owner account/,
+  );
+  assert.throws(() => app.api({ action: "settings" }), /restricted/);
+});
+test("non-secret workspace settings persist through report rebuilds without changing login access", () => {
+  const app = spreadsheetTest();
+  const result = app.api({
+    action: "saveSettings",
+    data: {
+      name: "NPI Alaska Operations",
+      support: "Contact the site supervisor",
+    },
+  });
+  assert.equal(result.workspace.name, "NPI Alaska Operations");
+  assert.equal(result.companyLogin, "Not connected");
+  app.rebuild();
+  app.setup();
+  assert.equal(
+    app.api({ action: "settings" }).workspace.support,
+    "Contact the site supervisor",
+  );
+  assert.equal(app.api({ action: "settings" }).tabs.length, 8);
+});

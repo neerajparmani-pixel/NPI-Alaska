@@ -75,3 +75,7 @@ Full emblem belongs on login; compact, uncropped emblem in headers. `brandMark()
 ## Spreadsheet review surface
 
 The user requested a spreadsheet-first review before Cloudflare. `spreadsheet-first/Index.html` mirrors the established navy, blue, gold, white and gray palette in one self-contained HTML file for copy/paste into Apps Script. This is a deliberate isolated-delivery adapter, not a new app-wide token owner. Native controls, large labeled actions, visible test banner and owner-only preview labels take precedence over decorative branding. The full original logo remains pending; no replacement emblem is invented.
+
+## Full-page owner preview revision
+
+The user rejected the small dialog/plain backend and provided a private NPI reference app. spreadsheet-first/Index.html now has a 224px navy navigation column, white top bar, responsive worker cards, real overview totals and a dedicated Settings surface. At 700px the navigation becomes four labeled touch buttons. Gold is limited to selection and wordmark accents; primary actions remain blue. UTF-8 charset is declared to preserve punctuation. Workspace labels are separate from the fixed NPI brand. No artwork/credentials from the uploaded reference are included; its organization is referenced in docs/REFERENCE-SETTINGS.md.

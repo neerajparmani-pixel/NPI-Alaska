@@ -3,7 +3,43 @@
     {
       "category": "violation",
       "file": "spreadsheet-first/Index.html",
-      "line": 419,
+      "line": 1025,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "spreadsheet-first/Index.html",
+      "line": 1037,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "spreadsheet-first/Index.html",
+      "line": 1048,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "spreadsheet-first/Index.html",
+      "line": 1062,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "spreadsheet-first/Index.html",
+      "line": 1094,
       "message": "Enabled literal button has no detectable action or submit behavior.",
       "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
       "ruleId": "affordance.actionless-button",
@@ -95,10 +131,10 @@
   "projectRoot": "/workspace/NPI-Alaska",
   "schemaVersion": 1,
   "summary": {
-    "errors": 10,
-    "total": 10,
+    "errors": 14,
+    "total": 14,
     "unresolved": 0,
-    "violations": 10,
+    "violations": 14,
     "warnings": 0
   }
 }

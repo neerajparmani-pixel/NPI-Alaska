@@ -23,7 +23,7 @@ with ZipFile(deploy, 'w', ZIP_DEFLATED) as archive:
             archive.write(path, path.relative_to(dist))
 
 source = out / 'NPI-Alaska-Source.zip'
-roots = ['src', 'public', 'server', 'functions', 'backend', 'scripts', 'tests', 'spreadsheet-first']
+roots = ['src', 'public', 'server', 'functions', 'backend', 'scripts', 'tests', 'spreadsheet-first', 'docs']
 files = [p for p in root.iterdir() if p.is_file() and (p.suffix in {'.md', '.json', '.jsonc', '.html'} or p.name in {'.gitignore', 'playwright.config.js'})]
 for folder in roots:
     files.extend(p for p in (root / folder).rglob('*') if p.is_file())

@@ -36,3 +36,7 @@ User selected silver lion/navy wings/gold stars. Color theme applied, exact logo
 ## Spreadsheet-first review stage — 2026-10-28
 
 User requested frontend and Apps Script code to inspect inside Google Sheets before Cloudflare. `spreadsheet-first/` is an isolated owner-only test with actual sheet/file write operations: assignment → start → tasks/evidence → submit → correction/resubmission → approval. Preview views do not represent authenticated workers. Owner identity is checked at each server call; employee passwords are not stored in Sheets. Cloudflare/Firebase app remains separate and unchanged. GPS/snowfall, real user accounts, final per-site policy and production deployment are deferred, explicitly documented.
+
+## Owner preview revision and reference input
+
+User requested a full-page app, professional multi-tab backend and login/admin configuration similar to their privately uploaded NPI app. Version 2 adds a private Apps Script web entry, revised interface, editable general settings and eight readable backend tabs while preserving all prior test records. The supplied reference was inspected only; credentials and unrelated modules are not copied. Real employee account administration remains blocked by missing authentication implementation/configuration; a Cloudflare hosting project does not establish a Firebase or other identity project. New Alaska logo remains pending from the user.

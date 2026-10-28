@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <base target="_top" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>NPI Alaska — Spreadsheet test</title>
@@ -405,42 +406,753 @@
       dialog::backdrop {
         background: #102c5080;
       }
+      /* Full-page field operations shell: same approved navy / silver / gold tokens. */
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+      .app-shell {
+        display: grid;
+        grid-template-columns: 224px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+      .sidebar {
+        background: var(--navy);
+        color: white;
+        padding: 30px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+      .wordmark {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 0 9px;
+      }
+      .brand-circle {
+        flex-shrink: 0;
+        width: 43px;
+        height: 43px;
+        display: grid;
+        place-items: center;
+        border: 2px solid #cbd5e1;
+        border-radius: 50%;
+        font-size: 14px;
+        font-weight: 800;
+        position: relative;
+      }
+      .brand-circle:after {
+        content: "★";
+        position: absolute;
+        bottom: -7px;
+        background: var(--navy);
+        padding: 0 3px;
+        color: var(--gold);
+        font-size: 12px;
+      }
+      .wordmark strong {
+        font-size: 20px;
+        letter-spacing: 0.6px;
+      }
+      .wordmark small {
+        display: block;
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: #b8c8db;
+        margin-top: 5px;
+      }
+      .nav-label {
+        color: #a7bdd2;
+        font-size: 10px;
+        letter-spacing: 2px;
+        margin: 10px 12px 0;
+      }
+      .side-nav {
+        display: grid;
+        gap: 7px;
+      }
+      .side-nav button {
+        display: flex;
+        justify-content: flex-start;
+        gap: 12px;
+        border: 0;
+        background: transparent;
+        color: #c9d7e6;
+        min-height: 52px;
+        padding: 14px;
+        font-size: 14px;
+        text-align: left;
+      }
+      .side-nav button.active {
+        background: #294b71;
+        color: white;
+        box-shadow: inset 3px 0 var(--gold);
+      }
+      .side-nav svg {
+        width: 19px;
+        height: 19px;
+        flex-shrink: 0;
+      }
+      .side-bottom {
+        margin-top: auto;
+        border-top: 1px solid #375574;
+        padding: 20px 12px 0;
+        font-size: 12px;
+        color: #b8c8db;
+        line-height: 1.8;
+      }
+      .side-bottom strong {
+        display: block;
+        color: white;
+      }
+      .workspace {
+        min-width: 0;
+      }
+      .workspace > header {
+        background: white;
+        color: var(--ink);
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        min-height: 82px;
+        padding: 18px 34px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .context {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .context b {
+        color: var(--ink);
+        margin-left: 8px;
+      }
+      .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .header-controls label {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .header-controls select {
+        font-size: 12px;
+        min-height: 42px;
+        padding: 10px;
+        border-color: var(--line);
+      }
+      .header-controls button {
+        min-height: 42px;
+        padding: 10px 14px;
+        font-size: 12px;
+      }
+      .workspace main {
+        max-width: 1240px;
+        padding: 24px 34px 60px;
+      }
+      .banner {
+        background: #edf3fa;
+        color: #3a5674;
+        border-color: #d6e3f1;
+        font-size: 12px;
+        padding: 12px 16px;
+      }
+      .toolbar {
+        margin: 28px 0 22px;
+      }
+      .toolbar h1 {
+        font-size: 32px;
+        letter-spacing: -0.8px;
+        margin-bottom: 8px;
+      }
+      .toolbar .muted {
+        font-size: 14px;
+        margin: 0;
+      }
+      .eyebrow {
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: var(--muted);
+        font-weight: 700;
+        margin: 0 0 10px;
+      }
+      .grid {
+        gap: 20px;
+      }
+      .card {
+        padding: 24px;
+        border-radius: 14px;
+      }
+      .job-card {
+        display: flex;
+        flex-direction: column;
+      }
+      .job-card .full {
+        margin-top: 18px;
+      }
+      .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .job-header .badge {
+        margin: 0;
+      }
+      .site-symbol {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: #eaf1fa;
+        color: #315a85;
+      }
+      .site-symbol svg {
+        width: 23px;
+        height: 23px;
+      }
+      .job-card h2 {
+        font-size: 22px;
+        letter-spacing: -0.4px;
+        margin: 0 0 6px;
+      }
+      .job-card > p {
+        color: var(--muted);
+        margin: 0 0 18px;
+      }
+      .job-card .summary {
+        border-top: 1px solid var(--line);
+        padding-top: 16px;
+        margin: 0;
+      }
+      .record-reference {
+        font-size: 10px !important;
+        letter-spacing: 0.7px;
+        margin: 18px 0 0 !important;
+        color: #6a7c8e !important;
+      }
+      .badge {
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .badge.in-progress {
+        background: #fff1d8;
+        color: #80501a;
+      }
+      .badge.submitted {
+        background: #e8f1fc;
+        color: #205d8a;
+      }
+      .connection-pill {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .connection-pill[data-state="ready"] {
+        color: #246248;
+      }
+      .connection-pill:before {
+        content: "";
+        display: block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 28px;
+      }
+      .metric {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .metric span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .metric strong {
+        display: block;
+        font-size: 32px;
+        letter-spacing: -1px;
+        margin: 12px 0 6px;
+      }
+      .metric small {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .section-heading {
+        font-size: 19px;
+        margin: 0 0 10px;
+      }
+      .section-note {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 20px;
+      }
+      .empty {
+        padding: 40px 25px;
+      }
+      .empty .site-symbol {
+        margin: 0 auto 18px;
+      }
+      .empty h2 {
+        font-size: 22px;
+        margin: 0 0 8px;
+      }
+      .empty p {
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 450px;
+        margin: 0 auto 20px;
+      }
+      .empty button {
+        margin-top: 4px;
+      }
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .settings-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        border-bottom: 1px solid var(--line);
+        padding: 16px 0;
+        font-size: 13px;
+      }
+      .settings-row span {
+        color: var(--muted);
+      }
+      .settings-row strong {
+        text-align: right;
+        overflow-wrap: anywhere;
+        max-width: 65%;
+        font-size: 13px;
+      }
+      .backend-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .backend-links a {
+        border: 1px solid var(--line);
+        padding: 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+      }
+      .backend-links a:hover {
+        background: var(--paper);
+      }
+      .settings-note {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .settings-grid .card {
+        margin: 0;
+      }
+      .settings-full {
+        grid-column: 1/-1;
+      }
+      .blocked-status {
+        display: inline-block;
+        padding: 7px 10px;
+        background: #fff1d8;
+        color: #80501a;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .settings-grid button:disabled {
+        cursor: not-allowed;
+      }
+      .small-info {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-top: 20px;
+      }
+      .page-foot {
+        font-size: 11px;
+        color: #6a7c8e;
+        margin-top: 36px;
+      }
+      .workspace #busy {
+        margin-top: 10px;
+        font-size: 12px;
+      }
+      .workspace #error {
+        margin-top: 16px;
+      }
+      .card h2 {
+        letter-spacing: -0.3px;
+      }
+      .job-card .summary b {
+        font-size: 13px;
+      }
+      .card .muted {
+        line-height: 1.7;
+      }
+      @media (max-width: 1000px) {
+        .app-shell {
+          grid-template-columns: 190px minmax(0, 1fr);
+        }
+        .sidebar {
+          padding: 26px 12px;
+        }
+        .wordmark strong {
+          font-size: 17px;
+        }
+        .wordmark {
+          gap: 8px;
+          padding: 0 5px;
+        }
+        .workspace > header {
+          padding: 16px 24px;
+        }
+        .workspace main {
+          padding: 22px 24px 40px;
+        }
+        .connection-pill {
+          display: none;
+        }
+        .settings-grid {
+          grid-template-columns: 1fr;
+        }
+        .settings-full {
+          grid-column: auto;
+        }
+        .metrics {
+          gap: 10px;
+        }
+        .metric {
+          padding: 16px;
+        }
+      }
+      @media (max-width: 700px) {
+        .app-shell {
+          display: block;
+        }
+        .sidebar {
+          position: static;
+          height: auto;
+          padding: 18px 16px;
+          gap: 18px;
+        }
+        .wordmark {
+          padding: 0;
+        }
+        .wordmark strong {
+          font-size: 19px;
+        }
+        .brand-circle {
+          width: 36px;
+          height: 36px;
+          font-size: 12px;
+        }
+        .wordmark small {
+          font-size: 9px;
+        }
+        .nav-label,
+        .side-bottom {
+          display: none;
+        }
+        .side-nav {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 4px;
+        }
+        .side-nav button {
+          justify-content: center;
+          flex-direction: column;
+          gap: 7px;
+          font-size: 11px;
+          padding: 9px 3px;
+          min-height: 60px;
+        }
+        .side-nav button.active {
+          box-shadow: inset 0 -3px var(--gold);
+        }
+        .side-nav svg {
+          width: 18px;
+          height: 18px;
+        }
+        .workspace > header {
+          min-height: 70px;
+          padding: 14px 16px;
+          gap: 10px;
+          align-items: center;
+        }
+        .context {
+          font-size: 11px;
+        }
+        .context > span {
+          display: none;
+        }
+        .context b {
+          margin: 0;
+        }
+        .header-controls {
+          gap: 7px;
+          flex-wrap: nowrap;
+        }
+        .header-controls label {
+          display: none;
+        }
+        .header-controls select {
+          max-width: 125px;
+          min-height: 42px;
+        }
+        .header-controls button {
+          padding: 10px;
+          min-height: 42px;
+        }
+        .workspace main {
+          padding: 16px 16px 36px;
+        }
+        .toolbar {
+          margin: 24px 0 20px;
+        }
+        .toolbar h1 {
+          font-size: 29px;
+        }
+        .banner {
+          font-size: 11px;
+          padding: 11px 13px;
+          line-height: 1.7;
+        }
+        .toolbar > .primary {
+          width: 100%;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .card {
+          padding: 20px;
+        }
+        .job-card h2 {
+          font-size: 21px;
+        }
+        .metrics {
+          grid-template-columns: 1fr 1fr;
+          margin-bottom: 24px;
+        }
+        .metric strong {
+          font-size: 29px;
+        }
+        .settings-grid {
+          grid-template-columns: 1fr;
+        }
+        .backend-links {
+          grid-template-columns: 1fr;
+        }
+        .settings-row {
+          font-size: 12px;
+        }
+        .settings-row strong {
+          font-size: 12px;
+        }
+        .button,
+        button {
+          min-height: 54px;
+        }
+        .pager {
+          gap: 10px;
+          font-size: 13px;
+        }
+        .pager button {
+          min-height: 46px;
+        }
+        .page-foot {
+          line-height: 1.7;
+        }
+        .empty {
+          padding: 30px 20px;
+        }
+        .job-header {
+          margin-bottom: 18px;
+        }
+      }
+      .wordmark > div {
+        min-width: 0;
+      }
+      .wordmark strong {
+        display: block;
+        overflow-wrap: anywhere;
+      }
+      .job-card p {
+        overflow-wrap: anywhere;
+      }
+      .page-foot,
+      .record-reference {
+        color: var(--muted) !important;
+      }
+      .backend-links a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
     </style>
   </head>
   <body>
-    <header>
-      <div><strong>NPI ALASKA</strong><small>SPREADSHEET TEST</small></div>
-      <nav aria-label="Test controls">
-        <label for="view">Preview view</label
-        ><select id="view">
-          <option value="worker">Worker</option>
-          <option value="supervisor">Supervisor</option>
-          <option value="management">Management</option></select
-        ><button id="refresh" type="button">Refresh</button>
-      </nav>
-    </header>
-    <main>
-      <div class="banner">
-        <b>Spreadsheet-owner test.</b> Changes are saved to
-        <b>NPI_Test_Work</b>. The view selector previews the workflow; it is not
-        worker authentication. Use sample information only.
-      </div>
-      <div id="error" role="alert" tabindex="-1" class="error" hidden></div>
-      <div id="busy" class="busy" role="status" aria-live="polite"></div>
-      <div id="screen"><p role="status">Loading spreadsheet records…</p></div>
-    </main>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="wordmark">
+          <span class="brand-circle" aria-hidden="true">NPI</span>
+          <div><strong>NPI ALASKA</strong><small>FIELD OPERATIONS</small></div>
+        </div>
+        <p class="nav-label">WORKSPACE PREVIEW</p>
+        <nav class="side-nav" aria-label="Workspace navigation">
+          <button data-preview="worker" class="active">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <rect x="4" y="7" width="16" height="14" rx="2" />
+              <path d="M9 7V3h6v4M4 12h16" /></svg
+            >My work
+          </button>
+          <button data-preview="supervisor">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <path d="M8 4H5v17h14V4h-3M8 3h8v4H8zM8 14l3 3 5-6" /></svg
+            >Reviews
+          </button>
+          <button data-preview="management">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" /></svg
+            >Overview
+          </button>
+          <button data-preview="settings">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <path d="M4 6h16M4 12h16M4 18h16" />
+              <circle cx="9" cy="6" r="2" fill="#102c50" />
+              <circle cx="16" cy="12" r="2" fill="#102c50" />
+              <circle cx="8" cy="18" r="2" fill="#102c50" /></svg
+            >Settings
+          </button>
+        </nav>
+        <div class="side-bottom">
+          <strong id="workspace-label">NPI Alaska</strong>Assignments. Evidence.
+          Approval.<br />Private owner preview
+        </div>
+      </aside>
+      <section class="workspace">
+        <header>
+          <div class="context">
+            <span>Field operations / </span><b id="context-title">My work</b>
+          </div>
+          <div class="header-controls">
+            <span class="connection-pill" id="connection">Connecting…</span
+            ><label for="view">Preview view</label
+            ><select id="view">
+              <option value="worker">Worker</option>
+              <option value="supervisor">Supervisor</option>
+              <option value="management">Management</option></select
+            ><button id="refresh" type="button">Refresh</button>
+          </div>
+        </header>
+        <main>
+          <div class="banner">
+            <b>Private owner preview</b> · Work saves to your spreadsheet and
+            private Drive. The views below demonstrate roles; employee logins
+            are not connected.
+          </div>
+          <div id="error" role="alert" tabindex="-1" class="error" hidden></div>
+          <div id="busy" class="busy" role="status" aria-live="polite"></div>
+          <div id="screen">
+            <p role="status">Loading spreadsheet records…</p>
+          </div>
+          <p id="support-note" class="small-info"></p>
+          <p class="page-foot">
+            NPI Alaska · Field operations · Private owner preview
+          </p>
+        </main>
+      </section>
+    </div>
     <div id="toast" class="toast" role="status" hidden></div>
     <dialog id="discard-dialog" aria-labelledby="discard-title">
       <form method="dialog" novalidate>
         <h2 id="discard-title">Discard unsaved drafts?</h2>
         <p>
-          Refresh will load the spreadsheet records and discard unsaved task and
-          note edits. Uploaded files and saved records will remain.
+          Refresh will load the spreadsheet records and discard unsaved task,
+          note and workspace-setting edits. Uploaded files and saved records
+          will remain.
         </p>
         <div class="actions">
           <button value="cancel" autofocus>Keep editing</button
           ><button value="discard">Discard drafts and refresh</button>
         </div>
+      </form>
+    </dialog>
+    <dialog id="auth-guide" aria-labelledby="auth-guide-title">
+      <form method="dialog" novalidate>
+        <h2 id="auth-guide-title">Company account setup</h2>
+        <p>
+          The login service is separate from your Cloudflare hosting project.
+        </p>
+        <ol>
+          <li>
+            Choose and configure a managed password service, such as Firebase
+            Authentication.
+          </li>
+          <li>
+            Connect identity verification to the backend and map users to
+            approved roles and site access.
+          </li>
+          <li>
+            Implement account creation, reset, deactivation and session
+            revocation.
+          </li>
+          <li>Test these permissions before granting workers access.</li>
+        </ol>
+        <p>
+          No passwords belong in spreadsheet cells. This owner preview does not
+          yet issue worker accounts.
+        </p>
+        <button autofocus>Close</button>
       </form>
     </dialog>
     <script>
@@ -458,6 +1170,9 @@
             })[c],
         );
       let state = { jobs: [], sites: {}, total: 0, page: 0 },
+        section = "work",
+        initialized = false,
+        workspaceDraft = null,
         view = "worker",
         selected = null,
         pending = null,
@@ -474,12 +1189,27 @@
         create: "Assignment created",
       };
       function request(payload) {
-        return new Promise((resolve, reject) =>
+        return new Promise((resolve, reject) => {
+          const timer = setTimeout(
+            () =>
+              reject(
+                Error(
+                  "Google is taking longer than expected. A save may already have completed; retry the same action or refresh before creating another record.",
+                ),
+              ),
+            45000,
+          );
           google.script.run
-            .withSuccessHandler(resolve)
-            .withFailureHandler(reject)
-            .npiTestApi(payload),
-        );
+            .withSuccessHandler((value) => {
+              clearTimeout(timer);
+              resolve(value);
+            })
+            .withFailureHandler((error) => {
+              clearTimeout(timer);
+              reject(error);
+            })
+            .npiTestApi(payload);
+        });
       }
       function busy(value, message = "Working…") {
         working = value;
@@ -518,10 +1248,25 @@
         $("#error").hidden = true;
         try {
           state = await request({ action: "list", page: state.page });
+          if (state.appVersion !== "2")
+            throw Error(
+              "Update both Code.gs and Index.html, then run setupNpiTest again. This page needs the new backend version.",
+            );
+          initialized = true;
+          $("#connection").textContent = "Spreadsheet connected";
+          $("#connection").dataset.state = "ready";
           if (selected && !state.jobs.some((j) => j.id === selected))
             selected = null;
           render();
+          if (state.warning) fail(Error(state.warning));
         } catch (e) {
+          $("#connection").textContent = "Connection needs attention";
+          $("#connection").dataset.state = "error";
+          if (!initialized) {
+            $("#screen").innerHTML =
+              '<section class="empty"><h2>Let’s connect your spreadsheet.</h2><p>Run setupNpiTest in Apps Script using the spreadsheet owner account, then try again.</p><button id="retry-load" class="primary">Try again</button></section>';
+            $("#retry-load").onclick = refresh;
+          }
           fail(e);
         } finally {
           busy(false);
@@ -567,26 +1312,61 @@
             if (action !== "upload") drafts.delete(result.job.id);
             else if (drafts.get(result.job.id)?.baseVersion === payload.version)
               drafts.get(result.job.id).baseVersion = result.job.version;
-            if (action === "create" && result.list) state = result.list;
+            if (action === "create" && result.list)
+              state = { ...state, ...result.list };
+            if (result.summary) state.summary = result.summary;
             selected = result.job.id;
           }
           render();
           notify(labels[action]);
+          if (result.warning) fail(Error(result.warning));
         } catch (e) {
           fail(e);
         } finally {
           busy(false);
         }
       }
+      const siteIcon = (site) =>
+        site === "Tote Port"
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 6h12v12H2zM14 11h4l4 4v3h-8"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6M8 10h1m6 0h1"/></svg>';
       function card(job) {
-        return `<article class="card">${badge(job)}<h2>${esc(job.site)}</h2><p>${esc(job.area)}</p><div class="summary"><div><span>Worker</span><b>${esc(job.worker)}</b></div><div><span>Equipment</span><b>${esc(job.equipment)}</b></div></div><button class="${view === "worker" ? "primary " : ""}full" data-open="${esc(job.id)}">${view === "supervisor" && job.status === "Submitted" ? "Review work" : "Open work"}</button></article>`;
+        return `<article class="card job-card"><div class="job-header"><span class="site-symbol">${siteIcon(job.site)}</span>${badge(job)}</div><h2>${esc(job.site)}</h2><p>${esc(job.area)}</p><div class="summary"><div><span>Worker</span><b>${esc(job.worker)}</b></div><div><span>Equipment</span><b>${esc(job.equipment)}</b></div></div><p class="record-reference">RECORD ${esc(job.id.slice(-8).toUpperCase())}</p><button class="${view === "worker" ? "primary " : ""}full" data-open="${esc(job.id)}">${view === "supervisor" && job.status === "Submitted" ? "Review work" : "Open work"}<span aria-hidden="true"> →</span></button></article>`;
+      }
+      function metrics() {
+        const c = state.summary || {};
+        return `<div class="metrics">${[
+          ["Total work", c.total || 0, "Across all sites"],
+          ["In progress", c.inProgress || 0, "Work underway"],
+          ["Awaiting review", c.submitted || 0, "Ready for verification"],
+          ["Approved", c.approved || 0, "Work verified"],
+        ]
+          .map(
+            ([label, count, note]) =>
+              `<div class="metric"><span>${label}</span><strong>${count.toString().padStart(2, "0")}</strong><small>${note}</small></div>`,
+          )
+          .join("")}</div>`;
       }
       function home() {
         const jobs =
           view === "supervisor"
             ? state.jobs.filter((j) => j.status === "Submitted")
             : state.jobs;
-        return `<div class="toolbar"><div><h1>${view === "worker" ? "My work" : view === "supervisor" ? "Review work" : "Work overview"}</h1><p class="muted">${view === "worker" ? "Choose an assignment to record test work." : "Follow work from assignment to approval."}</p></div>${view !== "worker" ? '<button id="new-assignment" class="primary">Create assignment</button>' : ""}</div><p class="muted">Spreadsheet page ${state.page + 1} · ${state.total} total records${view === "supervisor" ? " · showing submissions on this page" : ""}</p><div class="grid">${jobs.length ? jobs.map(card).join("") : `<div class="empty"><h2>${view === "supervisor" ? "No submissions on this page" : "No test assignments yet"}</h2><p>${view === "worker" ? "Choose Supervisor view to create an assignment first." : "Try another page or create a test assignment."}</p></div>`}</div><div class="pager"><button id="previous" ${state.page === 0 ? 'data-readonly="true" disabled' : ""}>Previous</button><span>${state.page + 1} / ${Math.max(1, Math.ceil(state.total / 20))}</span><button id="next" ${state.page + 1 >= Math.ceil(state.total / 20) ? 'data-readonly="true" disabled' : ""}>Next</button></div>`;
+        return `<div class="toolbar"><div><p class="eyebrow">${view === "worker" ? "YOUR WORKDAY" : view === "supervisor" ? "WORK VERIFICATION" : "OPERATIONS OVERVIEW"}</p><h1>${view === "worker" ? "My work" : view === "supervisor" ? "Review work" : "Work overview"}</h1><p class="muted">${view === "worker" ? "Your assignments, ready when you are." : view === "supervisor" ? "Check the work. Review the evidence. Close the loop." : "A clear view of your sites, people and progress."}</p></div>${view !== "worker" ? '<button id="new-assignment" class="primary"><span aria-hidden="true">+</span> Create assignment</button>' : ""}</div>${view === "management" ? metrics() : ""}<h2 class="section-heading">${view === "supervisor" ? "Submissions" : "Work assignments"}</h2><p class="section-note">Page ${state.page + 1} · ${state.total} total work records${view === "supervisor" ? " · submissions on this page" : ""}</p><div class="grid">${jobs.length ? jobs.map(card).join("") : `<div class="empty"><span class="site-symbol">${siteIcon("Courthouse")}</span><h2>${view === "supervisor" ? "Nothing waiting on this page" : "Let’s set up your first job."}</h2><p>${view === "supervisor" ? "Work appears here once it has been submitted for review." : "Create an assignment with a site, worker and equipment. Then try recording work and approving it."}</p>${view === "worker" ? '<button id="first-assignment" class="primary">Create a test assignment</button>' : ""}</div>`}</div><div class="pager"><button id="previous" ${state.page === 0 ? 'data-readonly="true" disabled' : ""}>Previous</button><span>${state.page + 1} / ${Math.max(1, Math.ceil(state.total / 20))}</span><button id="next" ${state.page + 1 >= Math.ceil(state.total / 20) ? 'data-readonly="true" disabled' : ""}>Next</button></div>`;
+      }
+      function settingsPage() {
+        const info = state.backend || {};
+        const names = {
+          NPI_Settings: "Workspace settings",
+          NPI_Assignments: "Assignments",
+          NPI_WorkLogs: "Work logs",
+          NPI_Attachments: "Attachments",
+          NPI_Approvals: "Approvals",
+          NPI_AuditLog: "Audit history",
+          NPI_Sites: "Sites",
+          NPI_Users: "Owner access",
+        };
+        return `<div class="toolbar"><div><p class="eyebrow">WORKSPACE ADMINISTRATION</p><h1>Settings & access</h1><p class="muted">Your connected backend and account setup, in one place.</p></div></div><div class="settings-grid"><section class="card settings-full"><h2>Workspace settings</h2><p class="settings-note">These non-secret settings are saved in the NPI_Settings tab.</p><form id="workspace-settings" novalidate><div class="summary"><div class="field"><label for="workspace-name">Workspace name</label><input id="workspace-name" required maxlength="60" value="${esc(workspaceDraft?.name ?? info.workspace?.name ?? "NPI Alaska")}"></div><div class="field"><label for="support-contact">Support contact (optional)</label><input id="support-contact" maxlength="200" value="${esc(workspaceDraft?.support ?? info.workspace?.support ?? "")}"></div></div><button class="primary" type="submit">Save workspace settings</button></form></section><section class="card"><h2>Current access</h2><div class="settings-row"><span>Account</span><strong>${esc(info.owner || "Spreadsheet owner")}</strong></div><div class="settings-row"><span>Access level</span><strong>Owner-only Google account</strong></div><div class="settings-row"><span>Backend</span><strong>Google Sheets & private Drive</strong></div><p class="small-info">Only the spreadsheet owner can use this preview. Switching views does not change your identity or grant another person access.</p></section><section class="card"><h2>Company logins</h2><span class="blocked-status">Authentication not connected</span><p class="settings-note">The planned account type is company-issued usernames and passwords. Your Cloudflare project hosts the app; a password service still needs to be connected.</p><div class="actions"><button disabled data-readonly="true">Create user</button><button disabled data-readonly="true">Reset password</button></div><p class="small-info">These actions become available only after real authentication, account administration and server permissions are implemented. Passwords will not be stored in Sheets.</p><button id="account-guide" class="full">Account setup requirements</button></section><section class="card settings-full"><h2>Spreadsheet backend</h2><p class="settings-note">Open the separate tabs below to inspect your saved work. They are maintained by the app; the versioned record store preserves existing test data.</p><div class="backend-links">${(info.tabs || []).map((tab) => `<a href="${esc(tab.url)}" target="_blank" rel="noopener noreferrer">${esc(names[tab.name] || tab.name)} <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5H5v14h14v-4M13 4h7v7M20 4 10 14"/></svg></a>`).join("")}</div></section></div>`;
       }
       function detail(job) {
         const edit =
@@ -609,7 +1389,7 @@
           )
           .join(
             "",
-          )}</div><small class="muted">${esc(job.id)} · version ${job.version}</small></section>${job.status === "Correction requested" ? `<div class="notice"><b>Correction requested</b><br>${esc(job.correction)}</div>` : ""}${view === "worker" && job.status === "Assigned" ? '<section class="card"><h2>Ready to begin?</h2><p>Start time is recorded when you press the button.</p><button class="primary full" id="start">Start work</button></section>' : ""}${job.status !== "Assigned" ? `<section class="card"><h2>Completed tasks</h2>${state.sites[job.site].map((task) => `<label class="task"><input type="checkbox" data-task="${esc(task)}" ${form.tasks.includes(task) ? "checked" : ""} ${edit ? "" : 'data-readonly="true" disabled'}>${esc(task)}</label>`).join("")}${job.site === "Tote Port" ? `<div class="field"><label for="loads">Completed loads</label><input id="loads" type="number" min="0" step="1" inputmode="numeric" value="${esc(form.loads)}" ${edit ? "" : 'data-readonly="true" readonly'}></div>` : ""}<div class="field"><label for="notes">Work notes</label><textarea id="notes" style="resize:none" maxlength="2000" ${edit ? "" : 'data-readonly="true" readonly'}>${esc(form.notes)}</textarea></div><p id="draft-status" class="saved">${drafts.has(job.id) ? "Changes not saved yet" : "Saved in spreadsheet"}</p>${edit ? '<button id="save">Save draft</button>' : ""}</section><section class="card"><h2>Evidence</h2><p class="muted">JPEG/PNG photos, maximum 6. Timecard: JPEG/PNG/PDF. Up to 2 MB each. Files remain private in the owner’s Drive.</p><div class="photos">${job.files.map((file) => `<div class="photo">${file.kind === "photo" ? `<img data-photo="${esc(file.id)}" alt="Loading work evidence" width="180" height="110">` : ""}<a href="https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view" target="_blank" rel="noopener noreferrer">${esc(file.kind)}: ${esc(file.name)}</a></div>`).join("")}</div>${!job.files.length ? "<p>No evidence attached.</p>" : ""}${edit ? '<div class="actions"><button id="add-photo">Add work photo</button><button id="add-timecard">Add signed timecard</button></div><input id="photo" type="file" accept="image/jpeg,image/png" hidden><input id="timecard" type="file" accept="image/jpeg,image/png,application/pdf" hidden>' : ""}</section>` : ""}${edit ? '<section class="card"><h2>Ready for review?</h2><p>Submission records your finish time. At least one completed task and one work photo are required. Port work also needs loads and a signed timecard.</p><button id="submit" class="primary full">Submit work for review</button></section>' : ""}${view === "supervisor" && job.status === "Submitted" ? '<section class="card"><h2>Review decision</h2><p>Verify the tasks and evidence before approving.</p><div class="field"><label for="reason">Correction instructions (required if returning)</label><textarea id="reason" style="resize:none" maxlength="1000"></textarea></div><div class="actions"><button id="approve" class="success">Approve work</button><button id="return">Request correction</button></div></section>' : ""}<section class="card"><h2>History</h2><div class="history">${job.history
+          )}</div><small class="muted">${esc(job.id)} · version ${job.version}</small></section>${job.status === "Correction requested" ? `<div class="notice"><b>Correction requested</b><br>${esc(job.correction)}</div>` : ""}${view === "worker" && job.status === "Assigned" ? '<section class="card"><h2>Ready to begin?</h2><p>Start time is recorded when you press the button.</p><button class="primary full" id="start">Start work</button></section>' : ""}${job.status !== "Assigned" ? `<section class="card"><h2>Completed tasks</h2>${(state.sites[job.site] || job.tasks).map((task) => `<label class="task"><input type="checkbox" data-task="${esc(task)}" ${form.tasks.includes(task) ? "checked" : ""} ${edit ? "" : 'data-readonly="true" disabled'}>${esc(task)}</label>`).join("")}${job.site === "Tote Port" ? `<div class="field"><label for="loads">Completed loads</label><input id="loads" type="number" min="0" step="1" inputmode="numeric" value="${esc(form.loads)}" ${edit ? "" : 'data-readonly="true" readonly'}></div>` : ""}<div class="field"><label for="notes">Work notes</label><textarea id="notes" style="resize:none" maxlength="2000" ${edit ? "" : 'data-readonly="true" readonly'}>${esc(form.notes)}</textarea></div><p id="draft-status" class="saved">${drafts.has(job.id) ? "Changes not saved yet" : "Saved in spreadsheet"}</p>${edit ? '<button id="save">Save draft</button>' : ""}</section><section class="card"><h2>Evidence</h2><p class="muted">JPEG/PNG photos, maximum 6. Timecard: JPEG/PNG/PDF. Up to 2 MB each. Files remain private in the owner’s Drive.</p><div class="photos">${job.files.map((file) => `<div class="photo">${file.kind === "photo" ? `<img data-photo="${esc(file.id)}" alt="Loading work evidence" width="180" height="110">` : ""}<a href="https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view" target="_blank" rel="noopener noreferrer">${esc(file.kind)}: ${esc(file.name)}</a></div>`).join("")}</div>${!job.files.length ? "<p>No evidence attached.</p>" : ""}${edit ? '<div class="actions"><button id="add-photo">Add work photo</button><button id="add-timecard">Add signed timecard</button></div><input id="photo" type="file" accept="image/jpeg,image/png" hidden><input id="timecard" type="file" accept="image/jpeg,image/png,application/pdf" hidden>' : ""}</section>` : ""}${edit ? '<section class="card"><h2>Ready for review?</h2><p>Submission records your finish time. At least one completed task and one work photo are required. Port work also needs loads and a signed timecard.</p><button id="submit" class="primary full">Submit work for review</button></section>' : ""}${view === "supervisor" && job.status === "Submitted" ? '<section class="card"><h2>Review decision</h2><p>Verify the tasks and evidence before approving.</p><div class="field"><label for="reason">Correction instructions (required if returning)</label><textarea id="reason" style="resize:none" maxlength="1000"></textarea></div><div class="actions"><button id="approve" class="success">Approve work</button><button id="return">Request correction</button></div></section>' : ""}<section class="card"><h2>History</h2><div class="history">${job.history
           .slice()
           .reverse()
           .map(
@@ -634,9 +1414,31 @@
       }
       function render() {
         const job = state.jobs.find((j) => j.id === selected);
-        $("#screen").innerHTML = job ? detail(job) : home();
+        $("#screen").innerHTML =
+          section === "settings" ? settingsPage() : job ? detail(job) : home();
+        document.querySelectorAll("[data-preview]").forEach((button) => {
+          const active =
+            button.dataset.preview ===
+            (section === "settings" ? "settings" : view);
+          button.classList.toggle("active", active);
+          if (active) button.setAttribute("aria-current", "page");
+          else button.removeAttribute("aria-current");
+        });
+        $("#context-title").textContent =
+          section === "settings"
+            ? "Settings"
+            : view === "worker"
+              ? "My work"
+              : view === "supervisor"
+                ? "Review work"
+                : "Overview";
+        $("#workspace-label").textContent =
+          state.backend?.workspace?.name || "NPI Alaska";
+        $("#support-note").textContent = state.backend?.workspace?.support
+          ? "Assignment support: " + state.backend.workspace.support
+          : "";
         bind(job);
-        if (job) loadPhotos(job);
+        if (job && section !== "settings") loadPhotos(job);
       }
       async function loadPhotos(job) {
         for (const file of job.files.filter((f) => f.kind === "photo")) {
@@ -751,6 +1553,14 @@
             }),
         );
         if ($("#new-assignment")) $("#new-assignment").onclick = newAssignment;
+        if ($("#first-assignment"))
+          $("#first-assignment").onclick = () => {
+            view = "supervisor";
+            $("#view").value = view;
+            newAssignment();
+          };
+        if ($("#account-guide"))
+          $("#account-guide").onclick = () => $("#auth-guide").showModal();
         if ($("#back"))
           $("#back").onclick = () => {
             selected = null;
@@ -765,6 +1575,42 @@
           $("#next").onclick = () => {
             state.page++;
             refresh();
+          };
+        if ($("#workspace-settings"))
+          $("#workspace-settings").oninput = () => {
+            workspaceDraft = {
+              name: $("#workspace-name").value,
+              support: $("#support-contact").value,
+            };
+          };
+        if ($("#workspace-settings"))
+          $("#workspace-settings").onsubmit = async (event) => {
+            event.preventDefault();
+            if (working) return;
+            const name = $("#workspace-name").value,
+              support = $("#support-contact").value;
+            if (!name.trim()) {
+              fail(Error("Enter a workspace name."));
+              $("#workspace-name").setAttribute("aria-invalid", "true");
+              $("#workspace-name").setAttribute("aria-describedby", "error");
+              $("#workspace-name").focus();
+              return;
+            }
+            busy(true, "Saving workspace settings…");
+            $("#error").hidden = true;
+            try {
+              state.backend = await request({
+                action: "saveSettings",
+                data: { name, support },
+              });
+              workspaceDraft = null;
+              render();
+              notify("Workspace settings saved.");
+            } catch (error) {
+              fail(error);
+            } finally {
+              busy(false);
+            }
           };
         if (!job) return;
         for (const id of ["start", "approve"])
@@ -798,30 +1644,49 @@
           }
       }
       $("#view").onchange = (event) => {
+        section = "work";
         view = event.target.value;
         selected = null;
         $("#error").hidden = true;
         render();
       };
+      document.querySelectorAll("[data-preview]").forEach(
+        (button) =>
+          (button.onclick = () => {
+            if (working) return;
+            selected = null;
+            $("#error").hidden = true;
+            if (button.dataset.preview === "settings") section = "settings";
+            else {
+              section = "work";
+              view = button.dataset.preview;
+              $("#view").value = view;
+            }
+            render();
+            window.scrollTo(0, 0);
+          }),
+      );
       $("#refresh").onclick = () => {
-        if (!working && drafts.size) $("#discard-dialog").showModal();
+        if (!working && (drafts.size || workspaceDraft))
+          $("#discard-dialog").showModal();
         else refresh();
       };
       $("#discard-dialog").addEventListener("close", () => {
         if ($("#discard-dialog").returnValue === "discard") {
           drafts.clear();
+          workspaceDraft = null;
           refresh();
         }
       });
       window.addEventListener("beforeunload", (event) => {
-        if (drafts.size) {
+        if (drafts.size || workspaceDraft) {
           event.preventDefault();
           event.returnValue = "";
         }
       });
       if (typeof google === "undefined" || !google.script?.run) {
         $("#screen").innerHTML =
-          '<section class="card"><h1>Open this app from Google Sheets</h1><p>Paste this file into Apps Script as Index.html, then use NPI Alaska Test → Open app. It cannot connect to a spreadsheet when opened as a local HTML file.</p></section>';
+          '<section class="card"><h1>Open this app from Google Sheets</h1><p>Paste this file into Apps Script as Index.html and install the matching Code.gs. Run setupNpiTest, then deploy a private Web app (execute as Me; access Only myself) and open the URL Google provides. A local HTML file cannot connect on its own.</p></section>';
         $("#view").disabled = true;
         $("#refresh").disabled = true;
       } else refresh();

@@ -53,3 +53,7 @@ For the prebuilt demo, open [`downloads/NPI-Alaska-Deploy.zip`](downloads/NPI-Al
 ## Test inside Google Sheets first
 
 Use the new [spreadsheet-first instructions](spreadsheet-first/README.md). Paste [Code.gs](spreadsheet-first/Code.gs) and [Index.html](spreadsheet-first/Index.html) into a script bound to a new private test spreadsheet, run `setupNpiTest`, then reload the spreadsheet and open **NPI Alaska Test → Open app**. This test writes records to a separate tab and files to private Drive storage; only the spreadsheet owner can use it. It does not require Cloudflare or Firebase and is not live worker authentication.
+
+## Updated full-page spreadsheet preview
+
+The [version 2 guide](spreadsheet-first/README.md) replaces the earlier dialog-only instructions. Replace both spreadsheet-first files, run setupNpiTest again, then deploy a **private Google Apps Script Web app** (execute as Me, access Only myself). The returned URL opens the full-page interface. This adds eight readable backend tabs and preserves the internal record store; employee logins are not connected yet.
