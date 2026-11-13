@@ -1,6 +1,11 @@
 {
   "profile": "product-admin",
-  "sourceRoots": ["src", "spreadsheet-first", "public/sample"],
+  "sourceRoots": [
+    "src",
+    "spreadsheet-first",
+    "public/sample",
+    "public/operations"
+  ],
   "locale": "en-US",
   "canonicalMap": "UX-CONTRACT.md",
   "requiredCapabilities": [

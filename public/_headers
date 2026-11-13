@@ -12,3 +12,7 @@
   Cache-Control: no-cache
 /sample/index.html
   Cache-Control: no-cache
+/operations/sw.js
+  Cache-Control: no-cache
+/operations/index.html
+  Cache-Control: no-cache
