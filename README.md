@@ -1,3 +1,5 @@
+> **Latest: exactly three views.** [Download the NPI three-view sample](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Three-View-Sample.zip), extract, then open **START-HERE.html**. NPI Admin → Subcontractor Admin → Subcontractor Worker. No contract documents or prices. [Guide and visual-reference limitation](docs/three-view/README.md).
+
 > **Revised subcontracting sample:** [Download ZIP](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Subcontract-Operations-Sample.zip), extract and open **START-HERE.html**. Includes individual/crew GPS check-in/out, contractor-first hours approval, NPI cross-verification and mixed customer/subcontractor billing. [Plan and guide](docs/operations/README.md).
 
 > **New clickable PWA sample:** [Download ZIP](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Alaska-Clickable-Sample.zip), extract, then open **START-HERE.html**. Includes worker, supervisor, Settings and simulated two-way Supabase/Sheets workflow. [Guide](docs/prototype/README.md). No backend setup needed for the sample.

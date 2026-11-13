@@ -15,7 +15,8 @@
     "preview:cloudflare": "wrangler pages dev dist --port 8788",
     "package": "npm run build:cloudflare && python3 scripts/package.py",
     "package:sample": "python3 scripts/package-sample.py",
-    "package:operations": "python3 scripts/package-operations.py"
+    "package:operations": "python3 scripts/package-operations.py",
+    "package:three-view": "python3 scripts/package-three-view.py"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

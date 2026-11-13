@@ -4,7 +4,8 @@
     "src",
     "spreadsheet-first",
     "public/sample",
-    "public/operations"
+    "public/operations",
+    "public/three-view"
   ],
   "locale": "en-US",
   "canonicalMap": "UX-CONTRACT.md",

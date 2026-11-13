@@ -16,3 +16,7 @@
   Cache-Control: no-cache
 /operations/index.html
   Cache-Control: no-cache
+/three-view/sw.js
+  Cache-Control: no-cache
+/three-view/index.html
+  Cache-Control: no-cache
