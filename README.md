@@ -1,3 +1,5 @@
+> **New clickable PWA sample:** [Download ZIP](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Alaska-Clickable-Sample.zip), extract, then open **START-HERE.html**. Includes worker, supervisor, Settings and simulated two-way Supabase/Sheets workflow. [Guide](docs/prototype/README.md). No backend setup needed for the sample.
+
 # NPI Alaska — Phase 1
 
 A working mobile-first **local demo** of work tracking and supervisor approval. Not connected to a real spreadsheet, live login, Drive or Cloudflare deployment yet. Do not use for company records.

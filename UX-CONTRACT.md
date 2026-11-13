@@ -44,3 +44,16 @@ User confirmed company-issued usernames/passwords. Login uses native labels/auto
 ## Full-page entry and multi-tab backend
 
 Version 2 adds doGet and a saved spreadsheet binding for a private owner-only Google Web app. The server still verifies active/effective owner identity at every RPC. Setup preserves existing source records and creates eight readable tabs; reports are rebuilt from the atomic versioned record store. Failed report refresh returns a warning without pretending the primary save failed. NPI_Settings holds editable non-secret workspace details; Users/Sites are reference tabs, not employee access grants. Settings exposes actual account/setup status; unconnected account creation/reset remain disabled with reasons. RPC waiting is bounded at 45 seconds; uncertain save results retain the same retry key. Initial loading failures show recovery. Management counts cover all stored records, not just the visible page. The reference archive remains private and unmodified.
+
+## Clickable Supabase + Sheets proposal
+
+Separate deliverable at `public/sample/`, preserving original app and spreadsheet preview. Shared tokens are the inline `:root` adapter in its single-file index.html; all sample views use the same renderer, field, button, status, dialog, local commit and navigation owners. Native selects and dates accept OS popup geometry; all displayed work dates use Alaska time. Sample role switch is explicitly a preview. Sample people editing never stores passwords or grants access. Work mutations use one local commit function; storage errors roll back and retain input. Offline changes stay on this device and are never described as synced. No financial actions. No destructive reset without named confirmation. Drafts are protected on app navigation, dialog dismissal and unload. Cross-tab edits become a conflict warning and require reload; no silent last-writer overwrite.
+
+| Capability     | Canonical owner                       | Source of truth | Allowed variants                        | Verification                 |
+| -------------- | ------------------------------------- | --------------- | --------------------------------------- | ---------------------------- |
+| Select/Listbox | sample field() native selects         | UX-CONTRACT.md  | OS popup                                | prototype.spec.js            |
+| Date           | sample native date input              | UX-CONTRACT.md  | date-only local calendar                | prototype.spec.js            |
+| Form           | sample field()/validate()/form dialog | PRODUCT.md      | work, person, site                      | prototype.spec.js            |
+| Scrollbar      | sample :root and global CSS           | DESIGN.md       | native geometry                         | computed style browser check |
+| Toast          | sample notify() live region           | UX-CONTRACT.md  | local success, error                    | prototype.spec.js            |
+| CRUD           | sample commit()/render()/go()         | PRODUCT.md      | create/edit work and people, deactivate | prototype.spec.js            |

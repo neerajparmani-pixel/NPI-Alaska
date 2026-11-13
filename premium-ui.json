@@ -1,6 +1,6 @@
 {
   "profile": "product-admin",
-  "sourceRoots": ["src", "spreadsheet-first"],
+  "sourceRoots": ["src", "spreadsheet-first", "public/sample"],
   "locale": "en-US",
   "canonicalMap": "UX-CONTRACT.md",
   "requiredCapabilities": [
@@ -11,7 +11,8 @@
     "CRUD"
   ],
   "ownership": {
-    "Select/Listbox": "native"
+    "Select/Listbox": "native",
+    "Date": "native"
   },
   "requiredCommands": ["unit", "e2e", "build"],
   "commands": {
