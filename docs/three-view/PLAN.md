@@ -4,7 +4,7 @@ The current user request authorizes building a sample after private review of th
 
 ## Visual target and limitation
 
-The user prefers https://alaska-npi-operations-demo.nxk230076.chatgpt.site/. Its URL returns a network-proxy 403 in this workspace, and no browser/desktop tools are exposed. Access to the exact hostname was added to the existing network-access draft, preserving the prior domains. That draft has not been applied. Therefore do not claim a clone or visual comparison to that page. Available earlier NPI worker screenshots and code provide the provisional visual fallback: navy header, light workspace, large simple worker cards and blue primary actions. Exact matching to the preferred page remains pending access or source screenshots.
+The user prefers https://alaska-npi-operations-demo.nxk230076.chatgpt.site/ and subsequently supplied two screenshots. Those screenshots now define the visual source: split navy/light welcome screen, fixed navy sidebar, white top bar, navy/gold banner, four metrics and activity/attention columns. Retain exactly three role previews. The live page is still proxy-blocked, but screenshots remove the layout ambiguity. Original emblem bytes are unavailable; Settings accepts the original image unchanged. Do not use the different logo found in the reference archive.
 
 ## Screen responsibilities
 

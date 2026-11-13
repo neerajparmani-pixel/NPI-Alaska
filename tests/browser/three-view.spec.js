@@ -4,27 +4,31 @@ const start = async (p) => {
   await p.goto("/three-view/");
   await p.evaluate(() => localStorage.removeItem("npi-three-view-v1"));
   await p.reload();
+  if (await p.locator("[data-action=role]").count())
+    await p.locator("[data-action=role][data-id=npi]").click();
 };
 const action = async (p, a, id) =>
   p
     .locator(`[data-action="${a}"]${id ? '[data-id="' + id + '"]' : ""}`)
     .first()
     .click();
-const role = async (p, r) => action(p, "role", r);
+const role = async (p, r) => p.locator("#preview-role").selectOption(r);
 test("three views: only requested roles, company scope, no contracts or financial amounts", async ({
   page,
 }) => {
   await start(page);
-  await expect(page.locator(".role")).toHaveCount(3);
-  await expect(page.locator(".role").nth(0)).toContainText("NPI Admin");
-  await expect(page.locator(".role").nth(1)).toContainText(
+  await expect(page.locator("#preview-role option")).toHaveCount(3);
+  await expect(page.locator("#preview-role option").nth(0)).toContainText(
+    "NPI Admin",
+  );
+  await expect(page.locator("#preview-role option").nth(1)).toContainText(
     "Subcontractor Admin",
   );
-  await expect(page.locator(".role").nth(2)).toContainText(
+  await expect(page.locator("#preview-role option").nth(2)).toContainText(
     "Subcontractor Worker",
   );
   await expect(
-    page.getByText("Summit Site Services", { exact: true }),
+    page.getByText("Summit Site Services", { exact: true }).first(),
   ).toBeVisible();
   await role(page, "sub");
   await expect(
@@ -36,7 +40,7 @@ test("three views: only requested roles, company scope, no contracts or financia
     page.getByText("Customer invoice checklists", { exact: true }),
   ).toHaveCount(0);
   await role(page, "worker");
-  await expect(page.locator(".tabs a")).toHaveCount(4);
+  await expect(page.locator(".side-nav a")).toHaveCount(4);
   await expect(page.locator("input[type=password]")).toHaveCount(0);
   const body = await page.locator("body").innerText();
   expect(body).not.toMatch(/\$\s*\d/);
@@ -350,4 +354,37 @@ test("three views: company assigns its own worker before attendance begins", asy
   await expect(
     page.locator("[data-action=open-job][data-id=DEMO-104]"),
   ).toBeVisible();
+});
+
+test("reference login: three demo roles, masked password and no credential persistence", async ({
+  page,
+}) => {
+  await page.goto("/three-view/");
+  await page.evaluate(() => localStorage.removeItem("npi-three-view-v1"));
+  await page.goto("/three-view/#login");
+  await page.reload();
+  await expect(page.locator(".login-layout")).toBeVisible();
+  await expect(page.locator(".login-role-grid .role")).toHaveCount(3);
+  await page.locator("#login-password").fill("example-preview-only");
+  await expect(page.locator("#login-password")).toHaveAttribute(
+    "type",
+    "password",
+  );
+  await action(page, "show-password");
+  await expect(page.locator("#login-password")).toHaveAttribute("type", "text");
+  await page.locator("#preview-login button[type=submit]").click();
+  await expect(page.locator("#login-error")).toContainText("visual preview");
+  expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
+    "example-preview-only",
+  );
+  await action(page, "role", "npi");
+  await expect(page.locator(".reference-sidebar")).toBeVisible();
+  await expect(page.locator(".oversight-hero")).toContainText(
+    "Work visibility",
+  );
+  await action(page, "phone");
+  await expect(page.locator("body")).toHaveClass(/phone-preview/);
+  await action(page, "phone");
+  await action(page, "notifications");
+  await expect(page.locator("#dialog")).toBeVisible();
 });

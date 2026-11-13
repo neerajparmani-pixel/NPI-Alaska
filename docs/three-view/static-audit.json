@@ -29,15 +29,6 @@
     },
     {
       "category": "violation",
-      "file": "public/three-view/app.js",
-      "line": 520,
-      "message": "Enabled literal button has no detectable action or submit behavior.",
-      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
-      "ruleId": "affordance.actionless-button",
-      "severity": "error"
-    },
-    {
-      "category": "violation",
       "file": "spreadsheet-first/Index.html",
       "line": 1025,
       "message": "Enabled literal button has no detectable action or submit behavior.",
@@ -167,10 +158,10 @@
   "projectRoot": "/workspace/NPI-Alaska",
   "schemaVersion": 1,
   "summary": {
-    "errors": 18,
-    "total": 18,
+    "errors": 17,
+    "total": 17,
     "unresolved": 0,
-    "violations": 18,
+    "violations": 17,
     "warnings": 0
   }
 }

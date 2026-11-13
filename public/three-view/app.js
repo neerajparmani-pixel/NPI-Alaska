@@ -34,6 +34,7 @@ const paths = {
     '<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="16" cy="17" r="3"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   close: '<path d="m6 6 12 12M6 18 18 6"/>',
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
   snow: '<path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M8 4l4 4 4-4M8 20l4-4 4 4"/>',
 };
 const icon = (n) =>
@@ -299,6 +300,56 @@ function seed() {
       acceptedBy: { miles: 1 },
     },
   ];
+  jobs.push({
+    id: "DEMO-098",
+    site: "boney",
+    family: "courthouse",
+    service: "Snow clearing",
+    title: "Example active equipment shift",
+    worker: "miles",
+    company: "summit",
+    equipment: "Plow 04",
+    date: "2026-11-13",
+    status: "in-progress",
+    sessions: [
+      {
+        in: point(new Date(Date.now() - 45 * 60000).toISOString()),
+        out: null,
+        members: ["miles"],
+        operator: "miles",
+        breakMinutes: 0,
+      },
+    ],
+    tasks: [0],
+    photos: [],
+    timecard: null,
+    loads: 0,
+    claimedBy: {},
+    acceptedBy: {},
+  });
+  jobs.push({
+    id: "DEMO-097",
+    site: "nesbit",
+    family: "courthouse",
+    service: "Safety check",
+    title: "Example completed site check",
+    worker: "lee",
+    company: "north",
+    equipment: "Hand tools",
+    date: "2026-11-07",
+    status: "approved",
+    sessions: [
+      session("2026-11-07T15:00:00Z", "2026-11-07T16:30:00Z", ["lee"]),
+    ],
+    tasks: [0, 1, 2],
+    photos: [{ name: "Example completion evidence", example: true }],
+    timecard: null,
+    loads: 0,
+    claimedHours: 1.5,
+    acceptedHours: 1.5,
+    claimedBy: { lee: 1.5 },
+    acceptedBy: { lee: 1.5 },
+  });
   return {
     version: 1,
     revision: 0,
@@ -317,7 +368,7 @@ function seed() {
 }
 let state,
   role = "npi",
-  page = "overview",
+  page = "login",
   selected = "DEMO-104",
   filter = "All",
   query = "",
@@ -330,7 +381,7 @@ let state,
   captureToken = 0,
   returnFocus = null,
   toastTimer,
-  keepDialog = null;
+  phonePreview = false;
 try {
   state = JSON.parse(localStorage.getItem(KEY)) || seed();
   if (
@@ -373,27 +424,32 @@ const menu = () =>
     ? [
         ["work", "My work", "work"],
         ["hours", "My hours", "clock"],
-        ["sites", "Locations", "pin"],
+        ["sites", "Sites & notes", "snow"],
         ["help", "Help", "file"],
       ]
     : role === "sub"
       ? [
           ["overview", "Overview", "home"],
           ["orders", "Work orders", "work"],
-          ["review", "Review hours", "check"],
-          ["team", "My team", "users"],
-          ["hours", "Hours & evidence", "clock"],
-          ["bills", "My bills", "file"],
-          ["sites", "Locations", "pin"],
+          ["review", "Review worker hours", "check"],
+          ["requests", "Service requests", "work"],
+          ["sites", "Sites & snowfall", "snow"],
+          ["team", "Workers & crews", "users"],
+          ["bills", "Invoices", "file"],
+          ["people", "People & access", "users"],
           ["settings", "Settings", "settings"],
         ]
       : [
           ["overview", "Overview", "home"],
           ["orders", "Work orders", "work"],
-          ["review", "Verify hours", "check"],
-          ["hours", "Hours & evidence", "clock"],
-          ["bills", "Billing workflow", "file"],
-          ["sites", "Locations", "pin"],
+          ["review", "NPI verification", "check"],
+          ["requests", "Service requests", "work"],
+          ["sites", "Sites & snowfall", "snow"],
+          ["companies", "Subcontractors", "users"],
+          ["services", "Service setup", "file"],
+          ["bills", "Invoices", "file"],
+          ["drafts", "Customer drafts", "file"],
+          ["people", "People & access", "users"],
           ["settings", "Settings", "settings"],
         ];
 const badge = (j) =>
@@ -505,28 +561,71 @@ function metric(label, value, detail, i = "clock") {
 function panel(title, body, action = "") {
   return `<section class="panel"><header class="panel-head"><h2>${title}</h2>${action}</header>${body}</section>`;
 }
+function brandImage(kind = "sidebar") {
+  return state.brandLogo
+    ? `<img class="brand-image ${kind}" src="${state.brandLogo}" alt="NPI company emblem">`
+    : `<div class="brand-placeholder ${kind}" role="img" aria-label="Original NPI emblem image pending"><span>NPI</span><small>COMPANY EMBLEM</small></div>`;
+}
+function attention() {
+  const list = visible();
+  return {
+    review: list.filter(
+      (j) => j.status === (role === "sub" ? "contractor-review" : "npi-review"),
+    ).length,
+    returned: list.filter((j) => j.status === "returned").length,
+    claims: state.bills.filter(
+      (b) =>
+        (role === "npi" || b.company === "north") && b.status === "Submitted",
+    ).length,
+  };
+}
 function render() {
   const nav = menu(),
-    reviewCount = visible().filter(
-      (j) => j.status === (role === "sub" ? "contractor-review" : "npi-review"),
-    ).length;
-  document.title = `NPI Alaska · ${roles[role].name} · ${nav.find((x) => x[0] === page)?.[1] || "Work details"}`;
+    a = attention();
+  document.title = `Alaska NPI · ${page === "login" ? "Welcome" : roles[role].name + " · " + (nav.find((x) => x[0] === page)?.[1] || "Work details")}`;
   document.body.dataset.role = role;
-  app.innerHTML = `<header class="top"><div class="top-inner"><div class="brand"><span class="mark">NPI</span><div><b>NPI ALASKA</b><small>WORK · PEOPLE · OPERATIONS</small></div></div><div class="row"><span class="status">${icon("pin")} Alaska field operations</span><span class="badge">Three-view sample</span></div></div></header><section class="rolebar" aria-label="Choose a sample view"><div class="role-inner"><div class="rolechoices">${Object.entries(
+  document.body.dataset.screen = page;
+  document.body.classList.toggle(
+    "phone-preview",
+    phonePreview && page !== "login",
+  );
+  if (page === "login") {
+    app.innerHTML = login();
+    return;
+  }
+  const count = a.review + a.returned + (role === "npi" ? a.claims : 0);
+  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar"><div class="side-brand">${brandImage()}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Workspace navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span>${id === "review" && a.review ? `<b class="side-count">${a.review}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${role === "worker" ? "A" : "N"}</span><div><b>${role === "worker" ? "Alex Morgan" : roles[role].name}</b><p>Sample workspace</p></div>${btn(icon("arrow"), "sign-out", "", "ghost", 'aria-label="Return to preview login"')}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>ALASKA NPI</b><p>Operations / ${nav.find((x) => x[0] === page)?.[1] || "Work details"}</p></div><div class="top-controls"><label for="preview-role">Preview as</label><select id="preview-role" aria-label="Preview as">${Object.entries(
     roles,
   )
     .map(
       ([id, r]) =>
-        `<button type="button" class="role" data-action="role" data-id="${id}" aria-pressed="${role === id}">${icon(r.icon)}<span class="role-label">${r.name}<small>${r.subtitle}</small></span></button>`,
+        `<option value="${id}" ${id === role ? "selected" : ""}>${r.name}</option>`,
     )
     .join(
       "",
-    )}</div><div class="identity row"><span class="avatar">${role === "worker" ? "AM" : role === "sub" ? "NF" : "NP"}</span><div><b class="small">${role === "worker" ? "Alex Morgan" : role === "sub" ? "Company office" : "NPI office"}</b><p class="small muted">Preview identity</p></div></div></div></section><div class="samplebar"><span><b>Interactive sample</b> · Fictional records, saved on this device. Contracts and prices are excluded.</span>${btn("Guide", "guide", "", "ghost")}</div>${!navigator.onLine ? '<div class="samplebar" role="status">Offline · This sample stays on this device. No server sync occurs.</div>' : ""}${conflict ? `<div class="samplebar notice error" role="alert">Another tab changed the sample. Reload before saving. ${btn("Reload", "reload", "", "danger")}</div>` : ""}<div class="navwrap"><nav class="tabs" aria-label="Workspace navigation">${nav.map(([id, l, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}${l}${id === "review" && reviewCount ? `<span class="counter">${reviewCount}</span>` : ""}</a>`).join("")}</nav></div><main id="main" class="main">${content()}<footer class="footer"><span>NPI Alaska · Performance. Power. Precision.</span><span>Preview roles only · No connected backend · No contract documents or prices</span></footer></main>`;
+    )}</select>${btn(icon("bell") + (count ? `<span class="bell-count">${count}</span>` : ""), "notifications", "", "bell-button", `aria-label="Notifications, ${count} item${count === 1 ? "" : "s"}"`)}<span class="top-avatar">${role === "worker" ? "A" : "N"}</span></div></header><main id="main" class="main"><div class="reference-demo"><span>DEMO · Sample data · Login, GPS examples, sync, and alerts are simulated.</span><div class="row">${btn(phonePreview ? "Desktop layout" : "Phone layout", "phone", "", "compact")}${btn("Online demo", "guide", "", "compact")}</div></div>${!navigator.onLine ? '<p class="notice warning mt12" role="status">Offline · Changes stay on this device. No server sync occurs.</p>' : ""}${conflict ? `<p class="notice error mt12" role="alert">Another tab changed this sample. Reload before saving. ${btn("Reload", "reload")}</p>` : ""}<div class="reference-content">${content()}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Sample only · Contracts and prices excluded · Backends unconnected</span></footer></main></div></div>`;
+}
+function login() {
+  return `<div class="login-layout"><section class="login-brand-panel"><p class="login-wordmark">NPI <span>/</span> ALASKA OPERATIONS</p><div class="login-emblem">${brandImage("login")}</div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2>Every site.<br>Every shift.<br>Accounted for.</h2><p>One workspace for snow removal, port hauling, work verification, and contractor invoices.</p><small>NEESON PERFORMANCE INDUSTRIES</small></div></section><main id="main" class="login-main"><div class="login-form-wrap"><span class="login-tag">INTERACTIVE DEMO</span><h1>Welcome to Alaska NPI</h1><p class="login-subtitle">Your workday starts here.</p><form id="preview-login" novalidate><div class="field"><label for="login-username">Company username</label><input id="login-username" autocomplete="off" placeholder="e.g. alex.morgan" maxlength="80"></div><div class="field"><label for="login-password">Password</label><div class="password-row"><input id="login-password" type="password" autocomplete="off" placeholder="Enter your password" maxlength="100">${btn("Show", "show-password", "", "", 'aria-label="Show password"')}</div></div><button type="submit" class="btn navy wide">Sign in ${icon("arrow")}</button><div id="login-error" class="error mt12" role="alert"></div></form><div class="login-links">${btn("First-time setup", "first-setup", "", "ghost")}${btn("Forgot password?", "forgot-password", "", "ghost")}</div><section class="demo-roles"><h2>Explore a demo role</h2><p>No credentials needed. All names and records are samples.</p><div class="login-role-grid">${Object.entries(
+    roles,
+  )
+    .map(([id, r]) =>
+      btn(icon(r.icon) + r.name, "role", id, "role", `aria-label="${r.name}"`),
+    )
+    .join(
+      "",
+    )}</div></section><p class="login-disclaimer">Login is a visual preview. Do not enter a real password. Account invitations and resets are not sent.</p></div></main></div>`;
 }
 function content() {
   return (
     {
       overview,
+      login,
+      requests: serviceRequests,
+      companies: companiesView,
+      services: serviceSetup,
+      drafts: customerDrafts,
+      people: peopleView,
       orders,
       review,
       hours,
@@ -541,7 +640,7 @@ function content() {
   );
 }
 function go(next) {
-  if (!menu().some((x) => x[0] === next) && next !== "detail")
+  if (!menu().some((x) => x[0] === next) && !["detail", "login"].includes(next))
     next = menu()[0][0];
   page = next;
   history.replaceState(null, "", "#" + page);
@@ -551,6 +650,7 @@ function go(next) {
 }
 function setRole(next) {
   if (!roles[next]) return;
+  $("#login-password") && ($("#login-password").value = "");
   role = next;
   query = "";
   filter = "All";
@@ -560,40 +660,191 @@ function setRole(next) {
 }
 function overview() {
   const list = visible(),
-    recorded = list.reduce((a, j) => a + recordedHours(j), 0),
-    accepted = list.reduce((a, j) => a + (j.acceptedHours || 0), 0);
+    a = attention(),
+    verified = list.filter((j) => j.status === "approved").length,
+    active = list.filter((j) => j.sessions.some((s) => !s.out)).length,
+    diffs = list.filter(
+      (j) =>
+        j.claimedHours !== undefined &&
+        Math.abs(j.claimedHours - recordedHours(j)) > 0.0001,
+    ).length;
+  const activity = [...list].sort(
+    (x, y) =>
+      (({
+        "npi-review": 0,
+        "contractor-review": 1,
+        "in-progress": 2,
+        draft: 3,
+        approved: 4,
+      })[x.status] ?? 5) -
+      ({
+        "npi-review": 0,
+        "contractor-review": 1,
+        "in-progress": 2,
+        draft: 3,
+        approved: 4,
+      }[y.status] ?? 5),
+  );
   return (
     head(
-      role === "npi" ? "Your operations, in view." : "Your company’s workday.",
+      role === "npi" ? "NPI contract oversight" : "Subcontractor operations",
       role === "npi"
-        ? "Follow the work from assignment to company review and final NPI acceptance."
-        : "Keep your crews moving. Review their hours before sending them to NPI.",
-      role === "npi"
-        ? btn(icon("plus") + " Create work order", "new-job", "", "primary")
-        : "",
+        ? "Monitor activity. Verify delivery. Check contractor quantities."
+        : "Coordinate crews. Review hours. Keep NPI updated.",
     ) +
-    `<div class="dispatch"><span class="round">${icon("snow")}</span><div class="grow"><h3>${role === "npi" ? "A clear handoff from the field to the office." : "Your review comes before NPI verification."}</h3><p>Snow operations, site tasks and hauling have separate work records. No private contract terms are preloaded.</p></div>${btn("View work", "goto", "orders")}</div><section class="metrics" aria-label="Operational summary">${metric("Work orders", list.length, "Within this view’s scope", "work")}${metric("Recorded worker-hours", h(recorded), "Ended intervals, less breaks")}${metric("NPI-accepted hours", h(accepted), "Final accepted quantities", "check")}${metric(role === "npi" ? "Awaiting NPI" : "Awaiting company review", list.filter((j) => j.status === (role === "npi" ? "npi-review" : "contractor-review")).length, "Claims needing a decision", "file")}</section><div class="two"><div class="stack">${panel(
+    `<section class="oversight-hero"><div><p>CUSTOMER → NPI → SUBCONTRACTOR</p><h2>Work visibility, before the invoice.</h2><span>Crews belong to the subcontractor. NPI monitors and verifies service.</span></div><div class="hero-stat"><strong>${verified}/${list.length}</strong><span>NPI verified</span></div></section><section class="metrics" aria-label="Operational summary">${metric("Workers active", active, "Recorded starts / checkouts", "work")}${metric(role === "npi" ? "NPI review" : "Company review", a.review, "Claims awaiting verification", "check")}${metric("Verified records", verified, "Accepted after NPI review", "pin")}${metric("Claim differences", diffs, "Claimed vs recorded hours", "file")}</section><div class="two oversight-grid"><div class="stack">${panel(
+      "Worker activity",
+      `<div class="worker-activity">${activity
+        .slice(0, 6)
+        .map(
+          (j) =>
+            `<div class="activity-row"><span class="activity-symbol">${icon(j.family === "hauling" ? "truck" : "snow")}</span><div class="grow"><b>${escape(person(j.worker).name)}</b><p>${escape(site(j.site).name)} · ${escape(j.equipment)}</p><small>${escape(company(j.company).name)}</small></div>${btn(labels[j.status], "evidence", j.id, "activity-status")}</div>`,
+        )
+        .join("")}</div>`,
+      '<span class="demo-updates">Demo updates</span>',
+    )}${panel(
       "Hours by location",
       `<div class="site-summary">${state.sites
         .filter((s) => list.some((j) => j.site === s.id))
         .map((s) => {
           const js = list.filter((j) => j.site === s.id);
-          return `<article class="mini-site"><h3>${escape(s.name)}</h3><div class="row between"><div><b>${h(js.reduce((a, j) => a + recordedHours(j), 0))}</b><small> recorded h</small><p class="small muted">${h(js.reduce((a, j) => a + (j.acceptedHours || 0), 0))} NPI-accepted h</p></div>${btn("Open", "site", s.id)}</div></article>`;
+          return `<article class="mini-site"><h3>${escape(s.name)}</h3><div class="row between"><div><b>${h(js.reduce((sum, j) => sum + recordedHours(j), 0))}</b><small> recorded h</small><p class="small muted">${h(js.reduce((sum, j) => sum + (j.acceptedHours || 0), 0))} NPI-accepted h</p></div>${btn("Open", "site", s.id)}</div></article>`;
         })
         .join("")}</div>`,
-    )}${panel("Work moving through the system", workTable(list.slice(0, 6)), btn("All work", "goto", "orders", "", ""))}</div><aside class="stack" style="align-content:start">${panel("Who does what", `<ol class="flow"><li><span class="step">1</span><div><b>Subcontractor Worker</b><p>Check in and out with location. Record tasks and evidence. Submit claimed hours.</p></div></li><li><span class="step">2</span><div><b>Subcontractor Admin</b><p>Review your workers’ hours, correct issues, then forward the claim to NPI.</p></div></li><li><span class="step">3</span><div><b>NPI Admin</b><p>Compare original app evidence with the claim. Accept hours and review billing quantities.</p></div></li></ol>${btn("Open review queue", "goto", "review", "primary wide mt")}`)}${panel(
-      "Recent activity",
+    )}${panel("Work register", workTable(list.slice(0, 6)), btn("All work", "goto", "orders") + (role === "npi" ? btn("New work order", "new-job", "", "primary") : ""))}</div><aside class="stack" style="align-content:start">${panel("Attention queue", `<ul class="attention-list"><li><span></span>${a.review} record(s) await ${role === "npi" ? "NPI verification" : "company review"}.</li><li><span></span>${diffs} claim(s) differ from recorded worker-hours.</li><li><span></span>${a.returned} correction(s) with the subcontractor.</li></ul><p class="notice warning">Deadline and missing-update alerts need confirmed service rules. No contract deadlines or prices are loaded.</p><div class="row wrap mt12">${btn("Review records", "goto", "review", "primary")}${btn("Work orders", "goto", "orders")}</div>`)}${panel("Approval handoff", `<ol class="flow"><li><span class="step">1</span><div><b>Subcontractor Worker</b><p>Tasks, hours and both recorded positions.</p></div></li><li><span class="step">2</span><div><b>Subcontractor Admin</b><p>Company reviews and forwards its workers’ claims.</p></div></li><li><span class="step">3</span><div><b>NPI Admin</b><p>Final evidence cross-check and accepted hours.</p></div></li></ol>`)}${panel(
+      "Recent decisions",
       state.audit.length
         ? `<ol class="log">${state.audit
-            .filter((a) => role === "npi" || a.company === "north")
+            .filter((x) => role === "npi" || x.company === "north")
             .slice(0, 5)
             .map(
-              (a) =>
-                `<li>${escape(a.text)}<small>${escape(a.actor)} · ${date(a.at)}</small></li>`,
+              (x) =>
+                `<li>${escape(x.text)}<small>${escape(x.actor)} · ${date(x.at)}</small></li>`,
             )
             .join("")}</ol>`
-        : '<p class="small muted">Your sample actions and decisions will appear here.</p>',
-    )}${panel("Connections", `<div class="line"><span>Supabase</span><b>Not connected</b></div><div class="line"><span>Management spreadsheet</span><b>Two-way workflow planned</b></div><p class="pill-note mt12">No real logins, uploads or sync jobs are running in this sample.</p>`)}</aside></div>`
+        : '<p class="small muted">Your sample actions and decisions appear here.</p>',
+    )}</aside></div>`
+  );
+}
+function serviceRequests() {
+  return (
+    head(
+      "Service requests",
+      "Record additional work needs without importing private contract terms.",
+      btn("Create sample request", "new-request", "", "primary"),
+    ) +
+    panel(
+      "Request register",
+      table(
+        ["Reference", "Location", "Request", "Status"],
+        (state.requests || [])
+          .filter((r) => role === "npi" || r.company === "north")
+          .map((r) => [
+            escape(r.id),
+            escape(site(r.site).name),
+            escape(r.description),
+            '<span class="badge orange">Awaiting scheduling</span>',
+          ]),
+        "Local sample requests only",
+      ),
+    )
+  );
+}
+function companiesView() {
+  return (
+    head(
+      "Subcontractors",
+      "NPI monitors service; each subcontractor manages its own workers.",
+    ) +
+    panel(
+      "Company register",
+      table(
+        ["Company", "Workers", "Work orders", "Action"],
+        state.companies.map((c) => [
+          escape(c.name),
+          state.people.filter((p) => p.company === c.id).length,
+          state.jobs.filter((j) => j.company === c.id).length,
+          btn("View company", "company-detail", c.id),
+        ]),
+        "Fictional companies only",
+      ),
+    )
+  );
+}
+function serviceSetup() {
+  return (
+    head(
+      "Service setup",
+      "Tracking categories only. Contract documents, prices and service thresholds are excluded.",
+    ) +
+    panel(
+      "Sample service categories",
+      table(
+        ["Service", "Evidence fields"],
+        [
+          [
+            "Site snow clearing",
+            "Work order, tasks, attendance and completion photo",
+          ],
+          [
+            "Sidewalk clearing",
+            "Assigned area, task checklist and completion evidence",
+          ],
+          [
+            "Sanding / deicing",
+            "Separate task record, material note and evidence",
+          ],
+          ["Port hauling", "Truck type, hours, loads and timecard evidence"],
+        ],
+        "No contract rules or rate tables are imported",
+      ),
+    )
+  );
+}
+function customerDrafts() {
+  return (
+    head(
+      "Customer drafts",
+      "Unpriced checklists from NPI-approved work.",
+      btn("Create invoice checklist", "new-invoice", "", "primary"),
+    ) +
+    panel(
+      "Draft register",
+      table(
+        ["Reference", "Approved records", "Status"],
+        state.invoices.map((d) => [
+          escape(d.reference),
+          d.jobIds.join(", "),
+          "Unpriced draft",
+        ]),
+        "Separate from subcontractor quantity claims; nothing is sent",
+      ),
+    )
+  );
+}
+function peopleView() {
+  const list = state.people.filter(
+    (p) => role === "npi" || p.company === "north",
+  );
+  return (
+    head(
+      "People & access",
+      "Sample profiles only. Managed account setup is not connected.",
+    ) +
+    panel(
+      "People register",
+      table(
+        ["Name", "Company", "Username", "Profile"],
+        list.map((p) => [
+          escape(p.name),
+          escape(company(p.company).name),
+          escape(p.username),
+          p.active ? "Active sample" : "Inactive",
+        ]),
+        "No passwords or invitations are stored or sent",
+      ),
+    ) +
+    `<p class="notice mt">${role === "sub" ? "Manage company sample profiles from Workers & crews." : "Company-issued login creation and reset require the real authentication backend."}</p>`
   );
 }
 function workTable(list) {
@@ -862,7 +1113,7 @@ function bills() {
     )}</section>`
   );
 }
-function settings() {
+function settingsBody() {
   return (
     head(
       "Workspace settings",
@@ -877,6 +1128,12 @@ function settings() {
         )
         .join("")}</ol>`,
     )}${panel("Account setup preview", `<p class="small muted">Company-issued usernames and managed passwords are planned. Real account creation, reset and permissions require the backend.</p><div class="line"><span>Authentication service</span><b>Not connected</b></div><div class="line"><span>Passwords in Sheets</span><b>Never</b></div>${role === "sub" ? btn("Manage sample workers", "goto", "team", "mt12") : btn("View companies", "companies", "", "mt12")}`)}</div><div class="stack">${panel("Backend workflow", `<div class="line"><span>Supabase</span><b>Proposed primary records and identity</b></div><div class="line"><span>Google Sheets</span><b>Management workspace with controlled two-way changes</b></div><div class="line"><span>Original time events</span><b>Protected; corrections remain separate</b></div><p class="pill-note mt12">No connection or synchronization occurs in this prototype.</p>`)}${panel("Sample controls", `<p class="small muted">Reset only this three-view sample’s local records and selected photos.</p>${btn("Reset sample", "reset", "", "danger mt12")}`)}</div></div>`
+  );
+}
+function settings() {
+  return (
+    settingsBody() +
+    `<section class="panel mt"><h2>Company emblem</h2><p class="small muted mt12">Insert the original image unchanged. The screenshot shows its placement; the original image bytes are not available here.</p><label class="photo-input">Choose original NPI emblem (PNG, JPG or WebP, up to 600 KB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label></section>`
   );
 }
 function help() {
@@ -1131,6 +1388,60 @@ const actions = {
           .filter((p) => p.company === j.company && p.active)
           .map((p) => [p.id, p.name]),
       )}</div><div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">Save assignment</button></div></form>`,
+    );
+  },
+  "sign-out": () => go("login"),
+  "show-password": () => {
+    const input = $("#login-password");
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    const b = $("[data-action=show-password]");
+    b.textContent = show ? "Hide" : "Show";
+    b.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  },
+  "first-setup": () =>
+    modal(
+      "First-time setup",
+      `<p class="notice">Company accounts will be issued by an authorized administrator after the authentication service is connected. No invitations or credentials are created in this preview.</p><p class="small muted mt12">You can explore the three role previews without entering credentials.</p><div class="actions">${btn("Close", "close")}</div>`,
+    ),
+  "forgot-password": () =>
+    modal(
+      "Password reset preview",
+      `<p class="notice">Password reset is not connected in this sample. No reset link, email or message is sent.</p><p class="small muted mt12">For this review, close the dialog and choose a demo role.</p><div class="actions">${btn("Close", "close")}</div>`,
+    ),
+  notifications: () => {
+    const a = attention();
+    modal(
+      "Notifications",
+      `<ul class="attention-list"><li>${a.review} record(s) await review.</li><li>${a.returned} correction(s) remain open.</li><li>${a.claims} quantity claim(s) await a decision.</li></ul><p class="notice mt">Demo notifications are derived from local records. No live alert service is connected.</p>`,
+    );
+  },
+  phone: () => {
+    phonePreview = !phonePreview;
+    render();
+  },
+  "new-request": () =>
+    modal(
+      "Create sample service request",
+      `<form id="request-form" novalidate>${field(
+        "request-site",
+        "Location",
+        "select",
+        "boney",
+        state.sites.map((s) => [s.id, s.name]),
+      )}${field("request-description", "Additional work requested", "textarea", "")}<div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">Save sample request</button></div></form>`,
+    ),
+  "company-detail": (el) => {
+    const c = company(el.dataset.id);
+    modal(
+      escape(c.name),
+      table(
+        ["Worker", "Sample username"],
+        state.people
+          .filter((p) => p.company === c.id)
+          .map((p) => [escape(p.name), escape(p.username)]),
+        "Sample company profiles only",
+      ),
     );
   },
   "new-job": workDialog,
@@ -1493,6 +1804,29 @@ function submit(e) {
         render();
       }
     }
+    if (f.id === "request-form") {
+      if (
+        !validate(
+          value("request-description")
+            ? {}
+            : { "request-description": "Describe the additional work." },
+        )
+      )
+        return;
+      if (
+        save((n) => {
+          (n.requests ||= []).push({
+            id: "REQUEST-" + Date.now(),
+            site: value("request-site"),
+            description: value("request-description"),
+            company: "north",
+          });
+        }, "Sample request saved locally.")
+      ) {
+        close(true);
+        render();
+      }
+    }
     if (f.id === "job-form") {
       if (role !== "npi") return;
       if (state.jobs.length >= 20)
@@ -1815,6 +2149,14 @@ function clicks(e) {
   }
 }
 app.addEventListener("click", clicks);
+app.addEventListener("submit", (e) => {
+  if (e.target.id === "preview-login") {
+    e.preventDefault();
+    $("#login-password").value = "";
+    $("#login-error").textContent =
+      "Login is a visual preview. Choose a demo role below; do not enter a real password.";
+  }
+});
 dlg.addEventListener("click", clicks);
 dlg.addEventListener("submit", submit);
 dlg.addEventListener("input", (e) => {
@@ -1839,6 +2181,35 @@ app.addEventListener("input", (e) => {
   }
 });
 app.addEventListener("change", (e) => {
+  if (e.target.id === "preview-role") {
+    setRole(e.target.value);
+    return;
+  }
+  if (e.target.matches("[data-brand-logo]")) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
+      file.size > 600000
+    ) {
+      notice("Choose a PNG, JPG or WebP emblem up to 600 KB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => notice("Could not read the emblem image.");
+    reader.onload = () => {
+      if (
+        save(
+          (n) => (n.brandLogo = reader.result),
+          "Original emblem saved on this device.",
+        )
+      )
+        render();
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
   if (e.target.id === "filter-date") {
     dateFilter = e.target.value;
     render();

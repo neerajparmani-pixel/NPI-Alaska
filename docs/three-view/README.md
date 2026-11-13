@@ -2,7 +2,7 @@
 
 [Download ZIP](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Three-View-Sample.zip), extract it, then open **START-HERE.html**. No login, terminal or spreadsheet setup is needed to try the workflow.
 
-Exactly three view choices appear at the top:
+Exactly three view choices appear on the welcome screen and in the workspace role dropdown:
 
 - **NPI Admin:** assign work, see all sample companies, verify hours, inspect original evidence and review billing quantities.
 - **Subcontractor Admin:** see only Northern Field Services, manage sample worker profiles, assign its own workers before attendance begins, review workers’ claims, forward them to NPI and submit quantity claims.
@@ -25,9 +25,9 @@ The uploaded documents were private reference material, not app inputs. No PDFs,
 
 Original site photos and the selected emblem are not available as downloadable image files here. Locations have separate photo slots and local pickers. No generated picture is represented as a real property photograph. Addresses are not imported; NPI Admin can type a verified address into the sample. Event map links use the recorded coordinates; an unconfigured reverse lookup is reported rather than fabricated.
 
-## Visual reference limitation
+## Visual reference
 
-The user-selected `alaska-npi-operations-demo.nxk230076.chatgpt.site` is the intended target, but the environment proxy blocks it (403). The exact hostname was added to the existing access draft while preserving previous domains. That draft still needs review/save and Publish in environment settings before access applies. The earlier locally available NPI worker screenshots are the provisional design fallback. This deliverable is **not claimed to visually match a page we could not inspect**. Exact matching requires applied access or screenshots/source for the selected page.
+The user-provided screenshots define the split login and navy sidebar workspace. The original emblem file is not embedded; select the unchanged original in NPI Admin → Settings. Photo pickers likewise accept actual site images locally.
 
 ## PWA and backend
 
