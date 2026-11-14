@@ -27,7 +27,7 @@ Original site photos and the selected emblem are not available as downloadable i
 
 ## Visual reference
 
-The user-provided screenshots define the split login and navy sidebar workspace. The original emblem file is not embedded; select the unchanged original in NPI Admin → Settings. Photo pickers likewise accept actual site images locally.
+The latest refinement keeps the navy identity and workflow while using a consistent Source Sans 3 type scale, compact branding, desktop sidebar and labeled mobile page selector. The original emblem file is not embedded; select the unchanged original in NPI Admin → Settings. Photo pickers likewise accept actual site images locally.
 
 ## PWA and backend
 

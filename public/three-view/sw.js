@@ -1,9 +1,11 @@
-const CACHE = "npi-three-view-v2",
+const CACHE = "npi-three-view-v3",
   SHELL = [
     "./",
     "./index.html",
     "./style.css",
-    "./fonts/heading-700.woff2",
+    "./fonts/body-400.woff2",
+    "./fonts/body-600.woff2",
+    "./fonts/body-700.woff2",
     "./app.js",
     "./manifest.webmanifest",
     "../operations/domain.js",

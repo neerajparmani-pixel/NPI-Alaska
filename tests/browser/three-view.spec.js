@@ -378,13 +378,53 @@ test("reference login: three demo roles, masked password and no credential persi
     "example-preview-only",
   );
   await action(page, "role", "npi");
-  await expect(page.locator(".reference-sidebar")).toBeVisible();
+  if ((page.viewportSize()?.width || 0) >= 960)
+    await expect(page.locator(".reference-sidebar")).toBeVisible();
+  else await expect(page.getByLabel("Go to page")).toBeVisible();
   await expect(page.locator(".oversight-hero")).toContainText(
     "Work visibility",
   );
-  await action(page, "phone");
-  await expect(page.locator("body")).toHaveClass(/phone-preview/);
-  await action(page, "phone");
+  if ((page.viewportSize()?.width || 0) > 640) {
+    await action(page, "phone");
+    await expect(page.locator("body")).toHaveClass(/phone-preview/);
+    await action(page, "phone");
+  } else {
+    await page.getByLabel("Go to page").selectOption("orders");
+    await expect(
+      page.getByRole("heading", { name: "Work orders", exact: true }),
+    ).toBeVisible();
+  }
   await action(page, "notifications");
   await expect(page.locator("#dialog")).toBeVisible();
+});
+
+test("responsive design: readable fonts and no page overflow at supported widths", async ({
+  page,
+}) => {
+  await start(page);
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of ["overview", "orders", "sites", "people", "settings"]) {
+      await page.goto("/three-view/#" + route);
+      await page.evaluate(() => document.fonts.ready);
+      expect(
+        await page.evaluate(
+          () =>
+            document.body.scrollWidth <= document.documentElement.clientWidth,
+        ),
+        route + " at " + width,
+      ).toBe(true);
+      const font = await page
+        .locator("h1")
+        .evaluate((el) => getComputedStyle(el).fontFamily);
+      expect(font).toContain("NPISans");
+    }
+    if (width < 960) {
+      await expect(page.getByLabel("Go to page")).toBeVisible();
+      await page.getByLabel("Go to page").selectOption("orders");
+      await expect(
+        page.getByRole("heading", { name: "Work orders", exact: true }),
+      ).toBeVisible();
+    }
+  }
 });

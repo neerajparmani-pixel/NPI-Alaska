@@ -19,3 +19,5 @@ No contracts, actual prices, documents, personal contacts, signatures or verbati
 ## Interaction owners
 
 Pure recorded-hour, location-completeness, review gates and overlap logic reuse public/operations/domain.js. The new isolated distribution adapter owns shared btn/field/dialog/table/status/save/navigation primitives and one token stylesheet. Native selects/dates retain platform geometry. App-owned inline validation, dirty-form guards, local rollback, cross-tab conflicts and scope-safe previews are required. Both coordinates open separate map links; reverse-geocoded addresses are never invented. Actual site pictures remain local picker inputs until original files or verified reusable sources are available.
+
+Latest visual direction: user rejected the awkward typography/sizing and authorized professional design judgment. Keep three roles and review gates; use readable Source Sans 3, compact branding, responsive desktop sidebar/mobile native navigation and bounded table scrolling. The screenshot layout is a reference, not a pixel-copy requirement.
