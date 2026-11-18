@@ -14,7 +14,7 @@ Screenshots were recaptured after the user-requested professional refinement: co
 ## Results
 
 - `npm test`: 27 unit tests pass, including reused hour/location/review domain gates.
-- `npm run test:e2e -- --workers=2`: 88 browser tests pass across desktop and phone. Thirty-four exercise the three-view and management flows, with the remainder checking the preserved earlier samples.
+- `npm run test:e2e -- --workers=2`: 98 browser checks pass (96 in the full run plus the two exact-artifact export checks after correcting their development-server fixture) across desktop and phone. Forty-four exercise the three-view, management, image and test-transaction flows, with the remainder checking the preserved earlier samples.
 - New workflow checks: exactly three view choices; company/worker scope and company-scoped worker assignment; no visible currency amounts or credential persistence; masked preview login and role entry; individual/crew attendance; independent required event positions and clearing a prior example position when requesting fresh device GPS; denied GPS; raw evidence preservation; contractor-first review; NPI adjustment; correction reasons; hauling timecard gate; unpriced allocation and duplicate protection; assignment creation; worker-profile validation; dirty-dialog protection; storage failure; search empty/clear; phone overflow; offline reopening; navigation and no page overflow at 320, 390, 768, 1024 and 1440px.
 - axe-core WCAG A/AA-tagged scans report zero automated violations on the tested NPI overview, orders, review, hours, sites, billing and settings at both widths. This is not formal accessibility compliance. Initial role-helper contrast failure was corrected before final verification.
 - The exact self-contained downloaded HTML was tested over a local HTTP route: example check-in succeeds and checkout becomes available, with no JavaScript errors. Local-file URL use is blocked by the managed browser and depends on the user's browser support.
@@ -40,3 +40,11 @@ Additional axe-tagged scans pass for schedule, reports, workbook and settings at
 [Dispatch](schedule-desktop.png) · [Reports](reports-desktop.png) · [Phone report](reports-phone.png) · [Workbook](workbook-desktop.png) · [Settings](settings-desktop.png).
 
 Live research attempts to the prior demo and official comparison/court pages returned proxy 403 responses. No current source verification, court addresses or authentic site photos are claimed. See FEATURES.md for source links and the backend boundary.
+
+## Pictures and one test transaction
+
+Ten additional desktop/phone checks cover one idempotent test-record creation, the full worker/company/NPI approval path, independent event positions, original small/large image bytes, IndexedDB reload persistence, invalid-clipboard recovery and personalized-export privacy. The exact standalone HTML was served unmodified for export checks because Vite converts inline modules into development-only proxy scripts; those scripts must not enter a supposedly self-contained personalized download. These two corrected artifact-fixture checks pass.
+
+A separate browser walkthrough of the final packaged bytes completed one synthetic record and NPI approval with zero JavaScript errors. [Worker test screen](test-transaction-phone.png) · [Approved transaction](test-transaction-approved.png) · [Original-image paste control](paste-original-logo.png).
+
+No actual logo/courthouse image is bundled: inline assets remain inaccessible to workspace tools, and the attempted source fetches were proxy-blocked. Synthetic clipboard bytes in automated tests are not published as artwork. Users can paste the originals into the app and download a standalone copy with those images embedded; credentials and operational records are excluded.

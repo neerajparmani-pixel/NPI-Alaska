@@ -46,3 +46,22 @@ All changes stay on the current device. Scope filters and role buttons are previ
 - **Worker phones:** use the four labeled bottom buttons for work, hours, sites and help.
 
 [Full feature map, source review and backend handoff](FEATURES.md). The selected lion artwork is confirmed; only its original image bytes are pending reattachment. Real logins, Supabase/Sheets sync and invoice delivery are not connected.
+
+## Try one transaction
+
+1. Open START-HERE.html and choose **Start test transaction**. It creates one clearly labeled test work order and opens the worker's assignment. Reopening the button resumes that same record.
+2. **Check in → Capture example GPS** (or request real device location) → confirm. Complete all three tasks and add completion evidence.
+3. **Check out → capture a new position** → confirm → submit claimed hours.
+4. Use the test bar: **2. Company review** → Approve & forward → **3. NPI approval** → compare original evidence → accept hours.
+
+The test has no rate, payment or sent invoice. Existing work/evidence is preserved. Example checkout creates a two-hour interval for a quick test; breaks reduce the claimed/accepted worker-hours.
+
+## Add the exact pictures without another chat upload
+
+The conversation's inline images are still unavailable as downloadable workspace files, and external photo sources returned network-proxy blocks. The app therefore provides a direct image transfer:
+
+- On the welcome screen choose **Paste your logo**. Copy the actual logo image from the chat, click the paste box, and press Ctrl+V / Command+V. Drop/file selection is also available.
+- Choose NPI Admin → Sites & snowfall → **Paste site photo** on the matching building card. Each location stores its own image.
+- For a reusable self-contained copy, open NPI Admin → Settings → **Download with my pictures** from START-HERE.html. It embeds only the selected logo/site pictures, excluding live work records and credentials.
+
+PNG/JPG/WebP artwork up to 8 MB is supported without resizing/recolouring. Larger files use this sample's browser image database to avoid filling its JSON record store. Both the images and operational sample records remain on your device. The personalized-download action requires the standalone HTML; the hosted/PWA view shows guidance to use that file.

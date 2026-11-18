@@ -568,6 +568,7 @@ function close(force = false) {
     return;
   }
   capture = null;
+  pasteGeneration++;
   captureToken++;
   dirty = false;
   dlg.close();
@@ -589,8 +590,8 @@ function panel(title, body, action = "") {
   return `<section class="panel"><header class="panel-head"><h2>${title}</h2>${action}</header>${body}</section>`;
 }
 function brandImage(kind = "sidebar") {
-  return state.brandLogo
-    ? `<img class="brand-image ${kind}" src="${state.brandLogo}" alt="NPI company emblem">`
+  return artworkSource(state.brandLogo)
+    ? `<img class="brand-image ${kind}" src="${artworkSource(state.brandLogo)}" alt="NPI company emblem">`
     : `<div class="brand-placeholder ${kind}" role="img" aria-label="Original NPI emblem image pending"><span>NPI</span></div>`;
 }
 function attention() {
@@ -630,10 +631,10 @@ function render() {
     )
     .join(
       "",
-    )}</select>${btn(icon("bell") + (count ? `<span class="bell-count">${count}</span>` : ""), "notifications", "", "bell-button", `aria-label="Notifications, ${count} item${count === 1 ? "" : "s"}"`)}<span class="top-avatar">${role === "worker" ? "A" : "N"}</span></div><div class="mobile-navigation"><label for="mobile-route">Go to</label><select id="mobile-route" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${nav.map(([id, label]) => `<option value="${id}" ${page === id ? "selected" : ""}>${label}</option>`).join("")}</select></div></header><main id="main" class="main"><div class="reference-demo"><span>Demo workspace · Sample records, stored on this device.</span><div class="row">${btn(phonePreview ? "Desktop layout" : "Phone layout", "phone", "", "compact")}${btn("Online demo", "guide", "", "compact")}</div></div>${!navigator.onLine ? '<p class="notice warning mt12" role="status">Offline · Changes stay on this device. No server sync occurs.</p>' : ""}${conflict ? `<p class="notice error mt12" role="alert">Another tab changed this sample. Reload before saving. ${btn("Reload", "reload")}</p>` : ""}<div class="reference-content">${content()}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Sample only · Contracts and prices excluded · Backends unconnected</span></footer></main>${role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span></a>`).join("")}</nav>` : ""}</div></div>`;
+    )}</select>${btn(icon("bell") + (count ? `<span class="bell-count">${count}</span>` : ""), "notifications", "", "bell-button", `aria-label="Notifications, ${count} item${count === 1 ? "" : "s"}"`)}<span class="top-avatar">${role === "worker" ? "A" : "N"}</span></div><div class="mobile-navigation"><label for="mobile-route">Go to</label><select id="mobile-route" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${nav.map(([id, label]) => `<option value="${id}" ${page === id ? "selected" : ""}>${label}</option>`).join("")}</select></div></header><main id="main" class="main"><div class="reference-demo"><span>Demo workspace · Sample records, stored on this device.</span><div class="row">${btn(state.testTransactionId ? "Open test" : "Start test transaction", "test-transaction", "", "compact")}${btn(phonePreview ? "Desktop layout" : "Phone layout", "phone", "", "compact")}${btn("Online demo", "guide", "", "compact")}</div></div>${!navigator.onLine ? '<p class="notice warning mt12" role="status">Offline · Changes stay on this device. No server sync occurs.</p>' : ""}${conflict ? `<p class="notice error mt12" role="alert">Another tab changed this sample. Reload before saving. ${btn("Reload", "reload")}</p>` : ""}${testGuide()}<div class="reference-content">${content()}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Sample only · Contracts and prices excluded · Backends unconnected</span></footer></main>${role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span></a>`).join("")}</nav>` : ""}</div></div>`;
 }
 function login() {
-  return `<div class="login-layout"><section class="login-brand-panel"><p class="login-wordmark">NPI <span>/</span> ALASKA OPERATIONS</p><div class="login-emblem">${brandImage("login")}</div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2>Every site.<br> Every shift.<br> Accounted for.</h2><p>One workspace for snow removal, port hauling, work verification, and contractor invoices.</p><small>NEESON PERFORMANCE INDUSTRIES</small></div></section><main id="main" class="login-main"><div class="login-form-wrap"><span class="login-tag">INTERACTIVE DEMO</span><h1>Welcome to Alaska NPI</h1><p class="login-subtitle">Your workday starts here.</p><form id="preview-login" novalidate><div class="field"><label for="login-username">Company username</label><input id="login-username" autocomplete="off" placeholder="e.g. alex.morgan" maxlength="80"></div><div class="field"><label for="login-password">Password</label><div class="password-row"><input id="login-password" type="password" autocomplete="off" placeholder="Enter your password" maxlength="100">${btn("Show", "show-password", "", "", 'aria-label="Show password"')}</div></div><button type="submit" class="btn navy wide">Sign in ${icon("arrow")}</button><div id="login-error" class="error mt12" role="alert"></div></form><div class="login-links">${btn("First-time setup", "first-setup", "", "ghost")}${btn("Forgot password?", "forgot-password", "", "ghost")}</div><section class="demo-roles"><h2>Explore a demo role</h2><p>No credentials needed. All names and records are samples.</p><div class="login-role-grid">${Object.entries(
+  return `<div class="login-layout"><section class="login-brand-panel"><p class="login-wordmark">NPI <span>/</span> ALASKA OPERATIONS</p><div class="login-emblem">${brandImage("login")}</div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2>Every site.<br> Every shift.<br> Accounted for.</h2><p>One workspace for snow removal, port hauling, work verification, and contractor invoices.</p><small>NEESON PERFORMANCE INDUSTRIES</small></div></section><main id="main" class="login-main"><div class="login-form-wrap"><span class="login-tag">INTERACTIVE DEMO</span><h1>Welcome to Alaska NPI</h1><p class="login-subtitle">Your workday starts here.</p><form id="preview-login" novalidate><div class="field"><label for="login-username">Company username</label><input id="login-username" autocomplete="off" placeholder="e.g. alex.morgan" maxlength="80"></div><div class="field"><label for="login-password">Password</label><div class="password-row"><input id="login-password" type="password" autocomplete="off" placeholder="Enter your password" maxlength="100">${btn("Show", "show-password", "", "", 'aria-label="Show password"')}</div></div><button type="submit" class="btn navy wide">Sign in ${icon("arrow")}</button><div id="login-error" class="error mt12" role="alert"></div></form><div class="login-links">${btn("First-time setup", "first-setup", "", "ghost")}${btn("Forgot password?", "forgot-password", "", "ghost")}</div><section class="demo-roles"><div class="login-test-start">${btn("Start test transaction " + icon("arrow"), "test-transaction", "", "primary wide")}${btn("Paste your logo", "paste-image", "logo", "wide")}</div><h2>Explore a demo role</h2><p>No credentials needed. All names and records are samples.</p><div class="login-role-grid">${Object.entries(
     roles,
   )
     .map(([id, r]) =>
@@ -938,7 +939,7 @@ function orders() {
   );
 }
 function card(j) {
-  return `<article class="jobcard"><div class="card-art ${j.family === "hauling" ? "port" : ""} ${site(j.site).photo ? "has-site-photo" : ""}">${site(j.site).photo ? `<img src="${site(j.site).photo}" alt="Locally selected photo of ${escape(site(j.site).name)}">` : ""}<span class="eyebrow">${j.family === "hauling" ? "PORT OPERATIONS" : "SITE OPERATIONS"}</span>${icon(j.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><div class="row between">${badge(j)}<small class="muted">${j.id}</small></div><h2>${escape(site(j.site).name)}</h2><p>${escape(j.title)}</p><div class="card-detail"><div><small>Equipment</small><b>${escape(j.equipment)}</b></div><div><small>Work type</small><b>${escape(j.service)}</b></div></div>${btn("View assignment " + icon("arrow"), "open-job", j.id, "primary wide")}</div></article>`;
+  return `<article class="jobcard"><div class="card-art ${j.family === "hauling" ? "port" : ""} ${artworkSource(site(j.site).photo) ? "has-site-photo" : ""}">${artworkSource(site(j.site).photo) ? `<img src="${artworkSource(site(j.site).photo)}" alt="Locally selected photo of ${escape(site(j.site).name)}">` : ""}<span class="eyebrow">${j.family === "hauling" ? "PORT OPERATIONS" : "SITE OPERATIONS"}</span>${icon(j.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><div class="row between">${badge(j)}<small class="muted">${j.id}</small></div><h2>${escape(site(j.site).name)}</h2><p>${escape(j.title)}</p><div class="card-detail"><div><small>Equipment</small><b>${escape(j.equipment)}</b></div><div><small>Work type</small><b>${escape(j.service)}</b></div></div>${btn("View assignment " + icon("arrow"), "open-job", j.id, "primary wide")}</div></article>`;
 }
 function worker() {
   const list = visible().filter((j) =>
@@ -1091,7 +1092,7 @@ function sites() {
       .filter((s) => ids.has(s.id))
       .map(
         (s) =>
-          `<article class="jobcard"><div class="sitephoto">${s.photo ? `<img src="${s.photo}" alt="Locally selected photo of ${escape(s.name)}">` : icon(s.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><span class="badge">${s.family === "hauling" ? "Port operations" : "Site operations"}</span><h2>${escape(s.name)}</h2><p>${escape(s.address || "Address not configured in this sample")}</p><div class="row wrap mt12">${btn("Site work & hours", "site", s.id)}${role === "npi" ? btn("Edit site", "edit-site", s.id) : ""}</div><label class="photo-input">Choose an actual site photo (up to 600 KB)<input type="file" data-site-photo="${s.id}" accept="image/jpeg,image/png,image/webp"></label></div></article>`,
+          `<article class="jobcard"><div class="sitephoto">${artworkSource(s.photo) ? `<img src="${artworkSource(s.photo)}" alt="Locally selected photo of ${escape(s.name)}">` : icon(s.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><span class="badge">${s.family === "hauling" ? "Port operations" : "Site operations"}</span><h2>${escape(s.name)}</h2><p>${escape(s.address || "Address not configured in this sample")}</p><div class="row wrap mt12">${btn("Site work & hours", "site", s.id)}${role === "npi" ? btn("Edit site", "edit-site", s.id) : ""}</div>${btn("Paste site photo", "paste-image", s.id, "mt12")}<label class="photo-input">Choose an actual site photo (up to 8 MB)<input type="file" data-site-photo="${s.id}" accept="image/jpeg,image/png,image/webp"></label></div></article>`,
       )
       .join("")}</div>`
   );
@@ -1156,6 +1157,261 @@ function bills() {
     )}</section>`
   );
 }
+const artworkCache = new Map();
+const artworkSource = (value) =>
+  typeof value === "string" && value.startsWith("npi-artwork:")
+    ? artworkCache.get(value) || ""
+    : value || "";
+const readImageData = (blob) =>
+  new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(Error("Could not read that image."));
+    r.readAsDataURL(blob);
+  });
+function artworkDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("npi-three-view-artwork", 1);
+    request.onupgradeneeded = () => request.result.createObjectStore("images");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () =>
+      reject(
+        Error(
+          "Image storage is unavailable. Try a normal browser window or a smaller image.",
+        ),
+      );
+  });
+}
+async function artworkOperation(mode, key, blob) {
+  const db = await artworkDb();
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction("images", mode),
+        store = tx.objectStore("images"),
+        request = mode === "readwrite" ? store.put(blob, key) : store.get(key);
+      let result;
+      request.onsuccess = () => {
+        result = request.result;
+      };
+      tx.oncomplete = () => resolve(result);
+      tx.onerror = () =>
+        reject(
+          Error("Could not save image storage. Free browser space and retry."),
+        );
+      tx.onabort = () => reject(Error("Image storage was interrupted."));
+    });
+  } finally {
+    db.close();
+  }
+}
+async function persistArtworkBlob(file) {
+  const data = await readImageData(file);
+  if (file.size <= 600000) return data;
+  const key =
+    "npi-artwork:" +
+    Date.now().toString(36) +
+    "-" +
+    Math.random().toString(36).slice(2);
+  await artworkOperation("readwrite", key, file);
+  artworkCache.set(key, data);
+  return key;
+}
+async function loadArtwork() {
+  const embedded = JSON.parse(
+    document.querySelector("#npi-sample-assets")?.textContent || "null",
+  );
+  const valid = (data) =>
+    typeof data === "string" &&
+    data.length < 12000000 &&
+    /^data:image\/(png|jpeg|webp);base64,/.test(data);
+  const apply = async (target, data) => {
+    if (!valid(data)) return;
+    const split = data.indexOf(","),
+      bytes = Uint8Array.from(atob(data.slice(split + 1)), (c) =>
+        c.charCodeAt(0),
+      ),
+      blob = new Blob([bytes], { type: data.slice(5, data.indexOf(";")) });
+    const ref = await persistArtworkBlob(blob);
+    if (target === "logo") state.brandLogo = ref;
+    else state.sites.find((s) => s.id === target).photo = ref;
+  };
+  if (embedded) {
+    if (!state.brandLogo) await apply("logo", embedded.logo);
+    for (const s of state.sites)
+      if (!s.photo) await apply(s.id, embedded.sites?.[s.id]);
+  }
+  const refs = [state.brandLogo, ...state.sites.map((s) => s.photo)].filter(
+    (r) => typeof r === "string" && r.startsWith("npi-artwork:"),
+  );
+  for (const ref of refs) {
+    if (artworkCache.has(ref)) continue;
+    const blob = await artworkOperation("readonly", ref);
+    if (blob) artworkCache.set(ref, await readImageData(blob));
+  }
+}
+
+function testGuide() {
+  const j = state.jobs.find((x) => x.id === state.testTransactionId);
+  if (!j) return "";
+  return `<section class="test-guide" aria-label="Test transaction"><div><b>TEST · ${escape(j.id)}</b><p>${escape(site(j.site).name)} · ${labels[j.status]} · no prices or payments</p></div><div class="row wrap">${btn("1. Worker", "test-stage", "worker")}${btn("2. Company review", "test-stage", "sub")}${btn("3. NPI approval", "test-stage", "npi")}</div></section>`;
+}
+function startTestTransaction() {
+  let id = state.testTransactionId;
+  if (!state.jobs.some((j) => j.id === id)) {
+    if (state.jobs.length >= 20) {
+      notice(
+        "The sample has reached 20 work records. Reset the sample in Settings to start again.",
+      );
+      return;
+    }
+    id =
+      "DEMO-" + (Math.max(...state.jobs.map((j) => Number(j.id.slice(5)))) + 1);
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Anchorage",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    if (
+      !save((n) => {
+        n.jobs.unshift({
+          id,
+          site: "boney",
+          family: "courthouse",
+          service: "Snow clearing",
+          title: "TEST TRANSACTION — clear the access route",
+          worker: "alex",
+          company: "north",
+          equipment: "Test loader",
+          date: today,
+          status: "draft",
+          sessions: [],
+          tasks: [],
+          photos: [],
+          timecard: null,
+          loads: 0,
+          claimedBy: {},
+          acceptedBy: {},
+          customerBasis: "hourly",
+          contractorBasis: "hourly",
+          testRecord: true,
+        });
+        n.testTransactionId = id;
+        n.audit.unshift({
+          text: `${id}: user started a local test transaction.`,
+          company: "north",
+          actor: "NPI Admin demo setup",
+          at: new Date().toISOString(),
+        });
+      }, "Test transaction created locally. Begin with check-in.")
+    )
+      return;
+  }
+  role = "worker";
+  selected = id;
+  go("detail");
+}
+let pasteTarget = null,
+  pasteGeneration = 0;
+function pasteImageDialog(target) {
+  if (target !== "logo" && !state.sites.some((s) => s.id === target)) return;
+  pasteTarget = target;
+  pasteGeneration++;
+  modal(
+    target === "logo"
+      ? "Paste the original NPI logo"
+      : `Paste photo · ${escape(site(target).name)}`,
+    `<p class="notice">Copy the image itself from the conversation (Copy image), then click the box and paste. You can also drop or choose a PNG, JPG or WebP up to 8 MB. The image stays on this device.</p><div id="image-paste-zone" class="image-paste-zone" tabindex="0" role="region" aria-label="Image paste area"><b>Paste or drop your image here</b><p>Ctrl+V on Windows · Command+V on Mac</p></div><label class="photo-input">Or choose the image file<input type="file" id="paste-image-file" accept="image/png,image/jpeg,image/webp"></label><p class="small muted mt12">Use the exact logo or the correct building photograph. No generated substitute or unverified web photo is added.</p>`,
+  );
+  $("#image-paste-zone").focus();
+}
+async function receivePastedImage(file) {
+  const target = pasteTarget,
+    generation = ++pasteGeneration;
+  if (
+    !dlg.open ||
+    (!state.sites.some((s) => s.id === target) && target !== "logo")
+  )
+    return;
+  if (
+    !file ||
+    !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
+    file.size > 8000000
+  ) {
+    fail(
+      "Choose a PNG, JPG or WebP up to 8 MB. Copy the image itself, not its web address.",
+    );
+    return;
+  }
+  const zone = $("#image-paste-zone");
+  zone.setAttribute("aria-busy", "true");
+  try {
+    const reference = await persistArtworkBlob(file);
+    if (!dlg.open || pasteTarget !== target || pasteGeneration !== generation)
+      return;
+    if (
+      save(
+        (n) => {
+          if (target === "logo") n.brandLogo = reference;
+          else n.sites.find((s) => s.id === target).photo = reference;
+        },
+        target === "logo"
+          ? "Original logo saved unchanged."
+          : "Site photo saved unchanged.",
+      )
+    ) {
+      pasteTarget = null;
+      close(true);
+      render();
+    }
+  } catch (error) {
+    if (dlg.open && pasteTarget === target) fail(error.message);
+  } finally {
+    zone.removeAttribute("aria-busy");
+  }
+}
+function exportPersonalizedSample() {
+  // A standalone template only: never serialize live forms, credentials or work records.
+  if (document.querySelector('script[type="module"][src]')) {
+    notice(
+      "Open START-HERE.html from the sample ZIP to download a copy with your pictures embedded.",
+    );
+    return;
+  }
+  const root = document.documentElement.cloneNode(true);
+  root.querySelector("#app").innerHTML =
+    '<p role="status">Opening NPI sample…</p>';
+  root.querySelector("#dialog").innerHTML = "";
+  root.querySelector("#dialog").removeAttribute("open");
+  root.querySelector("#notice").textContent = "";
+  root.querySelector("#npi-sample-assets")?.remove();
+  const data = {
+    logo: artworkSource(state.brandLogo),
+    sites: Object.fromEntries(
+      state.sites
+        .filter((s) => s.photo)
+        .map((s) => [s.id, artworkSource(s.photo)]),
+    ),
+  };
+  const asset = document.createElement("script");
+  asset.type = "application/json";
+  asset.id = "npi-sample-assets";
+  asset.textContent = JSON.stringify(data).replaceAll("<", "\\u003c");
+  root.querySelector("body").prepend(asset);
+  const blob = new Blob(["<!doctype html>\n" + root.outerHTML], {
+      type: "text/html;charset=utf-8",
+    }),
+    url = URL.createObjectURL(blob),
+    a = document.createElement("a");
+  a.href = url;
+  a.download = "NPI-Sample-With-Your-Pictures.html";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  notice(
+    "Personalized sample downloaded. Only logo and site pictures are embedded; work records and credentials are excluded.",
+  );
+}
+
 function planningDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   return new Intl.DateTimeFormat("en-US", {
@@ -1347,7 +1603,7 @@ function configurationView() {
         ? btn("Edit workspace", "edit-workspace", "", "primary")
         : "",
     ) +
-    `<div class="two"><div class="stack">${panel("Company identity", `<div class="settings-brand">${brandImage("settings")}<div><h3>${escape(config.name || "Alaska NPI")}</h3><p class="small muted">${escape(config.note || "Operations & contract oversight")}</p></div></div><p class="small muted mt12">Approved identity: silver lion, navy wings and gold stars. Select the original image unchanged; no substitute lion is used.</p>${role === "npi" ? '<label class="photo-input">Choose original NPI logo (PNG, JPG or WebP, up to 600 KB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label>' : ""}<div class="line"><span>Work timezone</span><b>America/Anchorage</b></div>`)}${panel("Company-issued logins", `<p class="small muted">Username/password access will use managed authentication. This sample stores profiles, never passwords.</p><div class="line"><span>Account service</span><b>Not connected</b></div><div class="line"><span>Invitations & resets</span><b>Not sent in preview</b></div><div class="actions">${btn("View people & access", "goto", "people")}${role === "sub" ? btn("Add sample worker", "new-person") : ""}</div>`)}${panel("Sample controls", `<p class="small muted">Reset this sample’s local records, images and settings.</p>${btn("Reset sample", "reset", "", "danger mt12")}`)}</div><div class="stack">${panel("Connection readiness", `<div class="integration-row"><span class="integration-icon">${icon("building")}</span><div><b>Supabase</b><p>Primary records, managed identity and private evidence storage.</p></div><span class="badge">Not connected</span></div><div class="integration-row"><span class="integration-icon">${icon("file")}</span><div><b>Management spreadsheet</b><p>Versioned planning changes with protected original attendance.</p></div><span class="badge">Local preview</span></div><div class="integration-row"><span class="integration-icon">${icon("bell")}</span><div><b>Alerts</b><p>Local attention queue; external notifications are not sent.</p></div><span class="badge">Local only</span></div>${role === "npi" ? btn("Try workbook review", "goto", "sheets", "mt12") : ""}`)}${panel(
+    `<div class="two"><div class="stack">${panel("Company identity", `<div class="settings-brand">${brandImage("settings")}<div><h3>${escape(config.name || "Alaska NPI")}</h3><p class="small muted">${escape(config.note || "Operations & contract oversight")}</p></div></div><p class="small muted mt12">Approved identity: silver lion, navy wings and gold stars. Select the original image unchanged; no substitute lion is used.</p>${role === "npi" ? btn("Paste original logo", "paste-image", "logo", "mt12") + btn("Download with my pictures", "export-personalized", "", "mt12") + '<label class="photo-input">Choose original NPI logo (PNG, JPG or WebP, up to 8 MB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label>' : ""}<div class="line"><span>Work timezone</span><b>America/Anchorage</b></div>`)}${panel("Company-issued logins", `<p class="small muted">Username/password access will use managed authentication. This sample stores profiles, never passwords.</p><div class="line"><span>Account service</span><b>Not connected</b></div><div class="line"><span>Invitations & resets</span><b>Not sent in preview</b></div><div class="actions">${btn("View people & access", "goto", "people")}${role === "sub" ? btn("Add sample worker", "new-person") : ""}</div>`)}${panel("Sample controls", `<p class="small muted">Reset this sample’s local records, images and settings.</p>${btn("Reset sample", "reset", "", "danger mt12")}`)}</div><div class="stack">${panel("Connection readiness", `<div class="integration-row"><span class="integration-icon">${icon("building")}</span><div><b>Supabase</b><p>Primary records, managed identity and private evidence storage.</p></div><span class="badge">Not connected</span></div><div class="integration-row"><span class="integration-icon">${icon("file")}</span><div><b>Management spreadsheet</b><p>Versioned planning changes with protected original attendance.</p></div><span class="badge">Local preview</span></div><div class="integration-row"><span class="integration-icon">${icon("bell")}</span><div><b>Alerts</b><p>Local attention queue; external notifications are not sent.</p></div><span class="badge">Local only</span></div>${role === "npi" ? btn("Try workbook review", "goto", "sheets", "mt12") : ""}`)}${panel(
       "Role responsibilities",
       table(
         ["View", "Responsibility"],
@@ -1580,6 +1836,18 @@ function quantityDoc(invoice, existing) {
   );
 }
 const actions = {
+  "test-transaction": () => startTestTransaction(),
+  "test-stage": (el) => {
+    const j = job(state.testTransactionId);
+    if (!j) return;
+    setRole(el.dataset.id);
+    if (el.dataset.id === "worker") {
+      selected = j.id;
+      go("detail");
+    } else go("review");
+  },
+  "paste-image": (el) => pasteImageDialog(el.dataset.id),
+  "export-personalized": () => exportPersonalizedSample(),
   "edit-workspace": () => {
     if (role !== "npi") return;
     modal(
@@ -2128,8 +2396,27 @@ const actions = {
       "Reset this sample?",
       `<p>This removes only the three-view sample’s local changes and selected photos.</p><div class="actions">${btn("Keep sample", "close", "", "primary")}${btn("Reset sample", "reset-confirm", "", "danger")}</div>`,
     ),
-  "reset-confirm": () => {
+  "reset-confirm": async () => {
     try {
+      if (
+        [state.brandLogo, ...state.sites.map((s) => s.photo)].some(
+          (v) => typeof v === "string" && v.startsWith("npi-artwork:"),
+        )
+      ) {
+        const db = await artworkDb();
+        try {
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction("images", "readwrite");
+            tx.objectStore("images").clear();
+            tx.oncomplete = resolve;
+            tx.onerror = reject;
+            tx.onabort = reject;
+          });
+        } finally {
+          db.close();
+        }
+      }
+      artworkCache.clear();
       localStorage.removeItem(KEY);
       state = seed();
       workbookInput = "";
@@ -2588,6 +2875,30 @@ function clicks(e) {
     go(a.hash.slice(1));
   }
 }
+document.addEventListener("paste", (e) => {
+  if (!dlg.open || !document.querySelector("#image-paste-zone")) return;
+  const file = [...(e.clipboardData?.files || [])].find((f) =>
+    f.type.startsWith("image/"),
+  );
+  if (file) {
+    e.preventDefault();
+    receivePastedImage(file);
+  } else if (e.target.id === "image-paste-zone") {
+    e.preventDefault();
+    fail(
+      "No image found. Use Copy image, then paste here, or choose the image file.",
+    );
+  }
+});
+dlg.addEventListener("dragover", (e) => {
+  if (e.target.closest("#image-paste-zone")) e.preventDefault();
+});
+dlg.addEventListener("drop", (e) => {
+  if (e.target.closest("#image-paste-zone")) {
+    e.preventDefault();
+    receivePastedImage([...e.dataTransfer.files][0]);
+  }
+});
 app.addEventListener("click", clicks);
 app.addEventListener("submit", (e) => {
   if (e.target.id === "workbook-form") {
@@ -2613,6 +2924,10 @@ dlg.addEventListener("cancel", (e) => {
   close();
 });
 dlg.addEventListener("change", (e) => {
+  if (e.target.id === "paste-image-file") {
+    receivePastedImage(e.target.files[0]);
+    return;
+  }
   if (e.target.id === "mode")
     $("#crew-list").hidden = e.target.value !== "crew";
 });
@@ -2670,25 +2985,8 @@ app.addEventListener("change", (e) => {
   if (e.target.matches("[data-brand-logo]")) {
     const file = e.target.files[0];
     if (!file) return;
-    if (
-      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
-      file.size > 600000
-    ) {
-      notice("Choose a PNG, JPG or WebP emblem up to 600 KB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onerror = () => notice("Could not read the emblem image.");
-    reader.onload = () => {
-      if (
-        save(
-          (n) => (n.brandLogo = reader.result),
-          "Original emblem saved on this device.",
-        )
-      )
-        render();
-    };
-    reader.readAsDataURL(file);
+    pasteImageDialog("logo");
+    receivePastedImage(file);
     return;
   }
 
@@ -2715,6 +3013,11 @@ app.addEventListener("change", (e) => {
   if (e.target.matches("[data-photo],[data-site-photo]")) {
     const file = e.target.files[0];
     if (!file) return;
+    if (e.target.dataset.sitePhoto) {
+      pasteImageDialog(e.target.dataset.sitePhoto);
+      receivePastedImage(file);
+      return;
+    }
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
       file.size > 600000
@@ -2780,7 +3083,14 @@ setInterval(() => {
 }, 1000);
 const route = location.hash.slice(1);
 if (menu().some((x) => x[0] === route)) page = route;
-render();
+loadArtwork()
+  .then(() => render())
+  .catch((error) => {
+    render();
+    notice(
+      error.message || "Could not load saved artwork. Choose the image again.",
+    );
+  });
 if (
   "serviceWorker" in navigator &&
   ["http:", "https:"].includes(location.protocol) &&

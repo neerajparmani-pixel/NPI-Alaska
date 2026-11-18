@@ -2864,3 +2864,83 @@ table caption {
 .line > b {
   overflow-wrap: anywhere;
 }
+.test-guide {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  margin-top: 20px;
+  background: #eaf2fc;
+  border: 1px solid #b9cee9;
+  border-radius: 10px;
+}
+.test-guide b {
+  font-size: 14px;
+  color: #234e80;
+}
+.test-guide p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.test-guide .btn {
+  font-size: 13px;
+}
+.image-paste-zone {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 10px;
+  min-height: 160px;
+  border: 2px dashed #7897bc;
+  border-radius: 12px;
+  background: #f0f5fb;
+  padding: 24px;
+  margin-top: 20px;
+  cursor: copy;
+}
+.image-paste-zone p {
+  font-size: 14px;
+  color: var(--muted);
+}
+.login-test-start {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.reference-demo > .row {
+  flex-shrink: 0;
+}
+@media (max-width: 900px) {
+  .reference-demo {
+    flex-wrap: wrap;
+  }
+  .test-guide {
+    display: block;
+  }
+  .test-guide > .row {
+    margin-top: 14px;
+    gap: 8px;
+  }
+  .test-guide .btn {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+@media (max-width: 640px) {
+  .reference-demo > .row {
+    flex-shrink: 1;
+    flex-wrap: wrap;
+  }
+  .test-guide {
+    padding: 16px;
+  }
+  .test-guide .btn {
+    font-size: 12px;
+    padding: 8px;
+  }
+  .login-test-start .btn {
+    min-height: 48px;
+  }
+}

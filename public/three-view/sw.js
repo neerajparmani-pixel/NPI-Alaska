@@ -1,4 +1,4 @@
-const CACHE = "npi-three-view-v4",
+const CACHE = "npi-three-view-v5",
   SHELL = [
     "./",
     "./index.html",
