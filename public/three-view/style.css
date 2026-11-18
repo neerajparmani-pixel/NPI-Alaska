@@ -2504,3 +2504,363 @@ td {
 .card-art .eyebrow {
   font-size: 10px;
 }
+/* Shared management surfaces and phone field navigation. */
+.schedule-list {
+  display: grid;
+}
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.schedule-item:last-child {
+  border-bottom: 0;
+}
+.schedule-item p {
+  font-size: 15px;
+  margin: 3px 0;
+  color: var(--muted);
+}
+.schedule-item small {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+}
+.schedule-marker {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: #edf3fa;
+  color: #285989;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.schedule-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 300px;
+}
+.report-filters {
+  align-items: end;
+}
+.report-filters .field {
+  margin: 0;
+  min-width: 175px;
+}
+.report-filters input {
+  height: 44px;
+}
+.decision-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.decision-log li {
+  border-left: 2px solid #c2d3e7;
+  padding: 0 0 22px 18px;
+}
+.decision-log li:last-child {
+  padding-bottom: 0;
+}
+.decision-log p {
+  font-size: 15px;
+}
+.decision-log small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.settings-brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.brand-image.settings,
+.brand-placeholder.settings {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.brand-placeholder.settings span {
+  font-size: 25px;
+}
+.integration-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.integration-row > div {
+  flex: 1;
+  min-width: 0;
+}
+.integration-row p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.integration-row .badge {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.integration-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+.active-shift {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #e9f3ec;
+  border: 1px solid #adcbb6;
+  border-radius: 12px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+.active-shift .eyebrow {
+  color: #28613d;
+}
+.active-shift h2 {
+  margin: 6px 0;
+}
+.active-shift p {
+  font-size: 14px;
+  color: #375d44;
+}
+.assignments-heading {
+  margin-bottom: 18px;
+}
+.worker-bottom-nav {
+  display: none;
+}
+.has-site-photo {
+  overflow: hidden;
+}
+.has-site-photo > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.has-site-photo > .eyebrow,
+.has-site-photo > svg {
+  position: relative;
+  z-index: 1;
+}
+#workbook-csv {
+  font:
+    13px/1.5 ui-monospace,
+    monospace;
+  min-height: 190px;
+  overflow: auto;
+}
+.toolbar > .field {
+  margin-bottom: 0;
+}
+.toolbar {
+  gap: 16px;
+}
+.photo-input {
+  font-size: 14px;
+}
+body[data-screen="schedule"] .reference-content > .panel + section,
+body[data-screen="reports"] .reference-content > .panel + section,
+body[data-screen="sheets"] .reference-content > .panel + section {
+  margin-top: 24px;
+}
+@media (max-width: 959px) {
+  body[data-role="worker"] .mobile-navigation {
+    display: none;
+  }
+  .worker-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    position: fixed;
+    bottom: 0;
+    inset-inline: 0;
+    background: white;
+    border-top: 1px solid var(--line);
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    z-index: 20;
+    box-shadow: 0 -4px 18px #12304d08;
+  }
+  .worker-bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    min-height: 55px;
+    color: var(--muted);
+    font-size: 12px;
+    text-decoration: none;
+    border-radius: 8px;
+  }
+  .worker-bottom-nav a[aria-current] {
+    color: var(--blue);
+    background: #edf3fa;
+    font-weight: 700;
+  }
+  .worker-bottom-nav svg {
+    width: 21px;
+    height: 21px;
+  }
+  body[data-role="worker"] .reference-workspace .main {
+    padding-bottom: 110px;
+  }
+  body[data-role="worker"] #notice {
+    bottom: 90px;
+  }
+}
+@media (max-width: 640px) {
+  .schedule-item {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .schedule-item .grow {
+    min-width: 175px;
+  }
+  .schedule-actions {
+    margin-left: 54px;
+    justify-content: flex-start;
+    max-width: 100%;
+  }
+  .schedule-actions .btn {
+    font-size: 13px;
+  }
+  .integration-row {
+    flex-wrap: wrap;
+  }
+  .integration-row .badge {
+    margin-left: 48px;
+  }
+  .active-shift {
+    display: block;
+    padding: 20px;
+  }
+  .active-shift > .btn {
+    width: 100%;
+    margin-top: 16px;
+  }
+  .report-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .report-filters .field {
+    min-width: 0;
+  }
+  .report-filters .btn {
+    grid-column: 1/-1;
+  }
+  .settings-brand {
+    align-items: flex-start;
+  }
+  .settings-brand h3 {
+    overflow-wrap: anywhere;
+  }
+  .reference-workspace .main .three {
+    gap: 16px;
+  }
+  body[data-role="worker"] .reference-demo {
+    padding: 0 0 12px;
+  }
+  body[data-role="worker"] .reference-content {
+    margin-top: 20px;
+  }
+  body[data-role="worker"] .pagehead {
+    margin-bottom: 24px;
+  }
+}
+@media (min-width: 641px) {
+  .phone-preview .worker-bottom-nav {
+    display: none;
+  }
+  .phone-preview .schedule-item,
+  .phone-preview .integration-row {
+    flex-wrap: wrap;
+  }
+  .phone-preview .schedule-actions {
+    margin-left: 0;
+  }
+  .phone-preview .report-filters {
+    flex-wrap: wrap;
+  }
+}
+.brand-image.login {
+  width: 220px;
+  height: 220px;
+}
+.brand-image.sidebar {
+  width: 44px;
+  height: 44px;
+}
+@media (max-width: 640px) {
+  .brand-image.login {
+    width: 48px;
+    height: 48px;
+  }
+}
+.stack {
+  align-content: start;
+}
+.reference-content > .panel + section {
+  margin-top: 24px;
+}
+.report-filters .field {
+  min-width: 0;
+}
+.report-filters .field input {
+  width: 100%;
+  min-width: 0;
+}
+.report-filters .field label {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  .report-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.line {
+  font-size: 14px;
+}
+.pill-note {
+  font-size: 13px;
+}
+.flow p {
+  font-size: 14px;
+}
+.flow small {
+  font-size: 13px;
+}
+table caption {
+  font-size: 13px;
+}
+.err {
+  font-size: 13px;
+}
+.taskline {
+  font-size: 16px;
+}
+.taskline small {
+  font-size: 13px;
+}
+.line > b {
+  overflow-wrap: anywhere;
+}

@@ -1,14 +1,22 @@
 {
   "id": "/three-view/",
-  "name": "NPI Alaska · Three-view sample",
-  "short_name": "NPI Sample",
+  "name": "Alaska NPI Operations \u00b7 Review Sample",
+  "short_name": "Alaska NPI",
   "start_url": "/three-view/",
   "scope": "/three-view/",
   "display": "standalone",
   "background_color": "#f3f6fa",
   "theme_color": "#102c50",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }

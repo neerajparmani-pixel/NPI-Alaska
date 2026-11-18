@@ -9,12 +9,12 @@
 5. **Company review — usable:** the claim is reviewed by the company before NPI can accept it. [Screenshot](company-review.png).
 6. **NPI verification — usable:** recorded/claimed/accepted quantities remain separate; changes require a reason. [Screenshot](npi-review.png).
 
-Screenshots were recaptured after the user-requested professional refinement: consistent Source Sans 3 typography, compact branding, navy desktop sidebar, labeled native mobile navigation, restrained navy/gold summary, and responsive metrics/activity/attention columns. [Login screenshot](login-desktop.png). The original emblem file and site photographs are not embedded; Settings/local pickers accept originals unchanged.
+Screenshots were recaptured after the user-requested professional refinement: consistent Source Sans 3 typography, compact branding, navy desktop sidebar, labeled administrator page selection and worker bottom navigation, restrained navy/gold summary, and responsive metrics/activity/attention columns. [Login screenshot](login-desktop.png). The original emblem file and site photographs are not embedded; Settings/local pickers accept originals unchanged.
 
 ## Results
 
-- `npm test`: 23 existing unit tests pass, including reused hour/location/review domain gates.
-- `npm run test:e2e -- --workers=2`: 76 browser tests pass across desktop and phone. Twenty-two exercise the new three-view adapter, with the remainder checking the preserved earlier samples.
+- `npm test`: 27 unit tests pass, including reused hour/location/review domain gates.
+- `npm run test:e2e -- --workers=2`: 88 browser tests pass across desktop and phone. Thirty-four exercise the three-view and management flows, with the remainder checking the preserved earlier samples.
 - New workflow checks: exactly three view choices; company/worker scope and company-scoped worker assignment; no visible currency amounts or credential persistence; masked preview login and role entry; individual/crew attendance; independent required event positions and clearing a prior example position when requesting fresh device GPS; denied GPS; raw evidence preservation; contractor-first review; NPI adjustment; correction reasons; hauling timecard gate; unpriced allocation and duplicate protection; assignment creation; worker-profile validation; dirty-dialog protection; storage failure; search empty/clear; phone overflow; offline reopening; navigation and no page overflow at 320, 390, 768, 1024 and 1440px.
 - axe-core WCAG A/AA-tagged scans report zero automated violations on the tested NPI overview, orders, review, hours, sites, billing and settings at both widths. This is not formal accessibility compliance. Initial role-helper contrast failure was corrected before final verification.
 - The exact self-contained downloaded HTML was tested over a local HTTP route: example check-in succeeds and checkout becomes available, with no JavaScript errors. Local-file URL use is blocked by the managed browser and depends on the user's browser support.
@@ -30,3 +30,13 @@ Screenshots were recaptured after the user-requested professional refinement: co
 This is a bounded, synthetic, device-local sample. Actual authentication/RLS, durable server events, identity verification, private uploads, real proximity policy, real per-service rules, immutable server approvals, two-way Sheets sync and operational acceptance remain future work. No financial amounts, contract documents, real account creation, invoice delivery or money transfer are implemented. The user authorized design judgment beyond exact screenshot copying. Missing original image assets prevent an exact branding match.
 
 Typography: self-hosted Source Sans 3 at 400/600/700, 16px body, 32px desktop and 27px phone page headings. [Phone login](login-phone.png) · [Tablet](tablet-overview.png). A 320px site-summary overflow was found and corrected; no page-level clipping was used to hide it. Native tables retain their own horizontal scroll regions. The previous condensed heading font was removed.
+
+## Management extension checks
+
+Schedule edits are limited to unstarted, visible assignments. Request scheduling creates a linked work order through the existing form. Reports preserve company scope and export filtered data. The local workbook validates the entire batch before mutation, previews changes, rejects stale/duplicate/protected/invalid rows, revalidates at commit and records the applied revision. Workspace edits store no credentials. Six additional browser scenarios run on both projects; four pure CSV/workbook unit tests cover quoting, atomicity and formula handling.
+
+Additional axe-tagged scans pass for schedule, reports, workbook and settings at desktop/phone widths. Overflow checks also cover 320, 390, 820 and 1440px. Eight final accessibility/responsive/worker-navigation checks passed after the last typography adjustment. The 320px report-date grid was corrected through intrinsic input sizing rather than page clipping.
+
+[Dispatch](schedule-desktop.png) · [Reports](reports-desktop.png) · [Phone report](reports-phone.png) · [Workbook](workbook-desktop.png) · [Settings](settings-desktop.png).
+
+Live research attempts to the prior demo and official comparison/court pages returned proxy 403 responses. No current source verification, court addresses or authentic site photos are claimed. See FEATURES.md for source links and the backend boundary.

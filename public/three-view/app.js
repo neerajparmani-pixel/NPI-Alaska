@@ -4,6 +4,7 @@ import {
   approveHours,
   overlappingWorkers,
 } from "../operations/domain.js";
+import { csvText, workbookRows, previewWorkbook } from "./workbook.js";
 const KEY = "npi-three-view-v1",
   $ = (s, r = document) => r.querySelector(s),
   app = $("#app"),
@@ -58,6 +59,14 @@ const roles = {
     icon: "work",
   },
 };
+const basisOptions = [
+  ["hourly", "Hourly"],
+  ["fixed", "Fixed service"],
+  ["per-visit", "Per visit"],
+  ["per-load", "Per load"],
+];
+const basisName = (value) =>
+  basisOptions.find(([id]) => id === value)?.[1] || "Not configured";
 const labels = {
   draft: "Assigned",
   "in-progress": "In progress",
@@ -350,6 +359,13 @@ function seed() {
     claimedBy: { lee: 1.5 },
     acceptedBy: { lee: 1.5 },
   });
+  jobs.forEach((j, i) => {
+    j.customerBasis =
+      j.family === "hauling"
+        ? "per-load"
+        : ["hourly", "fixed", "per-visit"][i % 3];
+    j.contractorBasis = j.family === "hauling" ? "per-load" : "hourly";
+  });
   return {
     version: 1,
     revision: 0,
@@ -381,7 +397,13 @@ let state,
   captureToken = 0,
   returnFocus = null,
   toastTimer,
-  phonePreview = false;
+  phonePreview = false,
+  scheduleDate = "",
+  reportFrom = "",
+  reportUntil = "",
+  workbookInput = "",
+  workbookPreview = null,
+  workbookDirty = false;
 try {
   state = JSON.parse(localStorage.getItem(KEY)) || seed();
   if (
@@ -431,17 +453,20 @@ const menu = () =>
       ? [
           ["overview", "Overview", "home"],
           ["orders", "Work orders", "work"],
+          ["schedule", "Schedule & dispatch", "clock"],
           ["review", "Review worker hours", "check"],
           ["requests", "Service requests", "work"],
           ["sites", "Sites & snowfall", "snow"],
           ["team", "Workers & crews", "users"],
           ["bills", "Invoices", "file"],
           ["people", "People & access", "users"],
+          ["reports", "Reports & audit", "file"],
           ["settings", "Settings", "settings"],
         ]
       : [
           ["overview", "Overview", "home"],
           ["orders", "Work orders", "work"],
+          ["schedule", "Schedule & dispatch", "clock"],
           ["review", "NPI verification", "check"],
           ["requests", "Service requests", "work"],
           ["sites", "Sites & snowfall", "snow"],
@@ -449,7 +474,9 @@ const menu = () =>
           ["services", "Service setup", "file"],
           ["bills", "Invoices", "file"],
           ["drafts", "Customer drafts", "file"],
+          ["sheets", "Management workbook", "file"],
           ["people", "People & access", "users"],
+          ["reports", "Reports & audit", "file"],
           ["settings", "Settings", "settings"],
         ];
 const badge = (j) =>
@@ -594,7 +621,7 @@ function render() {
     return;
   }
   const count = a.review + a.returned + (role === "npi" ? a.claims : 0);
-  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar"><div class="side-brand">${brandImage()}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Workspace navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span>${id === "review" && a.review ? `<b class="side-count">${a.review}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${role === "worker" ? "A" : "N"}</span><div><b>${role === "worker" ? "Alex Morgan" : roles[role].name}</b><p>Sample workspace</p></div>${btn(icon("arrow"), "sign-out", "", "ghost", 'aria-label="Return to preview login"')}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>ALASKA NPI</b><p>Operations / ${nav.find((x) => x[0] === page)?.[1] || "Work details"}</p></div><div class="top-controls"><label for="preview-role">Preview as</label><select id="preview-role" aria-label="Preview as">${Object.entries(
+  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar"><div class="side-brand">${brandImage()}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Workspace navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span>${id === "review" && a.review ? `<b class="side-count">${a.review}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${role === "worker" ? "A" : "N"}</span><div><b>${role === "worker" ? "Alex Morgan" : roles[role].name}</b><p>Sample workspace</p></div>${btn(icon("arrow"), "sign-out", "", "ghost", 'aria-label="Return to preview login"')}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>${escape(state.workspace?.name || "ALASKA NPI")}</b><p>Operations / ${nav.find((x) => x[0] === page)?.[1] || "Work details"}</p></div><div class="top-controls"><label for="preview-role">Preview as</label><select id="preview-role" aria-label="Preview as">${Object.entries(
     roles,
   )
     .map(
@@ -603,7 +630,7 @@ function render() {
     )
     .join(
       "",
-    )}</select>${btn(icon("bell") + (count ? `<span class="bell-count">${count}</span>` : ""), "notifications", "", "bell-button", `aria-label="Notifications, ${count} item${count === 1 ? "" : "s"}"`)}<span class="top-avatar">${role === "worker" ? "A" : "N"}</span></div><div class="mobile-navigation"><label for="mobile-route">Go to</label><select id="mobile-route" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${nav.map(([id, label]) => `<option value="${id}" ${page === id ? "selected" : ""}>${label}</option>`).join("")}</select></div></header><main id="main" class="main"><div class="reference-demo"><span>Demo workspace · Sample records, stored on this device.</span><div class="row">${btn(phonePreview ? "Desktop layout" : "Phone layout", "phone", "", "compact")}${btn("Online demo", "guide", "", "compact")}</div></div>${!navigator.onLine ? '<p class="notice warning mt12" role="status">Offline · Changes stay on this device. No server sync occurs.</p>' : ""}${conflict ? `<p class="notice error mt12" role="alert">Another tab changed this sample. Reload before saving. ${btn("Reload", "reload")}</p>` : ""}<div class="reference-content">${content()}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Sample only · Contracts and prices excluded · Backends unconnected</span></footer></main></div></div>`;
+    )}</select>${btn(icon("bell") + (count ? `<span class="bell-count">${count}</span>` : ""), "notifications", "", "bell-button", `aria-label="Notifications, ${count} item${count === 1 ? "" : "s"}"`)}<span class="top-avatar">${role === "worker" ? "A" : "N"}</span></div><div class="mobile-navigation"><label for="mobile-route">Go to</label><select id="mobile-route" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${nav.map(([id, label]) => `<option value="${id}" ${page === id ? "selected" : ""}>${label}</option>`).join("")}</select></div></header><main id="main" class="main"><div class="reference-demo"><span>Demo workspace · Sample records, stored on this device.</span><div class="row">${btn(phonePreview ? "Desktop layout" : "Phone layout", "phone", "", "compact")}${btn("Online demo", "guide", "", "compact")}</div></div>${!navigator.onLine ? '<p class="notice warning mt12" role="status">Offline · Changes stay on this device. No server sync occurs.</p>' : ""}${conflict ? `<p class="notice error mt12" role="alert">Another tab changed this sample. Reload before saving. ${btn("Reload", "reload")}</p>` : ""}<div class="reference-content">${content()}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Sample only · Contracts and prices excluded · Backends unconnected</span></footer></main>${role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span></a>`).join("")}</nav>` : ""}</div></div>`;
 }
 function login() {
   return `<div class="login-layout"><section class="login-brand-panel"><p class="login-wordmark">NPI <span>/</span> ALASKA OPERATIONS</p><div class="login-emblem">${brandImage("login")}</div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2>Every site.<br> Every shift.<br> Accounted for.</h2><p>One workspace for snow removal, port hauling, work verification, and contractor invoices.</p><small>NEESON PERFORMANCE INDUSTRIES</small></div></section><main id="main" class="login-main"><div class="login-form-wrap"><span class="login-tag">INTERACTIVE DEMO</span><h1>Welcome to Alaska NPI</h1><p class="login-subtitle">Your workday starts here.</p><form id="preview-login" novalidate><div class="field"><label for="login-username">Company username</label><input id="login-username" autocomplete="off" placeholder="e.g. alex.morgan" maxlength="80"></div><div class="field"><label for="login-password">Password</label><div class="password-row"><input id="login-password" type="password" autocomplete="off" placeholder="Enter your password" maxlength="100">${btn("Show", "show-password", "", "", 'aria-label="Show password"')}</div></div><button type="submit" class="btn navy wide">Sign in ${icon("arrow")}</button><div id="login-error" class="error mt12" role="alert"></div></form><div class="login-links">${btn("First-time setup", "first-setup", "", "ghost")}${btn("Forgot password?", "forgot-password", "", "ghost")}</div><section class="demo-roles"><h2>Explore a demo role</h2><p>No credentials needed. All names and records are samples.</p><div class="login-role-grid">${Object.entries(
@@ -631,7 +658,10 @@ function content() {
       hours,
       sites,
       bills,
-      settings,
+      settings: configurationView,
+      schedule: scheduleView,
+      reports: reportsView,
+      sheets: sheetsView,
       team,
       work: worker,
       detail,
@@ -736,14 +766,21 @@ function serviceRequests() {
     panel(
       "Request register",
       table(
-        ["Reference", "Location", "Request", "Status"],
+        ["Reference", "Location", "Request", "Status", "Action"],
         (state.requests || [])
           .filter((r) => role === "npi" || r.company === "north")
           .map((r) => [
             escape(r.id),
             escape(site(r.site).name),
             escape(r.description),
-            '<span class="badge orange">Awaiting scheduling</span>',
+            r.jobId
+              ? '<span class="badge green">Scheduled</span>'
+              : '<span class="badge orange">Awaiting scheduling</span>',
+            r.jobId
+              ? btn("Work details", "evidence", r.jobId)
+              : role === "npi"
+                ? btn("Schedule work", "schedule-request", r.id)
+                : "Awaiting NPI",
           ]),
         "Local sample requests only",
       ),
@@ -901,20 +938,26 @@ function orders() {
   );
 }
 function card(j) {
-  return `<article class="jobcard"><div class="card-art ${j.family === "hauling" ? "port" : ""}"><span class="eyebrow">${j.family === "hauling" ? "PORT OPERATIONS" : "SITE OPERATIONS"}</span>${icon(j.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><div class="row between">${badge(j)}<small class="muted">${j.id}</small></div><h2>${escape(site(j.site).name)}</h2><p>${escape(j.title)}</p><div class="card-detail"><div><small>Equipment</small><b>${escape(j.equipment)}</b></div><div><small>Work type</small><b>${escape(j.service)}</b></div></div>${btn("View assignment " + icon("arrow"), "open-job", j.id, "primary wide")}</div></article>`;
+  return `<article class="jobcard"><div class="card-art ${j.family === "hauling" ? "port" : ""} ${site(j.site).photo ? "has-site-photo" : ""}">${site(j.site).photo ? `<img src="${site(j.site).photo}" alt="Locally selected photo of ${escape(site(j.site).name)}">` : ""}<span class="eyebrow">${j.family === "hauling" ? "PORT OPERATIONS" : "SITE OPERATIONS"}</span>${icon(j.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><div class="row between">${badge(j)}<small class="muted">${j.id}</small></div><h2>${escape(site(j.site).name)}</h2><p>${escape(j.title)}</p><div class="card-detail"><div><small>Equipment</small><b>${escape(j.equipment)}</b></div><div><small>Work type</small><b>${escape(j.service)}</b></div></div>${btn("View assignment " + icon("arrow"), "open-job", j.id, "primary wide")}</div></article>`;
 }
 function worker() {
   const list = visible().filter((j) =>
     ["draft", "in-progress", "returned"].includes(j.status),
   );
+  const active = list.find((j) => j.sessions.some((s) => !s.out));
   return (
     head(
-      "Let’s get to work.",
-      "Your assignments, in one place. Choose a job to get started.",
+      "My work",
+      "Open your assignment. Check the site, then start your shift.",
     ) +
-    `<details class="panel" style="padding:17px 20px"><summary class="small bold">View my work summary</summary><div class="metrics">${metric("Your recorded hours", h(visible().reduce((a, j) => a + ownHours(j), 0)), "Your ended intervals only")}${metric("Your claimed hours", h(visible().reduce((a, j) => a + (j.claimedBy.alex || 0), 0)), "Sent through company review")}${metric("Your accepted hours", h(visible().reduce((a, j) => a + (j.acceptedBy.alex || 0), 0)), "Accepted by NPI", "check")}</div></details><div class="panel-head mt"><div><h2>Your assignments</h2><p class="small muted mt12">Check the details before you start.</p></div><small class="muted">${list.length} jobs</small></div><div class="three">${list.map(card).join("") || '<div class="panel empty"><h3>You’re up to date.</h3><p>Submitted and approved records are in My hours.</p></div>'}</div><div class="notice mt">${icon("camera")} A clear completion photo makes review easier. Evidence in this sample stays on this device.</div>`
+    (active
+      ? `<section class="active-shift"><div><span class="eyebrow">SHIFT IN PROGRESS</span><h2>${escape(site(active.site).name)}</h2><p>${escape(active.equipment)} · check-in recorded</p></div>${btn("Continue shift", "open-job", active.id, "primary")}</section>`
+      : "") +
+    `<header class="panel-head assignments-heading"><h2>Your assignments</h2><span class="muted small">${list.length} open</span></header><div class="three">${list.map(card).join("") || '<section class="panel empty"><h2>You’re up to date</h2><p>Submitted work and accepted hours are in My hours.</p></section>'}</div>` +
+    `<details class="panel mt"><summary class="bold">Your hours at a glance</summary><div class="metrics">${metric("Recorded hours", h(visible().reduce((a, j) => a + ownHours(j), 0)), "Your ended intervals only")}${metric("Claimed hours", h(visible().reduce((a, j) => a + (j.claimedBy.alex || 0), 0)), "Sent through company review")}${metric("NPI-accepted hours", h(visible().reduce((a, j) => a + (j.acceptedBy.alex || 0), 0)), "Your final accepted allocation", "check")}</div></details><p class="notice mt">${icon("pin")} Location is required separately at check-in and checkout. Your company reviews first; NPI verifies next.</p>`
   );
 }
+
 function elapsed(time) {
   const seconds = Math.max(
     0,
@@ -1113,29 +1156,208 @@ function bills() {
     )}</section>`
   );
 }
-function settingsBody() {
+function planningDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(value + "T12:00:00Z"));
+}
+function scheduleView() {
+  const list = visible()
+    .filter((j) => !scheduleDate || j.date === scheduleDate)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const days = [...new Set(list.map((j) => j.date))];
+  return (
+    head(
+      "Schedule & dispatch",
+      "Plan site work, assign a crew lead, and follow each handoff.",
+      role === "npi" ? btn("Create work order", "new-job", "", "primary") : "",
+    ) +
+    `<div class="toolbar"><div class="field"><label for="schedule-date">Planned date</label><input type="date" id="schedule-date" value="${escape(scheduleDate)}"></div>${scheduleDate ? btn("Clear date", "clear-schedule") : ""}<span class="small muted">${list.length} assignment(s) · Alaska work dates</span></div>` +
+    (days.length
+      ? days
+          .map((day) =>
+            panel(
+              planningDate(day),
+              `<div class="schedule-list">${list
+                .filter((j) => j.date === day)
+                .map(
+                  (j) =>
+                    `<article class="schedule-item"><div class="schedule-marker">${icon(j.family === "hauling" ? "truck" : "snow")}</div><div class="grow"><b>${escape(site(j.site).name)}</b><p>${escape(j.title)}</p><small>${escape(person(j.worker).name)} · ${escape(j.equipment)}</small><small>${escape(company(j.company).name)}</small></div><div class="schedule-actions">${badge(j)}${btn("Work details", "evidence", j.id)}${j.status === "draft" && !j.sessions.length ? btn("Edit plan", "edit-plan", j.id) : ""}</div></article>`,
+                )
+                .join("")}</div>`,
+            ),
+          )
+          .join("")
+      : panel(
+          "No assignments for this date",
+          '<p class="muted">Choose another date or clear the filter to see all planned work.</p>',
+        ))
+  );
+}
+function reportsView() {
+  const list = visible().filter(
+    (j) =>
+      (!reportFrom || j.date >= reportFrom) &&
+      (!reportUntil || j.date <= reportUntil),
+  );
+  const recorded = list.reduce((a, j) => a + recordedHours(j), 0),
+    claimed = list.reduce((a, j) => a + (j.claimedHours || 0), 0),
+    accepted = list.reduce((a, j) => a + (j.acceptedHours || 0), 0);
+  const people = state.people.filter((p) =>
+    list.some((j) => j.worker === p.id || roster(j).includes(p.id)),
+  );
+  const discrepancies = list.filter(
+    (j) =>
+      j.claimedHours !== undefined &&
+      Math.abs(j.claimedHours - recordedHours(j)) > 0.001,
+  );
+  return (
+    head(
+      "Reports & audit",
+      "Compare original attendance, company claims and NPI decisions.",
+      btn("Export filtered report", "export-report", "", "primary"),
+    ) +
+    `<div class="toolbar report-filters"><div class="field"><label for="report-from">From planned date</label><input type="date" id="report-from" value="${escape(reportFrom)}"></div><div class="field"><label for="report-until">To planned date</label><input type="date" id="report-until" value="${escape(reportUntil)}"></div>${btn("Clear dates", "clear-report")}</div>` +
+    `<section class="metrics">${metric("Recorded worker-hours", h(recorded), "Ended attendance only")}${metric("Claimed worker-hours", h(claimed), "Company-submitted allocations")}${metric("Accepted worker-hours", h(accepted), "Final NPI decisions", "check")}${metric("Claim differences", discrepancies.length, "Claims that differ from attendance", "file")}</section>` +
+    panel(
+      "Hours by worker",
+      table(
+        ["Worker", "Company", "Recorded h", "Claimed h", "Accepted h"],
+        people.map((p) => [
+          escape(p.name),
+          escape(company(p.company).name),
+          h(list.reduce((a, j) => a + ownHours(j, p.id), 0)),
+          h(list.reduce((a, j) => a + (j.claimedBy[p.id] || 0), 0)),
+          h(list.reduce((a, j) => a + (j.acceptedBy[p.id] || 0), 0)),
+        ]),
+        "Per-person hours; crew totals are the sum of individual allocations",
+      ),
+    ) +
+    `<div class="two mt">${panel(
+      "Location summary",
+      table(
+        ["Location", "Records", "Recorded h", "Accepted h", "Loads"],
+        state.sites
+          .filter((s) => list.some((j) => j.site === s.id))
+          .map((s) => {
+            const jobs = list.filter((j) => j.site === s.id);
+            return [
+              escape(s.name),
+              jobs.length,
+              h(jobs.reduce((a, j) => a + recordedHours(j), 0)),
+              h(jobs.reduce((a, j) => a + (j.acceptedHours || 0), 0)),
+              jobs.reduce((a, j) => a + j.loads, 0),
+            ];
+          }),
+        "Loads and worker-hours are separate quantities",
+      ),
+    )}${panel("Differences to inspect", discrepancies.length ? `<div class="stack">${discrepancies.map((j) => `<div class="line"><div><b>${j.id}</b><p class="small muted">${h(recordedHours(j))} recorded / ${h(j.claimedHours)} claimed h</p></div>${btn("Evidence", "evidence", j.id)}</div>`).join("")}</div>` : '<p class="muted">No claimed-hour differences in this date range.</p>')}</div>` +
+    panel(
+      "Decision history",
+      state.audit.filter((a) => role === "npi" || a.company === "north").length
+        ? `<ol class="decision-log">${state.audit
+            .filter((a) => role === "npi" || a.company === "north")
+            .slice(0, 40)
+            .map(
+              (a) =>
+                `<li><p>${escape(a.text)}</p><small>${escape(a.actor)} · ${date(a.at)}</small></li>`,
+            )
+            .join("")}</ol>`
+        : '<p class="muted">Saved assignments, claims and approval decisions will appear here.</p>',
+    )
+  );
+}
+function sheetsView() {
+  return (
+    head(
+      "Management workbook",
+      "Review spreadsheet changes before applying them to work records.",
+      btn("Export workbook CSV", "export-workbook", "", "primary"),
+    ) +
+    `<p class="notice">Local bridge preview. No live Supabase or Google Sheets connection is configured. Try the validated round trip below using sample records.</p><div class="three mt"><article class="panel"><span class="step">1</span><h2>Export current work</h2><p class="small muted mt12">Open the CSV in a spreadsheet. Every row includes the current revision.</p></article><article class="panel"><span class="step">2</span><h2>Edit planning fields</h2><p class="small muted mt12">For unstarted assignments, edit title, planned_date or equipment. Keep all other columns unchanged.</p></article><article class="panel"><span class="step">3</span><h2>Review & apply</h2><p class="small muted mt12">Paste or import the edited CSV. Stale revisions and protected-field changes are rejected.</p></article></div>` +
+    `<section class="panel mt"><header class="panel-head"><h2>Review a workbook change</h2><span class="badge">Revision ${state.revision}</span></header><form id="workbook-form" novalidate><div class="field"><label for="workbook-csv">Edited workbook CSV</label><textarea id="workbook-csv" style="resize:none" rows="8" maxlength="100000" placeholder="Paste the exported CSV after editing an unstarted assignment.">${escape(workbookInput)}</textarea></div><label class="photo-input">Or choose the edited CSV (up to 100 KB)<input type="file" id="workbook-file" accept=".csv,text/csv"></label><p id="workbook-error" class="error" role="alert"></p><div class="actions">${btn("Load an example change", "example-workbook")}<button type="submit" class="btn primary">Preview changes</button></div></form></section>` +
+    panel(
+      "Protected attendance & decisions",
+      '<p class="muted">IDs, company scope, GPS events, timestamps, claimed/accepted hours and approval statuses cannot be changed through this workbook. Import is atomic: one invalid row prevents the entire batch.</p>',
+    ) +
+    panel(
+      "Workbook change log",
+      (state.sheetChanges || []).length
+        ? `<ol class="decision-log">${state.sheetChanges
+            .slice(0, 20)
+            .map(
+              (x) =>
+                `<li><p>${escape(x.text)}</p><small>${date(x.at)} · revision ${x.revision}</small></li>`,
+            )
+            .join("")}</ol>`
+        : '<p class="muted">No workbook changes applied yet.</p>',
+    )
+  );
+}
+function downloadCsv(name, rows) {
+  const url = URL.createObjectURL(
+      new Blob([csvText(rows)], { type: "text/csv;charset=utf-8" }),
+    ),
+    a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function reviewWorkbookInput() {
+  if (role !== "npi") return;
+  try {
+    workbookPreview = previewWorkbook(workbookInput, state, recordedHours);
+    if (!workbookPreview.changes.length) {
+      $("#workbook-error").textContent =
+        "No planning changes found. Edit an unstarted assignment and try again.";
+      return;
+    }
+    modal(
+      "Review workbook changes",
+      table(
+        ["Work ID", "Field", "Current value", "Proposed value"],
+        workbookPreview.changes.flatMap((x) =>
+          ["title", "date", "equipment"]
+            .filter((k) => x[k] !== x.before[k])
+            .map((k) => [escape(x.id), k, escape(x.before[k]), escape(x[k])]),
+        ),
+        "Planning changes only; attendance and decisions stay protected",
+      ) +
+        `<div class="actions">${btn("Keep editing", "close")}${btn("Apply reviewed changes", "apply-workbook", "", "primary")}</div>`,
+    );
+  } catch (error) {
+    $("#workbook-error").textContent = error.message;
+    $("#workbook-csv").setAttribute("aria-invalid", "true");
+    $("#workbook-csv").setAttribute("aria-describedby", "workbook-error");
+    $("#workbook-csv").focus();
+  }
+}
+function configurationView() {
+  const config = state.workspace || {};
   return (
     head(
       "Workspace settings",
-      "Keep the roles simple and the responsibilities clear.",
+      "Branding, account readiness and management connections.",
+      role === "npi"
+        ? btn("Edit workspace", "edit-workspace", "", "primary")
+        : "",
     ) +
-    `<div class="two"><div class="stack">${panel(
-      "The three views",
-      `<ol class="flow">${Object.values(roles)
-        .map(
-          (r, i) =>
-            `<li><span class="step">${i + 1}</span><div><b>${r.name}</b><p>${r.subtitle}</p></div></li>`,
-        )
-        .join("")}</ol>`,
-    )}${panel("Account setup preview", `<p class="small muted">Company-issued usernames and managed passwords are planned. Real account creation, reset and permissions require the backend.</p><div class="line"><span>Authentication service</span><b>Not connected</b></div><div class="line"><span>Passwords in Sheets</span><b>Never</b></div>${role === "sub" ? btn("Manage sample workers", "goto", "team", "mt12") : btn("View companies", "companies", "", "mt12")}`)}</div><div class="stack">${panel("Backend workflow", `<div class="line"><span>Supabase</span><b>Proposed primary records and identity</b></div><div class="line"><span>Google Sheets</span><b>Management workspace with controlled two-way changes</b></div><div class="line"><span>Original time events</span><b>Protected; corrections remain separate</b></div><p class="pill-note mt12">No connection or synchronization occurs in this prototype.</p>`)}${panel("Sample controls", `<p class="small muted">Reset only this three-view sample’s local records and selected photos.</p>${btn("Reset sample", "reset", "", "danger mt12")}`)}</div></div>`
+    `<div class="two"><div class="stack">${panel("Company identity", `<div class="settings-brand">${brandImage("settings")}<div><h3>${escape(config.name || "Alaska NPI")}</h3><p class="small muted">${escape(config.note || "Operations & contract oversight")}</p></div></div><p class="small muted mt12">Approved identity: silver lion, navy wings and gold stars. Select the original image unchanged; no substitute lion is used.</p>${role === "npi" ? '<label class="photo-input">Choose original NPI logo (PNG, JPG or WebP, up to 600 KB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label>' : ""}<div class="line"><span>Work timezone</span><b>America/Anchorage</b></div>`)}${panel("Company-issued logins", `<p class="small muted">Username/password access will use managed authentication. This sample stores profiles, never passwords.</p><div class="line"><span>Account service</span><b>Not connected</b></div><div class="line"><span>Invitations & resets</span><b>Not sent in preview</b></div><div class="actions">${btn("View people & access", "goto", "people")}${role === "sub" ? btn("Add sample worker", "new-person") : ""}</div>`)}${panel("Sample controls", `<p class="small muted">Reset this sample’s local records, images and settings.</p>${btn("Reset sample", "reset", "", "danger mt12")}`)}</div><div class="stack">${panel("Connection readiness", `<div class="integration-row"><span class="integration-icon">${icon("building")}</span><div><b>Supabase</b><p>Primary records, managed identity and private evidence storage.</p></div><span class="badge">Not connected</span></div><div class="integration-row"><span class="integration-icon">${icon("file")}</span><div><b>Management spreadsheet</b><p>Versioned planning changes with protected original attendance.</p></div><span class="badge">Local preview</span></div><div class="integration-row"><span class="integration-icon">${icon("bell")}</span><div><b>Alerts</b><p>Local attention queue; external notifications are not sent.</p></div><span class="badge">Local only</span></div>${role === "npi" ? btn("Try workbook review", "goto", "sheets", "mt12") : ""}`)}${panel(
+      "Role responsibilities",
+      table(
+        ["View", "Responsibility"],
+        Object.values(roles).map((r) => [r.name, r.subtitle]),
+        "Exactly three roles; production access needs server enforcement",
+      ),
+    )}${panel("Field attendance", `<div class="line"><span>Check-in location</span><b>Required</b></div><div class="line"><span>Checkout location</span><b>Required separately</b></div><div class="line"><span>Individual / crew</span><b>Both supported</b></div><div class="line"><span>Review order</span><b>Company → NPI</b></div><p class="small muted mt12">Original events stay separate from claimed and accepted worker-hours.</p>`)}</div></div>`
   );
 }
-function settings() {
-  return (
-    settingsBody() +
-    `<section class="panel mt"><h2>Company emblem</h2><p class="small muted mt12">Insert the original image unchanged. The screenshot shows its placement; the original image bytes are not available here.</p><label class="photo-input">Choose original NPI emblem (PNG, JPG or WebP, up to 600 KB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label></section>`
-  );
-}
+
 function help() {
   return (
     head("A clear next step.", "How to use your work view.") +
@@ -1159,7 +1381,7 @@ function evidence(id) {
         j.acceptedBy[id] === undefined ? "—" : h(j.acceptedBy[id]),
       ]),
       "Crew totals do not replace individual worker-hour allocations",
-    )}<div class="line"><span>Tasks completed</span><b>${j.tasks.length} / ${tasks(j).length}</b></div><div class="line"><span>Completion evidence</span><b>${j.photos.length} item(s)</b></div>${j.photos
+    )}<div class="line"><span>Subcontractor billing basis</span><b>${escape(basisName(j.contractorBasis))}</b></div>${role === "npi" ? `<div class="line"><span>Customer billing basis</span><b>${escape(basisName(j.customerBasis))}</b></div>` : ""}<div class="line"><span>Tasks completed</span><b>${j.tasks.length} / ${tasks(j).length}</b></div><div class="line"><span>Completion evidence</span><b>${j.photos.length} item(s)</b></div>${j.photos
       .filter((p) => p.data)
       .map(
         (p) =>
@@ -1331,7 +1553,7 @@ function workDialog() {
         "Hauling",
         "General site task",
       ].map((s) => [s, s]),
-    )}${field("job-equipment", "Equipment", "text", "Hand tools")}${field("job-date", "Planned date", "date", "2026-11-13")}<p class="pill-note">This is an unpriced assignment. No contract, rate or actual commercial term is imported.</p><div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">Create work order</button></div></form>`,
+    )}${field("job-equipment", "Equipment", "text", "Hand tools")}${field("job-date", "Planned date", "date", "2026-11-13")}${field("customer-basis", "Sample customer billing basis", "select", "hourly", basisOptions)}${field("contractor-basis", "Sample subcontractor billing basis", "select", "hourly", basisOptions)}<p class="pill-note">This is an unpriced assignment. No contract, rate or actual commercial term is imported.</p><div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">Create work order</button></div></form>`,
   );
 }
 function quantityDoc(invoice, existing) {
@@ -1354,10 +1576,160 @@ function quantityDoc(invoice, existing) {
   }
   modal(
     invoice ? "Customer invoice checklist" : "Subcontractor quantity claim",
-    `<form id="document-form" data-kind="${invoice ? "invoice" : "bill"}" data-id="${existing?.id || ""}" novalidate><p class="notice">This records approved work quantities and a reference only. No prices, financial amounts or contract files are included.</p><div class="mt">${list.map((j) => `<label class="taskline"><input type="checkbox" name="bill-job" value="${j.id}" ${existing ? (existing.jobIds.includes(j.id) ? "checked" : "") : "checked"}><span>${j.id} · ${escape(site(j.site).name)}<br><small>${h(j.acceptedHours)} accepted worker-h · ${j.loads} loads</small></span></label>`).join("")}</div><div class="mt">${field("doc-reference", "Your document reference", "text", existing?.reference || "")}</div><div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">${invoice ? "Create unpriced draft" : "Submit quantity claim"}</button></div></form>`,
+    `<form id="document-form" data-kind="${invoice ? "invoice" : "bill"}" data-id="${existing?.id || ""}" novalidate><p class="notice">This records approved work quantities and a reference only. No prices, financial amounts or contract files are included.</p><div class="mt">${list.map((j) => `<label class="taskline"><input type="checkbox" name="bill-job" value="${j.id}" ${existing ? (existing.jobIds.includes(j.id) ? "checked" : "") : "checked"}><span>${j.id} · ${escape(site(j.site).name)}<br><small>${h(j.acceptedHours)} accepted worker-h · ${j.loads} loads · ${escape(basisName(invoice ? j.customerBasis : j.contractorBasis))}</small></span></label>`).join("")}</div><div class="mt">${field("doc-reference", "Your document reference", "text", existing?.reference || "")}</div><div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">${invoice ? "Create unpriced draft" : "Submit quantity claim"}</button></div></form>`,
   );
 }
 const actions = {
+  "edit-workspace": () => {
+    if (role !== "npi") return;
+    modal(
+      "Edit workspace",
+      `<form id="workspace-form" novalidate>${field("workspace-name", "Workspace name", "text", state.workspace?.name || "Alaska NPI")}${field("workspace-note", "Workspace description", "text", state.workspace?.note || "Operations & contract oversight")}<div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">Save workspace</button></div></form>`,
+    );
+  },
+  "clear-schedule": () => {
+    scheduleDate = "";
+    render();
+  },
+  "clear-report": () => {
+    reportFrom = "";
+    reportUntil = "";
+    render();
+  },
+  "edit-plan": (el) => {
+    const j = job(el.dataset.id);
+    if (
+      !visible().some((x) => x.id === j?.id) ||
+      role === "worker" ||
+      j.status !== "draft" ||
+      j.sessions.length
+    )
+      return;
+    modal(
+      "Edit assignment plan",
+      `<form id="plan-form" data-id="${j.id}" novalidate><p class="notice">Planning can change before attendance begins. Original attendance and approvals are protected.</p>${field("plan-title", "Work description", "text", j.title)}${field("plan-date", "Planned date", "date", j.date)}${field("plan-equipment", "Equipment", "text", j.equipment)}<div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">Save plan</button></div></form>`,
+    );
+  },
+  "schedule-request": (el) => {
+    if (role !== "npi") return;
+    const request = state.requests?.find((r) => r.id === el.dataset.id);
+    if (!request || request.jobId) return;
+    workDialog();
+    const form = $("#job-form", dlg);
+    if (!form) return;
+    form.dataset.request = request.id;
+    $("#job-title", form).value = request.description.slice(0, 150);
+    $("#job-site", form).value = request.site;
+    $("#job-service", form).value =
+      site(request.site).family === "hauling" ? "Hauling" : "Snow clearing";
+  },
+  "export-report": () => {
+    if (role === "worker") return;
+    downloadCsv("NPI-Operations-Report.csv", [
+      [
+        "Work ID",
+        "Planned date",
+        "Location",
+        "Company",
+        "Crew lead",
+        "Recorded worker-hours",
+        "Claimed worker-hours",
+        "Accepted worker-hours",
+        "Loads",
+        "Status",
+      ],
+      ...visible()
+        .filter(
+          (j) =>
+            (!reportFrom || j.date >= reportFrom) &&
+            (!reportUntil || j.date <= reportUntil),
+        )
+        .map((j) => [
+          j.id,
+          j.date,
+          site(j.site).name,
+          company(j.company).name,
+          person(j.worker).name,
+          h(recordedHours(j)),
+          j.claimedHours === undefined ? "" : h(j.claimedHours),
+          j.acceptedHours === undefined ? "" : h(j.acceptedHours),
+          j.loads,
+          labels[j.status],
+        ]),
+    ]);
+    notice(
+      "Filtered report exported. No prices or private documents included.",
+    );
+  },
+  "export-workbook": () => {
+    if (role === "npi") {
+      downloadCsv(
+        "NPI-Management-Workbook.csv",
+        workbookRows(state, recordedHours),
+      );
+      notice("Current workbook revision exported.");
+    }
+  },
+  "example-workbook": () => {
+    if (role !== "npi") return;
+    const j = state.jobs.find(
+      (j) => j.status === "draft" && !j.sessions.length,
+    );
+    if (!j) {
+      notice("Create an unstarted work order first.");
+      return;
+    }
+    const rows = workbookRows(state, recordedHours),
+      r = rows.find((r) => r[0] === j.id);
+    r[7] = j.title.slice(0, 120) + " — workbook update";
+    workbookInput = csvText(rows);
+    render();
+    $("#workbook-csv").focus();
+  },
+  "apply-workbook": () => {
+    if (role !== "npi" || !workbookPreview) return;
+    if (state.revision !== workbookPreview.revision) {
+      fail(
+        "The records changed after preview. Export a fresh workbook; nothing was applied.",
+      );
+      return;
+    }
+    try {
+      const checked = previewWorkbook(workbookInput, state, recordedHours);
+      if (
+        save((n) => {
+          for (const x of checked.changes) {
+            const j = n.jobs.find((j) => j.id === x.id);
+            Object.assign(j, {
+              title: x.title,
+              date: x.date,
+              equipment: x.equipment,
+            });
+            n.audit.unshift({
+              text: `${x.id}: reviewed workbook planning change applied.`,
+              company: j.company,
+              actor: roles[role].name,
+              at: new Date().toISOString(),
+            });
+          }
+          (n.sheetChanges ||= []).unshift({
+            text: `Applied ${checked.changes.length} reviewed planning change(s).`,
+            at: new Date().toISOString(),
+            revision: n.revision + 1,
+          });
+        }, "Reviewed planning changes applied locally.")
+      ) {
+        workbookPreview = null;
+        workbookInput = "";
+        workbookDirty = false;
+        close(true);
+        render();
+      }
+    } catch (error) {
+      fail(error.message);
+    }
+  },
+
   role: (el) => setRole(el.dataset.id),
   goto: (el) => go(el.dataset.id),
   close: () => close(),
@@ -1760,6 +2132,9 @@ const actions = {
     try {
       localStorage.removeItem(KEY);
       state = seed();
+      workbookInput = "";
+      workbookPreview = null;
+      workbookDirty = false;
       conflict = false;
       close(true);
       render();
@@ -1776,6 +2151,65 @@ function submit(e) {
     j = job(id),
     value = (k) => $("#" + k, f)?.value.trim() || "";
   try {
+    if (f.id === "workspace-form") {
+      if (role !== "npi") return;
+      if (
+        !validate(
+          value("workspace-name")
+            ? {}
+            : { "workspace-name": "Enter the workspace name." },
+        )
+      )
+        return;
+      if (
+        save((n) => {
+          n.workspace = {
+            name: value("workspace-name"),
+            note: value("workspace-note"),
+          };
+        }, "Workspace saved locally.")
+      ) {
+        close(true);
+        render();
+      }
+      return;
+    }
+    if (f.id === "plan-form") {
+      if (
+        role === "worker" ||
+        !visible().some((x) => x.id === j?.id) ||
+        j.status !== "draft" ||
+        j.sessions.length
+      )
+        throw Error("Only an unstarted assignment can be planned.");
+      const errors = {};
+      if (!value("plan-title")) errors["plan-title"] = "Describe the work.";
+      const d = value("plan-date");
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(d) ||
+        !Number.isFinite(Date.parse(d + "T12:00:00Z"))
+      )
+        errors["plan-date"] = "Choose a valid planned date.";
+      if (!validate(errors)) return;
+      if (
+        save((n) => {
+          const x = n.jobs.find((x) => x.id === id);
+          x.title = value("plan-title");
+          x.date = d;
+          x.equipment = value("plan-equipment") || "To be confirmed";
+          n.audit.unshift({
+            text: `${id}: assignment plan updated.`,
+            company: x.company,
+            actor: roles[role].name,
+            at: new Date().toISOString(),
+          });
+        }, "Assignment plan saved locally.")
+      ) {
+        close(true);
+        render();
+      }
+      return;
+    }
     if (f.id === "assign-worker-form") {
       const p = person(value("assign-person"));
       if (
@@ -1859,6 +2293,8 @@ function submit(e) {
             worker: value("job-worker"),
             equipment: value("job-equipment") || "To be confirmed",
             date: value("job-date"),
+            customerBasis: value("customer-basis"),
+            contractorBasis: value("contractor-basis"),
             status: "draft",
             sessions: [],
             tasks: [],
@@ -1868,6 +2304,10 @@ function submit(e) {
             claimedBy: {},
             acceptedBy: {},
           });
+          if (f.dataset.request) {
+            const request = n.requests?.find((r) => r.id === f.dataset.request);
+            if (request) request.jobId = id;
+          }
           n.audit.unshift({
             text: `${id}: sample assignment created.`,
             company: value("job-company"),
@@ -2150,6 +2590,12 @@ function clicks(e) {
 }
 app.addEventListener("click", clicks);
 app.addEventListener("submit", (e) => {
+  if (e.target.id === "workbook-form") {
+    e.preventDefault();
+    workbookInput = $("#workbook-csv").value;
+    reviewWorkbookInput();
+    return;
+  }
   if (e.target.id === "preview-login") {
     e.preventDefault();
     $("#login-password").value = "";
@@ -2171,6 +2617,13 @@ dlg.addEventListener("change", (e) => {
     $("#crew-list").hidden = e.target.value !== "crew";
 });
 app.addEventListener("input", (e) => {
+  if (e.target.id === "workbook-csv") {
+    workbookInput = e.target.value;
+    workbookDirty = true;
+    $("#workbook-error").textContent = "";
+    e.target.removeAttribute("aria-invalid");
+    return;
+  }
   if (e.isComposing) return;
   if (e.target.id === "search") {
     query = e.target.value;
@@ -2181,6 +2634,31 @@ app.addEventListener("input", (e) => {
   }
 });
 app.addEventListener("change", (e) => {
+  if (["schedule-date", "report-from", "report-until"].includes(e.target.id)) {
+    if (e.target.id === "schedule-date") scheduleDate = e.target.value;
+    if (e.target.id === "report-from") reportFrom = e.target.value;
+    if (e.target.id === "report-until") reportUntil = e.target.value;
+    render();
+    return;
+  }
+  if (e.target.id === "workbook-file") {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 100000) {
+      notice("Choose a workbook CSV up to 100 KB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => notice("Could not read the workbook file.");
+    reader.onload = () => {
+      workbookInput = String(reader.result);
+      render();
+      $("#workbook-csv").focus();
+    };
+    reader.readAsText(file);
+    return;
+  }
+
   if (e.target.id === "mobile-route") {
     go(e.target.value);
     return;
@@ -2271,7 +2749,7 @@ app.addEventListener("change", (e) => {
   }
 });
 window.addEventListener("beforeunload", (e) => {
-  if (dirty) {
+  if (dirty || workbookDirty) {
     e.preventDefault();
     e.returnValue = "";
   }

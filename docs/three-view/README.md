@@ -36,3 +36,13 @@ The latest refinement keeps the navy identity and workflow while using a consist
 All changes stay on the current device. Scope filters and role buttons are previews, not authentication. Supabase, managed company logins, private file service and two-way management Sheets integration remain unconnected. The local dataset is capped at 20 work records; production needs bounded API queries and server authorization. Reset in Settings affects only this sample.
 
 [Plan](PLAN.md) · [Audit and screenshots](AUDIT.md). Rebuild with `npm run package:three-view`.
+
+## New management flows
+
+- **Schedule & dispatch:** edit title/date/equipment before attendance starts; turn a service request into a work order.
+- **Reports & audit:** compare per-worker/location totals, inspect discrepancies and export a date-filtered report.
+- **Management workbook (NPI):** export CSV, edit allowed planning cells, import or paste it, preview and apply. Stale or protected edits reject the entire batch. “Load an example change” makes this easy to try.
+- **Workspace settings:** edit the display name/description, select the original logo, and see account/integration readiness.
+- **Worker phones:** use the four labeled bottom buttons for work, hours, sites and help.
+
+[Full feature map, source review and backend handoff](FEATURES.md). The selected lion artwork is confirmed; only its original image bytes are pending reattachment. Real logins, Supabase/Sheets sync and invoice delivery are not connected.
