@@ -66,3 +66,13 @@ Final full browser rerun after the image-persistence test correction: 100 passed
 Settings cleanup removes development guidance about emblem appearance and separates setup diagnostics from everyday company/rate settings. No live connection is implied. Available plugin discovery found no callable web-search or image-retrieval plugin. Google, official Alaska courts and Wikimedia requests again failed with proxy 403; verified site images remain unavailable, and no substitutions were added.
 
 Settings cleanup validation: 24 focused and 100 full browser checks passed across desktop/mobile; 32 unit tests passed. Packaged Settings was visually inspected at 390px and 1440px, with setup collapsed initially. Cloudflare build, formatting and ZIP generation passed. Strict audit retains the 17 pre-existing findings; no new rate/settings findings.
+
+## Supplied artwork integration
+
+The uploaded ZIP provided four site JPEGs and two layout references. Four source photos are bundled unchanged, proven by ARTWORK.json hashes; the logo is a CSS presentation crop of the desktop reference. No generated enhancement, architectural reconstruction or substitute logo was created. Source emblem resolution is limited to the provided screen photograph. The port has no supplied image.
+
+Default artwork uses dedicated assets.js and sitePhoto()/brandImage() owners, while user-selected overrides remain intact. PWA v9 caches all bundled files; standalone packaging embeds the original JPEG bytes. Full-size viewing uses the existing accessible dialog and scoped photo-view action. Site images are not work-evidence records. Phone assignment photo height is 132px so the first assignment action remains visible above bottom navigation at 390×844.
+
+Four new browser checks cover defaults, actual image decoding, full-size view, standalone inlining and custom override persistence on desktop/phone. A pre-existing large-image test now waits for asynchronous persistence instead of treating the newly present default logo as proof of upload completion. Focused artwork/transaction suite: 14 passed. Unit suite: 32 passed. Cloudflare build passed. Strict audit retains 17 prior legacy findings. Actual standalone screenshots were inspected for welcome, site gallery and worker phone views.
+
+Final full browser run: 104 passed across desktop and mobile. Final original-image hash, packaged-byte equality and ZIP integrity checks passed. DESIGN.md lint has zero errors and eight existing warnings; changed-file formatting passed. NPI-Image-Preview.png shows actual app screenshots and is included in the downloads.

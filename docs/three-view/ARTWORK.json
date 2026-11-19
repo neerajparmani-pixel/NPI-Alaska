@@ -1,0 +1,25 @@
+{
+  "files": {
+    "boney.jpg": {
+      "source": "Boney-Courthouse.jpeg",
+      "sha256": "a11173920c2e07ff72c9d2b9f0738e51602d6b87ef625c203b39cf6e7e8dc824"
+    },
+    "nesbit.jpg": {
+      "source": "Nesbit-Courthouse.jpeg",
+      "sha256": "3abc2702b0c18ff1cffe8a028e346e16e98a050dcc29d4d2094ea218a05529b8"
+    },
+    "snowden.jpg": {
+      "source": "Snowden court.jpeg",
+      "sha256": "6cc4e8f46b7e4cd835f2c57debf34cb84d01feac313cc76a8f62312375be2dff"
+    },
+    "youth.jpg": {
+      "source": "Anchorage youth court.jpeg",
+      "sha256": "f39129992b974517bed72dc42c5e93ea646382cc007c8bb5a5306d774757c86e"
+    },
+    "logo-reference.jpg": {
+      "source": "Front page layout.jpeg",
+      "sha256": "f642379353166a4473975a5dbe53e245bcaf6a12fb16fc6a970f794df4186651"
+    }
+  },
+  "note": "User-supplied images preserved unchanged. Logo is a CSS presentation crop from the desktop reference, not a standalone high-resolution logo. Youth Court source includes its original campaign frame. Site identities follow user filenames; Snowden photograph signage says administrative office building. No hauling/port photo was supplied."
+}

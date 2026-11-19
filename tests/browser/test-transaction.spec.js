@@ -140,6 +140,9 @@ test("original clipboard images above the JSON limit persist in image storage ac
       );
   }, png);
   await expect(page.locator(".login-emblem img")).toBeVisible();
+  await expect
+    .poll(async () => (await state(page))?.brandLogo)
+    .toMatch(/^npi-artwork:/);
   const s = await state(page);
   expect(s.brandLogo).toMatch(/^npi-artwork:/);
   await page.reload();

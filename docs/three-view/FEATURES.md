@@ -59,3 +59,7 @@ The original chat images are not automatically embedded. Direct paste/drop/file 
 ## Location and task rates
 
 NPI Admin → Settings → Location & task prices. Add/edit separate customer and subcontractor rates with site, task/service, billing basis, USD unit price and effective dates. Overlapping periods within the same scope are rejected. A calculator previews quantities without issuing an invoice. Private CSV export is explicit. Rates are local-only and never seeded into public downloads. A new NPI-Setup-Package.zip includes Supabase SQL foundation and owner-only Google workbook initializer; neither service is created or connected automatically.
+
+## Included site images
+
+Four photographs from the user-supplied ZIP now appear by default: Boney, Nesbit, Snowden and Anchorage Youth Court. The selected logo is displayed using a CSS crop of the desktop reference photograph. No separate high-resolution logo was supplied, so this reference limits sharpness. Images are embedded in the standalone HTML and bundled/cached in the PWA. The port retains its existing placeholder because no port photo was supplied. Source hashes and provenance are in ARTWORK.json.

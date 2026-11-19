@@ -64,3 +64,7 @@ User requested the original logo/site pictures and one transaction for portal te
 ## Rates and backend setup foundation
 
 The user now authorizes blank price entry settings by location/task and separate customer/subcontractor rate lists. No private rates are copied from contracts. Rates are saved locally as USD integer cents with effective-date overlap validation and explicit version increments. Calculator is a subtotal preview only; existing invoice quantity checklists stay unpriced. No tax/contract quantity assumptions, issued invoices or payment states are added. Supabase and Google accounts do not exist yet; setup/ contains a default-deny database foundation and owner-only blank workbook initializer, not a live backend or a sync implementation.
+
+## Embedded image delivery
+
+User supplied NPI Alaska app pictures.zip with four named site photographs and two layout references. Embed the four photos as unchanged original JPEG bytes and display the selected emblem region from the desktop layout photograph. No separate original logo file or port image was supplied. These image defaults now ship with the standalone HTML and PWA and work offline. Custom user selections continue to override defaults; no existing records or selected artwork are overwritten. Database/account/sync status remains unchanged.

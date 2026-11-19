@@ -3140,3 +3140,85 @@ body:not([data-screen="login"]) #notice {
     margin-top: 12px;
   }
 }
+
+/* Original photo files; logo is a presentation crop of the supplied reference. */
+.brand-photo {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  flex-shrink: 0;
+  aspect-ratio: 13 / 12;
+  background: #10243c;
+  border-radius: 4px;
+}
+.brand-photo > img {
+  position: absolute;
+  max-width: none;
+  width: 393.846%;
+  height: 240%;
+  left: -65.385%;
+  top: -21.667%;
+  object-fit: fill;
+}
+.brand-photo.sidebar {
+  width: 52px;
+  grid-row: span 2;
+}
+.brand-photo.login {
+  width: min(260px, 100%);
+}
+.brand-photo.settings {
+  width: 76px;
+}
+.brand-photo.header {
+  width: 32px;
+  margin-right: 10px;
+}
+.top-crumb > b {
+  display: flex;
+  align-items: center;
+}
+.sitephoto:has(img) {
+  height: 220px;
+  background: #0b1e32;
+}
+.sitephoto img {
+  object-fit: contain;
+}
+.card-art.has-site-photo {
+  height: 190px;
+  background: #0b1e32;
+}
+.card-art.has-site-photo > img {
+  object-fit: contain;
+}
+@media (max-width: 640px) {
+  .brand-photo.login {
+    width: 96px;
+  }
+  body[data-role="worker"] .card-art.has-site-photo {
+    height: 132px;
+    padding: 0;
+  }
+  .sitephoto:has(img) {
+    height: 230px;
+  }
+}
+.brand-image.header {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.site-photo-full {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 65vh;
+  object-fit: contain;
+  background: #0b1e32;
+}
+body[data-role="worker"] .jobcard .btn {
+  scroll-margin-bottom: 100px;
+}

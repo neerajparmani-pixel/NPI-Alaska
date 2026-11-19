@@ -6,6 +6,7 @@ import {
   overlappingWorkers,
 } from "../operations/domain.js";
 import { csvText, workbookRows, previewWorkbook } from "./workbook.js";
+import { suppliedArtwork } from "./assets.js";
 const KEY = "npi-three-view-v1",
   $ = (s, r = document) => r.querySelector(s),
   app = $("#app"),
@@ -597,7 +598,10 @@ function panel(title, body, action = "") {
 function brandImage(kind = "sidebar") {
   return artworkSource(state.brandLogo)
     ? `<img class="brand-image ${kind}" src="${artworkSource(state.brandLogo)}" alt="NPI company emblem">`
-    : `<div class="brand-placeholder ${kind}" role="img" aria-label="Original NPI emblem image pending"><span>NPI</span></div>`;
+    : `<span class="brand-photo ${kind}"><img src="${suppliedArtwork.logoReference}" alt="NPI company emblem from the supplied desktop reference"></span>`;
+}
+function sitePhoto(s) {
+  return artworkSource(s.photo) || suppliedArtwork.sites[s.id] || "";
 }
 function attention() {
   const list = visible();
@@ -627,7 +631,7 @@ function render() {
     return;
   }
   const count = a.review + a.returned + (role === "npi" ? a.claims : 0);
-  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar"><div class="side-brand">${brandImage()}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Workspace navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span>${id === "review" && a.review ? `<b class="side-count">${a.review}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${role === "worker" ? "A" : "N"}</span><div><b>${role === "worker" ? "Alex Morgan" : roles[role].name}</b><p>Sample workspace</p></div>${btn(icon("arrow"), "sign-out", "", "ghost", 'aria-label="Return to preview login"')}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>${escape(state.workspace?.name || "ALASKA NPI")}</b><p>Operations / ${nav.find((x) => x[0] === page)?.[1] || "Work details"}</p></div><div class="top-controls"><label for="preview-role">View</label><select id="preview-role" aria-label="Preview as">${Object.entries(
+  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar"><div class="side-brand">${brandImage()}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Workspace navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span>${id === "review" && a.review ? `<b class="side-count">${a.review}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${role === "worker" ? "A" : "N"}</span><div><b>${role === "worker" ? "Alex Morgan" : roles[role].name}</b><p>Sample workspace</p></div>${btn(icon("arrow"), "sign-out", "", "ghost", 'aria-label="Return to preview login"')}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>${brandImage("header")}${escape(state.workspace?.name || "ALASKA NPI")}</b><p>Operations / ${nav.find((x) => x[0] === page)?.[1] || "Work details"}</p></div><div class="top-controls"><label for="preview-role">View</label><select id="preview-role" aria-label="Preview as">${Object.entries(
     roles,
   )
     .map(
@@ -945,7 +949,7 @@ function orders() {
   );
 }
 function card(j) {
-  return `<article class="jobcard"><div class="card-art ${j.family === "hauling" ? "port" : ""} ${artworkSource(site(j.site).photo) ? "has-site-photo" : ""}">${artworkSource(site(j.site).photo) ? `<img src="${artworkSource(site(j.site).photo)}" alt="Locally selected photo of ${escape(site(j.site).name)}">` : ""}<span class="eyebrow">${j.family === "hauling" ? "PORT OPERATIONS" : "SITE OPERATIONS"}</span>${icon(j.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><div class="row between">${badge(j)}<small class="muted">${j.id}</small></div><h2>${escape(site(j.site).name)}</h2><p>${escape(j.title)}</p><div class="card-detail"><div><small>Equipment</small><b>${escape(j.equipment)}</b></div><div><small>Work type</small><b>${escape(j.service)}</b></div></div>${btn("View assignment " + icon("arrow"), "open-job", j.id, "primary wide")}</div></article>`;
+  return `<article class="jobcard"><div class="card-art ${j.family === "hauling" ? "port" : ""} ${sitePhoto(site(j.site)) ? "has-site-photo" : ""}">${sitePhoto(site(j.site)) ? `<img src="${sitePhoto(site(j.site))}" alt="Site photo of ${escape(site(j.site).name)}">` : ""}<span class="eyebrow">${j.family === "hauling" ? "PORT OPERATIONS" : "SITE OPERATIONS"}</span>${icon(j.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><div class="row between">${badge(j)}<small class="muted">${j.id}</small></div><h2>${escape(site(j.site).name)}</h2><p>${escape(j.title)}</p><div class="card-detail"><div><small>Equipment</small><b>${escape(j.equipment)}</b></div><div><small>Work type</small><b>${escape(j.service)}</b></div></div>${btn("View assignment " + icon("arrow"), "open-job", j.id, "primary wide")}</div></article>`;
 }
 function worker() {
   const list = visible().filter((j) =>
@@ -1092,13 +1096,13 @@ function sites() {
   return (
     head(
       "Know your locations.",
-      "Separate site records, evidence and photo slots. No contract addresses are imported.",
+      "Recognize each work site and review its assignments.",
     ) +
-    `<div class="notice">Actual photos are not embedded because the originals are only visible in chat. Select a different photo for each site below; it stays on this device. No illustration is labeled as a real property photo.</div><div class="three mt">${state.sites
+    `<div class="three mt">${state.sites
       .filter((s) => ids.has(s.id))
       .map(
         (s) =>
-          `<article class="jobcard"><div class="sitephoto">${artworkSource(s.photo) ? `<img src="${artworkSource(s.photo)}" alt="Locally selected photo of ${escape(s.name)}">` : icon(s.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><span class="badge">${s.family === "hauling" ? "Port operations" : "Site operations"}</span><h2>${escape(s.name)}</h2><p>${escape(s.address || "Address not configured in this sample")}</p><div class="row wrap mt12">${btn("Site work & hours", "site", s.id)}${role === "npi" ? btn("Edit site", "edit-site", s.id) : ""}</div>${btn("Paste site photo", "paste-image", s.id, "mt12")}<label class="photo-input">Choose an actual site photo (up to 8 MB)<input type="file" data-site-photo="${s.id}" accept="image/jpeg,image/png,image/webp"></label></div></article>`,
+          `<article class="jobcard"><div class="sitephoto">${sitePhoto(s) ? `<img src="${sitePhoto(s)}" alt="Site photo of ${escape(s.name)}">` : icon(s.family === "hauling" ? "truck" : "building")}</div><div class="card-body"><span class="badge">${s.family === "hauling" ? "Port operations" : "Site operations"}</span><h2>${escape(s.name)}</h2><p>${escape(s.address || "Address not configured in this sample")}</p><div class="row wrap mt12">${sitePhoto(s) ? btn("View photo", "photo-view", s.id) : ""}${btn("Site work & hours", "site", s.id)}${role === "npi" ? btn("Edit site", "edit-site", s.id) : ""}</div>${btn("Paste site photo", "paste-image", s.id, "mt12")}<label class="photo-input">Choose an actual site photo (up to 8 MB)<input type="file" data-site-photo="${s.id}" accept="image/jpeg,image/png,image/webp"></label></div></article>`,
       )
       .join("")}</div>`
   );
@@ -2411,6 +2415,14 @@ const actions = {
       ),
     ),
   "new-bill": () => quantityDoc(false),
+  "photo-view": (el) => {
+    const s = state.sites.find((x) => x.id === el.dataset.id);
+    if (!s || !visible().some((j) => j.site === s.id) || !sitePhoto(s)) return;
+    modal(
+      escape(s.name),
+      `<img class="site-photo-full" src="${sitePhoto(s)}" alt="Site photo of ${escape(s.name)}"><div class="actions">${btn("Close", "close")}</div>`,
+    );
+  },
   "new-rate": () => rateForm(),
   "edit-rate": (el) => rateForm(el.dataset.id),
   "calculate-rate": (el) => calculateRate(el.dataset.id),

@@ -109,3 +109,7 @@ Simplified sample: the welcome screen starts one test transaction without a nonf
 Rates use existing configuration panels, shared field/validation/dialog/table/save owners and native date/select controls. Customer charges and subcontractor costs are labeled explicitly; USD is adjacent to amount entry. No token or typography changes. Tables retain their canonical horizontal scroll on phones. No drift from shared styling was introduced.
 
 Settings keeps operational configuration in primary shared panels. Installation diagnostics and reset controls are secondary native disclosures; the navy, silver and gold identity and shared field/button/table owners remain unchanged.
+
+## Supplied site artwork
+
+The supplied image ZIP is now accessible. Four site photos are bundled unchanged. The selected emblem appears inside the desktop reference, so brandImage() presents that region with CSS clipping; no invented replacement or generative enhancement is used. The source reference is only 1024×576 and its emblem region about 260px wide, limiting logo sharpness. Site galleries use contain framing to retain building context; worker assignment photos use a reserved 170px phone frame. Existing user-selected artwork takes precedence over bundled defaults. Shared typography and colors are unchanged.
