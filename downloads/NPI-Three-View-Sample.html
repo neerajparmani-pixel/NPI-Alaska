@@ -5166,7 +5166,7 @@ function ratesPanel() {
   const rates = state.rates || [];
   return panel(
     "Location & task prices",
-    `<p class="small muted">Customer charges and subcontractor costs are separate. Prices are USD per billing unit. Saved only on this device; workers cannot see this screen. Do not use shared demo devices for confidential prices.</p><div class="actions">${btn("Add rate", "new-rate", "", "primary")}${rates.length ? btn("Download private rates CSV", "export-rates") : ""}</div>${
+    `<p class="small muted">Set customer charges and subcontractor costs for each location and task. Prices are in USD per billing unit.</p><div class="actions">${btn("Add rate", "new-rate", "", "primary")}${rates.length ? btn("Download private rates CSV", "export-rates") : ""}</div>${
       rates.length
         ? table(
             [
@@ -5193,7 +5193,7 @@ function ratesPanel() {
             "Private rates entered on this device",
           )
         : '<p class="notice mt12">No prices entered. Add a customer rate and a separate subcontractor rate for each location and task.</p>'
-    }<p class="small muted mt12">Calculate previews quantity × rate only. Tax, invoice issuance and payment are not connected. Changing a rate does not change any existing work record or invoice checklist.</p>`,
+    }<p class="small muted mt12">Calculations show subtotals before tax. Updating a rate does not alter existing work records or documents.</p>`,
   );
 }
 function rateForm(id) {
@@ -5201,7 +5201,7 @@ function rateForm(id) {
   const r = (state.rates || []).find((x) => x.id === id) || {};
   modal(
     r.id ? "Edit location & task rate" : "Add location & task rate",
-    `<form id="rate-form" data-id="${escape(r.id || "")}" novalidate><p class="notice">Private local rate entry · USD. The downloadable public package always starts without prices.</p>${field(
+    `<form id="rate-form" data-id="${escape(r.id || "")}" novalidate><p class="notice">Enter the agreed unit price and the dates it applies.</p>${field(
       "rate-side",
       "Price list",
       "select",
@@ -5234,20 +5234,13 @@ function configurationView() {
   return (
     head(
       "Workspace settings",
-      "Branding, account readiness and management connections.",
+      "Company details, branding and location-based rates.",
       role === "npi"
         ? btn("Edit workspace", "edit-workspace", "", "primary")
         : "",
     ) +
     ratesPanel() +
-    `<div class="two"><div class="stack">${panel("Company identity", `<div class="settings-brand">${brandImage("settings")}<div><h3>${escape(config.name || "Alaska NPI")}</h3><p class="small muted">${escape(config.note || "Operations & contract oversight")}</p></div></div><p class="small muted mt12">Approved identity: silver lion, navy wings and gold stars. Select the original image unchanged; no substitute lion is used.</p>${role === "npi" ? btn("Paste original logo", "paste-image", "logo", "mt12") + btn("Download with my pictures", "export-personalized", "", "mt12") + '<label class="photo-input">Choose original NPI logo (PNG, JPG or WebP, up to 8 MB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label>' : ""}<div class="line"><span>Work timezone</span><b>America/Anchorage</b></div>`)}${panel("Company-issued logins", `<p class="small muted">Username/password access will use managed authentication. This sample stores profiles, never passwords.</p><div class="line"><span>Account service</span><b>Not connected</b></div><div class="line"><span>Invitations & resets</span><b>Not sent in preview</b></div><div class="actions">${btn("View people & access", "goto", "people")}${role === "sub" ? btn("Add sample worker", "new-person") : ""}</div>`)}${panel("Sample controls", `<p class="small muted">Reset this sample’s local records, images and settings.</p>${btn("Reset sample", "reset", "", "danger mt12")}`)}</div><div class="stack">${panel("Connection readiness", `<div class="integration-row"><span class="integration-icon">${icon("building")}</span><div><b>Supabase</b><p>Primary records, managed identity and private evidence storage.</p></div><span class="badge">Not connected</span></div><div class="integration-row"><span class="integration-icon">${icon("file")}</span><div><b>Management spreadsheet</b><p>Versioned planning changes with protected original attendance.</p></div><span class="badge">Local preview</span></div><div class="integration-row"><span class="integration-icon">${icon("bell")}</span><div><b>Alerts</b><p>Local attention queue; external notifications are not sent.</p></div><span class="badge">Local only</span></div>${role === "npi" ? btn("Try workbook review", "goto", "sheets", "mt12") : ""}`)}${panel(
-      "Role responsibilities",
-      table(
-        ["View", "Responsibility"],
-        Object.values(roles).map((r) => [r.name, r.subtitle]),
-        "Exactly three roles; production access needs server enforcement",
-      ),
-    )}${panel("Field attendance", `<div class="line"><span>Check-in location</span><b>Required</b></div><div class="line"><span>Checkout location</span><b>Required separately</b></div><div class="line"><span>Individual / crew</span><b>Both supported</b></div><div class="line"><span>Review order</span><b>Company → NPI</b></div><p class="small muted mt12">Original events stay separate from claimed and accepted worker-hours.</p>`)}</div></div>`
+    `<div class="two"><div class="stack">${panel("Company identity", `<div class="settings-brand">${brandImage("settings")}<div><h3>${escape(config.name || "Alaska NPI")}</h3><p class="small muted">${escape(config.note || "Operations & contract oversight")}</p></div></div>${role === "npi" ? btn("Paste logo", "paste-image", "logo", "mt12") + '<label class="photo-input">Change company logo (PNG, JPG or WebP, up to 8 MB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label>' : ""}<div class="line"><span>Work timezone</span><b>America/Anchorage</b></div>`)}${panel("People & access", `<p>Manage worker profiles and company assignments.</p><div class="actions">${btn("View people", "goto", "people")}${role === "sub" ? btn("Add worker profile", "new-person") : ""}</div>`)}</div><div class="stack">${panel("Attendance requirements", '<div class="line"><span>Check-in location</span><b>Required</b></div><div class="line"><span>Checkout location</span><b>Required separately</b></div><div class="line"><span>Hour approval</span><b>Company → NPI</b></div>')}${role === "npi" ? `<details class="sample-tools" id="installation-details"><summary>Installation & support</summary><p class="notice mt12">This installation is not connected to live accounts or shared storage. Rates stay on this device; invoice issuance and payment are unavailable. It remains a local review package.</p>${panel("Service status", '<div class="line"><span>Account service</span><b>Not connected</b></div><div class="line"><span>Supabase</span><b>Not connected</b></div><div class="line"><span>Management spreadsheet</span><b>Local preview</b></div><div class="line"><span>External alerts</span><b>Not configured</b></div>')}<div class="actions">${btn("Review workbook setup", "goto", "sheets")}${btn("Download with my pictures", "export-personalized")}</div><details class="sample-tools"><summary>Test data maintenance</summary><p class="small muted mt12">Reset removes this device’s review records, images and settings.</p>${btn("Reset sample", "reset", "", "danger mt12")}</details></details>` : ""}</div></div>`
   );
 }
 

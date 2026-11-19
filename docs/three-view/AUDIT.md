@@ -62,3 +62,7 @@ Standalone package screenshots: rates-desktop.png, rates-phone.png, rate-form-de
 An image-paste regression test originally read browser storage before asynchronous artwork persistence finished. It now waits for the saved image before asserting; the ten image/transaction tests pass. Unit suite: 32 passed. Cloudflare build and changed-file formatting passed. Both backend setup files are foundations, not evidence of deployed services.
 
 Final full browser rerun after the image-persistence test correction: 100 passed across desktop and mobile. Final unit rerun: 32 passed. The setup archive passes integrity and expected-file checks and contains no private document files.
+
+Settings cleanup removes development guidance about emblem appearance and separates setup diagnostics from everyday company/rate settings. No live connection is implied. Available plugin discovery found no callable web-search or image-retrieval plugin. Google, official Alaska courts and Wikimedia requests again failed with proxy 403; verified site images remain unavailable, and no substitutions were added.
+
+Settings cleanup validation: 24 focused and 100 full browser checks passed across desktop/mobile; 32 unit tests passed. Packaged Settings was visually inspected at 390px and 1440px, with setup collapsed initially. Cloudflare build, formatting and ZIP generation passed. Strict audit retains the 17 pre-existing findings; no new rate/settings findings.

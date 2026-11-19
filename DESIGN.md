@@ -107,3 +107,5 @@ Use the existing navy/blue outlined/primary action system for Start test transac
 Simplified sample: the welcome screen starts one test transaction without a nonfunctional password form. Testing controls are collapsed below the work content. Worker attendance actions and compact hour totals precede the audit trail; admin queues compare recorded, claimed and differing hours. Feedback occupies normal document flow rather than covering controls.
 
 Rates use existing configuration panels, shared field/validation/dialog/table/save owners and native date/select controls. Customer charges and subcontractor costs are labeled explicitly; USD is adjacent to amount entry. No token or typography changes. Tables retain their canonical horizontal scroll on phones. No drift from shared styling was introduced.
+
+Settings keeps operational configuration in primary shared panels. Installation diagnostics and reset controls are secondary native disclosures; the navy, silver and gold identity and shared field/button/table owners remain unchanged.

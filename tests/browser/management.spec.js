@@ -105,6 +105,14 @@ test("workspace settings persist without storing credentials and report export r
     .fill("Alaska NPI Operations");
   await page.locator("#workspace-form button[type=submit]").click();
   expect((await saved(page)).workspace.name).toBe("Alaska NPI Operations");
+  await expect(page.locator("#installation-details")).not.toHaveAttribute(
+    "open",
+    "",
+  );
+  await expect(
+    page.getByText("Approved identity:", { exact: false }),
+  ).toHaveCount(0);
+  await page.locator("#installation-details > summary").click();
   await expect(
     page.getByText("Not connected", { exact: true }).first(),
   ).toBeVisible();
