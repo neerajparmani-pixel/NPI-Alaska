@@ -3141,39 +3141,7 @@ body:not([data-screen="login"]) #notice {
   }
 }
 
-/* Original photo files; logo is a presentation crop of the supplied reference. */
-.brand-photo {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  flex-shrink: 0;
-  aspect-ratio: 13 / 12;
-  background: #10243c;
-  border-radius: 4px;
-}
-.brand-photo > img {
-  position: absolute;
-  max-width: none;
-  width: 393.846%;
-  height: 240%;
-  left: -65.385%;
-  top: -21.667%;
-  object-fit: fill;
-}
-.brand-photo.sidebar {
-  width: 52px;
-  grid-row: span 2;
-}
-.brand-photo.login {
-  width: min(260px, 100%);
-}
-.brand-photo.settings {
-  width: 76px;
-}
-.brand-photo.header {
-  width: 32px;
-  margin-right: 10px;
-}
+/* Transparent logo and original site photograph presentation. */
 .top-crumb > b {
   display: flex;
   align-items: center;
@@ -3193,9 +3161,6 @@ body:not([data-screen="login"]) #notice {
   object-fit: contain;
 }
 @media (max-width: 640px) {
-  .brand-photo.login {
-    width: 96px;
-  }
   body[data-role="worker"] .card-art.has-site-photo {
     height: 132px;
     padding: 0;

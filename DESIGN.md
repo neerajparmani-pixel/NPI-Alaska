@@ -113,3 +113,5 @@ Settings keeps operational configuration in primary shared panels. Installation 
 ## Supplied site artwork
 
 The supplied image ZIP is now accessible. Four site photos are bundled unchanged. The selected emblem appears inside the desktop reference, so brandImage() presents that region with CSS clipping; no invented replacement or generative enhancement is used. The source reference is only 1024×576 and its emblem region about 260px wide, limiting logo sharpness. Site galleries use contain framing to retain building context; worker assignment photos use a reserved 170px phone frame. Existing user-selected artwork takes precedence over bundled defaults. Shared typography and colors are unchanged.
+
+The user requested removal of the square logo backdrop. The shared brandImage() now uses a transparent PNG prepared with the image-editing tool from the supplied reference, replacing the screenshot crop. The result is an edited derivative; original source remains preserved. No other layout/palette changes are authorized.

@@ -1,6 +1,6 @@
 // User-supplied artwork; source images are preserved byte-for-byte.
 export const suppliedArtwork = {
-  logoReference: "./assets/logo-reference.jpg",
+  logo: "./assets/logo-transparent.png",
   sites: {
     boney: "./assets/boney.jpg",
     nesbit: "./assets/nesbit.jpg",

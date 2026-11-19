@@ -33,12 +33,16 @@ They represent the same business records after the bridge is implemented; they d
 
 ## 5. Artwork
 
-The package includes four original site photographs supplied in NPI Alaska app pictures.zip: Boney, Nesbit, Snowden and Anchorage Youth Court. The logo is displayed using a CSS presentation crop from the supplied desktop layout photograph; no separate high-resolution logo was present. This preserves the selected design but is limited by the screenshot resolution. No port photograph was supplied. No generated building details or replacement emblems are used.
+The package includes four original site photographs supplied in NPI Alaska app pictures.zip: Boney, Nesbit, Snowden and Anchorage Youth Court. The logo is a transparent PNG prepared with the image-editing tool from the supplied desktop reference. It is an edited derivative; no original standalone/vector logo was supplied. The opaque square backdrop is removed. No port photograph was supplied. No generated building details or replacement emblems are used.
 
-The original JPEG bytes are preserved, with source hashes in docs/three-view/ARTWORK.json in the repository. Photos serve as site identification, not completed-work evidence. Settings can replace the reference logo with a standalone original later. Existing local picture selections override bundled defaults; personalized exports retain this behavior. These changes do not connect any backend.
+The original site JPEG bytes are preserved, with source hashes in docs/three-view/ARTWORK.json in the repository. Photos serve as site identification, not completed-work evidence. Settings can replace the reference logo with a standalone original later. Existing local picture selections override bundled defaults; personalized exports retain this behavior. These changes do not connect any backend.
 
 ## 6. Hosting and go-live
 
 The PWA frontend is in `three-view/`, with its shared module in `operations/`. Upload extracted contents to an HTTPS static host after review. Hosting alone does not connect accounts or either backend. Do not use this local package for live payroll, invoice issuance or multi-user operations. Retain the offline guide as a sample walkthrough; its original footage predates price settings.
 
 Go-live requires actual account configuration and integration testing. The company approval → NPI verification workflow, denied-GPS handling, cross-company isolation, rate effective dates, invoice line snapshots, tax/rounding decisions and spreadsheet conflict handling must be tested against the real services first.
+
+## Custom domain
+
+Read DOMAIN-SETUP.html to connect https://alaska.npi6030.com through Cloudflare Pages. No DNS records have been changed.

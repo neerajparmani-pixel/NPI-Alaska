@@ -19,7 +19,11 @@
     "logo-reference.jpg": {
       "source": "Front page layout.jpeg",
       "sha256": "f642379353166a4473975a5dbe53e245bcaf6a12fb16fc6a970f794df4186651"
+    },
+    "logo-transparent.png": {
+      "source": "Image-editing tool derivative of supplied Front page layout.jpeg",
+      "sha256": "dafa62e89dda3eb82e324be3d61fdf517faaa425b9477b150daa58499d3733f1"
     }
   },
-  "note": "User-supplied images preserved unchanged. Logo is a CSS presentation crop from the desktop reference, not a standalone high-resolution logo. Youth Court source includes its original campaign frame. Site identities follow user filenames; Snowden photograph signage says administrative office building. No hauling/port photo was supplied."
+  "note": "Original site JPEGs preserved unchanged. Transparent logo is an image-tool-assisted derivative of the supplied reference, not original vector artwork or an exact pixel crop. Youth Court source retains its campaign frame. No port photograph supplied."
 }

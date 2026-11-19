@@ -1,0 +1,36 @@
+# Connect alaska.npi6030.com
+
+The requested address is https://alaska.npi6030.com. DNS names are case-insensitive, so Alaska.npi6030.com and alaska.npi6030.com refer to the same host. This package does not change your DNS or create a Cloudflare project.
+
+## Current installation status
+
+The ZIP contains a runnable static frontend and backend setup foundations. It does NOT contain connected production accounts, server-backed work records, spreadsheet synchronization or priced invoice issuance. The frontend still identifies itself as a local review app. Hosting it on your domain does not enable those services. Complete the backend integration before inviting staff to use it for live work.
+
+## Deploy the frontend on Cloudflare Pages
+
+1. Sign in to the Cloudflare account that should own NPI's app.
+2. Open Workers & Pages and create a **Pages** project. Choose the option to upload static assets (direct upload). Cloudflare may change the wording; select Pages/static hosting, not a Worker code editor.
+3. Name the project, for example `npi-alaska`. Extract NPI-Alaska-Deployment-Package.zip and upload the extracted contents. The folder must contain index.html, three-view/, operations/, icons/ and _headers. Do not upload the ZIP as a single website file.
+4. Finish deployment. Cloudflare will give you the actual project address, such as `npi-alaska.pages.dev` if that name is available. Use the address your project actually receives.
+5. Open that pages.dev address and confirm that it opens /three-view/, that the logo/photos load and that a sample work transaction can be completed. Account login, shared data and invoices remain unconnected.
+
+## Attach the subdomain
+
+1. In the Pages project's **Custom domains** section, add `alaska.npi6030.com`.
+2. Follow Cloudflare's verification and DNS instructions. Add the custom domain in Pages **before** creating a manual CNAME.
+3. If npi6030.com uses Cloudflare DNS, the wizard can offer to create the record in that zone. Review it before confirming.
+4. If DNS is managed elsewhere, create the CNAME requested by the wizard at that provider. Its host/name will normally be `alaska`; its target is the actual `<your-project>.pages.dev` address. Do not literally enter `<your-project>` or include `https://` or `/three-view/` in a DNS target.
+5. Check for an existing A, AAAA or CNAME at the **alaska** host before adding a conflicting record. Preserve the main website, email/MX records and unrelated DNS entries.
+6. Wait until Pages reports that the custom domain and HTTPS certificate are active, then open https://alaska.npi6030.com. Do not disable HTTPS. If certificate activation fails, follow the project's reported validation error, including any existing CAA restrictions.
+
+Example only — replace the target with your real project hostname:
+
+| Type  | Name   | Target                        |
+| ----- | ------ | ----------------------------- |
+| CNAME | alaska | your-actual-project.pages.dev |
+
+## Before live use
+
+Configure the real Supabase project, managed company logins, server/RLS tenant access, private evidence storage, rate/invoice rules and validated spreadsheet bridge. Register the exact production origin and any actual authentication callback routes with the chosen authentication service. Do not guess a callback path or put a service-role key in frontend code. Test tenant isolation, independently captured GPS at both events, company → NPI approvals, rate permissions, invoice snapshots and spreadsheet version conflicts against the live services.
+
+Cloudflare account, DNS, certificate issuance and backend connectivity could not be verified from this workspace because no Cloudflare/Supabase/Google accounts are connected.

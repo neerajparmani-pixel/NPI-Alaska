@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Alaska NPI audit report</title
+  ><style>
+    body {
+      font: 18px/1.6 system-ui;
+      background: #f2f5f8;
+      color: #172e49;
+      max-width: 1050px;
+      margin: 32px auto;
+      padding: 0 22px;
+    }
+    h1,
+    h2 {
+      line-height: 1.25;
+    }
+    section {
+      background: white;
+      padding: 24px;
+      margin: 24px 0;
+      border: 1px solid #d8e3ed;
+      border-radius: 12px;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      max-height: 850px;
+      height: auto;
+      margin: 20px auto;
+      border: 1px solid #d8e3ed;
+    }
+    a {
+      color: #174d83;
+    }
+    .warning {
+      border-left: 5px solid #d5af55;
+      padding: 16px;
+      background: #fff5d9;
+    }
+  </style>
+  <h1>Alaska NPI deployment audit</h1>
+  <p class="warning">
+    <b>UI verified. Live operation blocked.</b> Authentication, shared storage,
+    synchronization, priced invoice issuance and domain binding remain
+    unfinished.
+  </p>
+  <p>
+    Product Design audit guidance; current screenshots captured with local
+    Chromium/Playwright and inspected, with axe runtime scans. This is not an
+    independent certification or full WCAG assessment.
+  </p>
+  <p>
+    <a href="DOMAIN-SETUP.html">Domain setup</a> ·
+    <a href="SETUP.html">Installation guide</a>
+  </p>
+  <section>
+    <h2>01. Welcome and branding — UI checked</h2>
+    <p>
+      Transparent logo has no square backdrop. The branding region now has an
+      accessible name. Three review-role entries and one primary test action are
+      clear. Live company authentication is absent; role previews must not be
+      used as authorization.
+    </p>
+    <img src="audit/01-welcome.png" alt="Step 01: Welcome and branding" />
+  </section>
+  <section>
+    <h2>02. Worker assignment on phone — UI checked</h2>
+    <p>
+      Site identity, equipment and the View assignment action are visible above
+      bottom navigation at 390×844. Images are site references, not work
+      evidence. This run does not verify actual device GPS or live tenant
+      isolation.
+    </p>
+    <img
+      src="audit/02-worker-phone.png"
+      alt="Step 02: Worker assignment on phone"
+    />
+  </section>
+  <section>
+    <h2>03. Site photo viewer — UI checked</h2>
+    <p>
+      The tall site photograph is contained in a named dialog with a reachable
+      Close action. The exact viewport capture was inspected. Original site
+      images remain unchanged. Address/site-boundary accuracy still needs
+      management verification.
+    </p>
+    <img
+      src="audit/03-site-photo-viewer.png"
+      alt="Step 03: Site photo viewer"
+    />
+  </section>
+  <section>
+    <h2>04. Location and task rate entry — UI checked</h2>
+    <p>
+      Separate customer/subcontractor lists and labeled billing units/dates are
+      clear. The phone form scrolls; a second capture confirms Save rate and
+      Cancel remain reachable. Calculations are local subtotals, not issued
+      invoices.
+    </p>
+    <img
+      src="audit/04-rate-form.png"
+      alt="Step 04: Location and task rate entry"
+    /><img
+      src="audit/04b-rate-actions.png"
+      alt="Step 04: Location and task rate entry"
+    />
+  </section>
+  <section>
+    <h2>05. Everyday settings — UI checked</h2>
+    <p>
+      Transparent logo is visible on white and navy surfaces. Operational
+      settings precede collapsed Installation &amp; support diagnostics.
+      Account, storage and spreadsheet connections remain unfinished.
+    </p>
+    <img src="audit/05-settings.png" alt="Step 05: Everyday settings" />
+  </section>
+  <section>
+    <h2>06. Custom domain and live operation — BLOCKED</h2>
+    <p>
+      alaska.npi6030.com has setup instructions only. Cloudflare/DNS access and
+      project hostname are unavailable; no DNS or HTTPS changes were made.
+      Managed authentication, real server/RLS authorization, evidence storage,
+      spreadsheet synchronization and priced invoice issuance remain
+      unconnected. There is no valid live screenshot for this step.
+    </p>
+  </section>
+  <section>
+    <h2>Verification and limits</h2>
+    <p>
+      104 browser checks, 32 unit tests and the Cloudflare build passed. Six
+      current captured states have zero axe violations, horizontal overflow or
+      JavaScript errors after fixing the welcome landmark label.
+    </p>
+    <p>
+      No full screen-reader/browser/device matrix, live GPS, backend
+      integration, DNS/TLS or real authentication test was performed. The
+      repository static audit still has 17 prior heuristic findings on older
+      surfaces outside this package.
+    </p>
+    <p>
+      The transparent logo is an image-tool-assisted derivative of the supplied
+      reference. Original site JPEGs are unchanged.
+    </p>
+  </section>
+</html>

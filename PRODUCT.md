@@ -68,3 +68,5 @@ The user now authorizes blank price entry settings by location/task and separate
 ## Embedded image delivery
 
 User supplied NPI Alaska app pictures.zip with four named site photographs and two layout references. Embed the four photos as unchanged original JPEG bytes and display the selected emblem region from the desktop layout photograph. No separate original logo file or port image was supplied. These image defaults now ship with the standalone HTML and PWA and work offline. Custom user selections continue to override defaults; no existing records or selected artwork are overwritten. Database/account/sync status remains unchanged.
+
+Requested custom domain: alaska.npi6030.com. Deployment packaging includes domain instructions, but no live hosting, DNS or account connections are configured. Transparent logo derivative is approved in scope by the background-removal request; original supplied site photos remain unchanged.

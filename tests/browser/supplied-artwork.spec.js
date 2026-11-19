@@ -8,9 +8,9 @@ test("supplied logo reference and all four site photographs render without uploa
   await page.goto("/three-view/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await expect(page.locator(".login-emblem .brand-photo img")).toHaveAttribute(
+  await expect(page.locator(".login-emblem .bundled-logo")).toHaveAttribute(
     "src",
-    "./assets/logo-reference.jpg",
+    "./assets/logo-transparent.png",
   );
   await page.locator("[data-action=role][data-id=npi]").click();
   await page.goto("/three-view/#sites");
@@ -45,11 +45,11 @@ test("standalone file embeds original photographs and preserves a custom logo se
     r.fulfill({ contentType: "text/html", body: html }),
   );
   await page.goto("http://embedded-npi.test/");
-  const mark = page.locator(".login-emblem .brand-photo img");
-  await expect(mark).toHaveAttribute("src", /^data:image\/jpeg;base64,/);
-  expect(
-    await mark.evaluate((e) => e.complete && e.naturalWidth === 1024),
-  ).toBe(true);
+  const mark = page.locator(".login-emblem .bundled-logo");
+  await expect(mark).toHaveAttribute("src", /^data:image\/png;base64,/);
+  expect(await mark.evaluate((e) => e.complete && e.naturalWidth > 1000)).toBe(
+    true,
+  );
   await page.locator("[data-action=role][data-id=npi]").click();
   await page.evaluate(() => (location.hash = "sites"));
   await expect(page.locator(".sitephoto img")).toHaveCount(4);

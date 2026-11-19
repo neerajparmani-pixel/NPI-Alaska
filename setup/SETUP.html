@@ -63,7 +63,7 @@ They represent the same business records after the bridge is implemented; they d
 
 ## 5. Artwork
 
-The package includes four original site photographs supplied in NPI Alaska app pictures.zip: Boney, Nesbit, Snowden and Anchorage Youth Court. The logo is displayed using a CSS presentation crop from the supplied desktop layout photograph; no separate high-resolution logo was present. This preserves the selected design but is limited by the screenshot resolution. No port photograph was supplied. No generated building details or replacement emblems are used.
+The package includes four original site photographs supplied in NPI Alaska app pictures.zip: Boney, Nesbit, Snowden and Anchorage Youth Court. The logo is an image-tool-assisted transparent PNG derivative of the supplied desktop reference. Its square backdrop is removed. No port photograph was supplied. No generated building details or replacement emblems are used.
 
 The original JPEG bytes are preserved, with source hashes in docs/three-view/ARTWORK.json in the repository. Photos serve as site identification, not completed-work evidence. Settings can replace the reference logo with a standalone original later. Existing local picture selections override bundled defaults; personalized exports retain this behavior. These changes do not connect any backend.
 
@@ -73,4 +73,6 @@ The PWA frontend is in `three-view/`, with its shared module in `operations/`. U
 
 Go-live requires actual account configuration and integration testing. The company approval → NPI verification workflow, denied-GPS handling, cross-company isolation, rate effective dates, invoice line snapshots, tax/rounding decisions and spreadsheet conflict handling must be tested against the real services first.
 </pre>
+  <p><a href="DOMAIN-SETUP.html">Connect alaska.npi6030.com</a></p>
+  <p><a href="AUDIT-REPORT.html">Read the deployment audit</a></p>
 </html>

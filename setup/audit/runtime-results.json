@@ -1,0 +1,48 @@
+{
+  "method": "Chromium via Playwright; exact standalone package served on a local virtual origin",
+  "steps": [
+    {
+      "step": "01",
+      "name": "welcome",
+      "screenshot": "01-welcome.png",
+      "axeViolations": [],
+      "pageOverflow": false
+    },
+    {
+      "step": "02",
+      "name": "worker-phone",
+      "screenshot": "02-worker-phone.png",
+      "axeViolations": [],
+      "pageOverflow": false
+    },
+    {
+      "step": "03",
+      "name": "site-photo-viewer",
+      "screenshot": "03-site-photo-viewer.png",
+      "axeViolations": [],
+      "pageOverflow": false
+    },
+    {
+      "step": "04",
+      "name": "rate-form",
+      "screenshot": "04-rate-form.png",
+      "axeViolations": [],
+      "pageOverflow": false
+    },
+    {
+      "step": "04b",
+      "name": "rate-actions",
+      "screenshot": "04b-rate-actions.png",
+      "axeViolations": [],
+      "pageOverflow": false
+    },
+    {
+      "step": "05",
+      "name": "settings",
+      "screenshot": "05-settings.png",
+      "axeViolations": [],
+      "pageOverflow": false
+    }
+  ],
+  "errors": []
+}
