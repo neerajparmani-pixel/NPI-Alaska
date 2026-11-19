@@ -1,0 +1,414 @@
+[
+  {
+    "role": "npi",
+    "mobile": false,
+    "scenes": [
+      {
+        "title": "Sign in to your workspace",
+        "text": "This is a recording of the running app with fictional training records. Cloud responses and G P S are simulated. Sign in using your company username and password. Never share your password.",
+        "start": 0,
+        "end": 1.205
+      },
+      {
+        "title": "1. Review the overview",
+        "text": "N P I oversees every subcontractor. Check active work, company reviews and work waiting for verification. Start by setting up the company, locations, services and contract before inviting its administrator.",
+        "start": 1.205,
+        "end": 2.418
+      },
+      {
+        "title": "2. Add a subcontractor",
+        "text": "Open Companies and choose Add company. Enter the subcontractor business name and save. Repeat for future subcontractors. You do not need to create their worker accounts.",
+        "start": 2.419,
+        "end": 3.665
+      },
+      {
+        "title": "3. Add locations and pictures",
+        "text": "Open Locations and Add location. Enter the site name and a verified street address. Select the matching bundled photograph, then save. Site pictures identify the building; they are not evidence that work was completed.",
+        "start": 3.724,
+        "end": 4.976
+      },
+      {
+        "title": "4. Set up service types",
+        "text": "In Settings, use Add service to define the work your companies can assign, such as snow clearing or hauling. Enter a clear name and description. Billing and prices are deliberately excluded from this release.",
+        "start": 5.039,
+        "end": 6.28
+      },
+      {
+        "title": "5. Register the main contract",
+        "text": "Open Contracts and add the contract name, customer and optional reference. These details organise responsibility. Do not enter confidential contract documents or prices into these descriptive fields.",
+        "start": 6.356,
+        "end": 7.606
+      },
+      {
+        "title": "6. Assign contract sites",
+        "text": "Choose Assign site to subcontractor. Select the contract, company and location. Save each permitted combination. These assignments control where a company may schedule its workers.",
+        "start": 7.676,
+        "end": 8.559
+      },
+      {
+        "title": "7. Invite the company administrator",
+        "text": "Open People and access and invite a subcontractor administrator. Select the company and create its invitation link. Share the link privately. It is single use and expires after seven days. The administrator chooses their own credentials.",
+        "start": 8.59,
+        "end": 9.826
+      },
+      {
+        "title": "8. Monitor accounts and access",
+        "text": "Review the account register. The company administrator approves their own worker registrations. N P I can oversee accounts, reset company access or pause access when needed. Pausing access preserves original work records.",
+        "start": 9.858,
+        "end": 11.669
+      },
+      {
+        "title": "9. Inspect attendance and hours",
+        "text": "Open a work order waiting for N P I. Compare recorded time with the worker claim. Read both check in and checkout timestamps. Each location link opens the captured coordinates on a map. Check accuracy and the assigned site address.",
+        "start": 11.67,
+        "end": 13.962
+      },
+      {
+        "title": "10. Verify or return work",
+        "text": "Check completed tasks and open uploaded evidence. Choose Verify and accept hours only when satisfied. Keep exact claimed time, or explain a manual adjustment. To return a record, close this form and choose Return to company with a clear correction reason.",
+        "start": 13.962,
+        "end": 14.875
+      },
+      {
+        "title": "11. Review spreadsheet changes",
+        "text": "Spreadsheet review shows proposed management changes. Check the values and version before accepting or rejecting. Original attendance remains protected. The spreadsheet is a management table view; it is not the same interface as the app.",
+        "start": 14.909,
+        "end": 16.127
+      },
+      {
+        "title": "12. Daily operating routine",
+        "text": "Check the overview, review submitted work, and refresh after changes. Repeat company and site setup for future subcontractors. All working times use the Anchorage timezone. Sign out when finished on a shared device.",
+        "start": 16.127,
+        "end": 17.345
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Sign in to your workspace",
+        "duration": 10.773666666666665
+      },
+      {
+        "start": 10.773666666666665,
+        "title": "1. Review the overview",
+        "duration": 12.298208333333333
+      },
+      {
+        "start": 23.071875,
+        "title": "2. Add a subcontractor",
+        "duration": 9.659666666666666
+      },
+      {
+        "start": 32.731541666666665,
+        "title": "3. Add locations and pictures",
+        "duration": 12.139041666666666
+      },
+      {
+        "start": 44.87058333333333,
+        "title": "4. Set up service types",
+        "duration": 11.521416666666665
+      },
+      {
+        "start": 56.391999999999996,
+        "title": "5. Register the main contract",
+        "duration": 11.795166666666667
+      },
+      {
+        "start": 68.18716666666666,
+        "title": "6. Assign contract sites",
+        "duration": 10.234124999999999
+      },
+      {
+        "start": 78.42129166666666,
+        "title": "7. Invite the company administrator",
+        "duration": 13.572291666666667
+      },
+      {
+        "start": 91.99358333333333,
+        "title": "8. Monitor accounts and access",
+        "duration": 12.788124999999999
+      },
+      {
+        "start": 104.78170833333333,
+        "title": "9. Inspect attendance and hours",
+        "duration": 12.963375
+      },
+      {
+        "start": 117.74508333333333,
+        "title": "10. Verify or return work",
+        "duration": 14.436499999999999
+      },
+      {
+        "start": 132.18158333333332,
+        "title": "11. Review spreadsheet changes",
+        "duration": 12.868833333333333
+      },
+      {
+        "start": 145.05041666666665,
+        "title": "12. Daily operating routine",
+        "duration": 12.331166666666666
+      }
+    ],
+    "duration": 157.3815833333333
+  },
+  {
+    "role": "sub",
+    "mobile": false,
+    "scenes": [
+      {
+        "title": "Sign in to your workspace",
+        "text": "This is a recording of the running app with fictional training records. Cloud responses and G P S are simulated. Sign in using your company username and password. Never share your password.",
+        "start": 0,
+        "end": 1.124
+      },
+      {
+        "title": "1. Your invitation and company scope",
+        "text": "First open the administrator invitation from N P I and choose your own username and password. After signing in, your company workspace shows only its permitted work. Ask N P I to correct missing contract sites.",
+        "start": 1.124,
+        "end": 2.337
+      },
+      {
+        "title": "2. Invite your workers",
+        "text": "Open My team and choose Invite workers. Create the company link and share it privately with your team. The link expires after seven days and permits up to one hundred registrations. Workers enter their own details.",
+        "start": 2.337,
+        "end": 3.583
+      },
+      {
+        "title": "3. Approve worker accounts",
+        "text": "New registrations appear under Pending workers. Verify each person belongs to your company, then approve or reject. Account approval grants access; it does not approve their work hours.",
+        "start": 3.612,
+        "end": 4.57
+      },
+      {
+        "title": "4. Create a work assignment",
+        "text": "Open Work orders and create an assignment. Choose a permitted contract site and service. Enter instructions, date and equipment. Select approved workers from your company and add a practical checklist, then save.",
+        "start": 4.596,
+        "end": 5.865
+      },
+      {
+        "title": "5. Individual and crew work",
+        "text": "Select all workers assigned to a crew job. Workers can capture attendance for the assigned crew, but each person keeps their own recorded and claimed time. Hauling assignments additionally record whole loads and a timecard.",
+        "start": 5.928,
+        "end": 7.143
+      },
+      {
+        "title": "6. Monitor progress",
+        "text": "Use the overview and work orders to see activity and work waiting for company review. Refresh for updated records. An assignment reference photo identifies the site; workers must upload actual work evidence separately.",
+        "start": 7.143,
+        "end": 8.358
+      },
+      {
+        "title": "7. Review attendance and evidence",
+        "text": "Open submitted work. Compare recorded hours with each worker claim. Inspect both G P S events, accuracy, tasks and uploaded photos or timecards. Click a coordinate link to inspect that captured position on a map.",
+        "start": 8.359,
+        "end": 10.708
+      },
+      {
+        "title": "8. Forward verified work to NPI",
+        "text": "If the record is correct, choose Approve and forward to N P I, then confirm. Your review is the first approval stage. N P I performs the final verification of the original evidence and hours.",
+        "start": 10.708,
+        "end": 11.604
+      },
+      {
+        "title": "9. Request a correction",
+        "text": "If work or hours need clarification, use Request correction and enter a specific reason. The worker corrects the claim or evidence and submits again. Never rewrite original G P S attendance to make a claim match.",
+        "start": 11.636,
+        "end": 12.54
+      },
+      {
+        "title": "10. Manage team access",
+        "text": "In My team you can reset a worker password, pause access or restore access. Disable unused invitation links to stop new registrations. Share replacement passwords privately. Existing work records remain available for review.",
+        "start": 12.619,
+        "end": 14.763
+      },
+      {
+        "title": "11. Settings and daily close",
+        "text": "Settings shows your company identity, timezone and available services. Ask N P I for additional sites or service types. Finish by checking work waiting for review and sign out on shared devices. Invoices will be added in a future release.",
+        "start": 14.766,
+        "end": 16.002
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Sign in to your workspace",
+        "duration": 10.725083333333332
+      },
+      {
+        "start": 10.725083333333332,
+        "title": "1. Your invitation and company scope",
+        "duration": 12.825958333333332
+      },
+      {
+        "start": 23.551041666666663,
+        "title": "2. Invite your workers",
+        "duration": 12.348791666666665
+      },
+      {
+        "start": 35.899833333333326,
+        "title": "3. Approve worker accounts",
+        "duration": 10.603499999999999
+      },
+      {
+        "start": 46.50333333333332,
+        "title": "4. Create a work assignment",
+        "duration": 11.860083333333332
+      },
+      {
+        "start": 58.36341666666665,
+        "title": "5. Individual and crew work",
+        "duration": 11.968625
+      },
+      {
+        "start": 70.33204166666665,
+        "title": "6. Monitor progress",
+        "duration": 12.828708333333333
+      },
+      {
+        "start": 83.16075,
+        "title": "7. Review attendance and evidence",
+        "duration": 12.560333333333332
+      },
+      {
+        "start": 95.72108333333333,
+        "title": "8. Forward verified work to NPI",
+        "duration": 11.615749999999998
+      },
+      {
+        "start": 107.33683333333332,
+        "title": "9. Request a correction",
+        "duration": 12.122666666666666
+      },
+      {
+        "start": 119.45949999999998,
+        "title": "10. Manage team access",
+        "duration": 13.011916666666666
+      },
+      {
+        "start": 132.47141666666664,
+        "title": "11. Settings and daily close",
+        "duration": 13.846583333333333
+      }
+    ],
+    "duration": 146.31799999999998
+  },
+  {
+    "role": "worker",
+    "mobile": true,
+    "scenes": [
+      {
+        "title": "Sign in to your workspace",
+        "text": "This is a recording of the running app with fictional training records. Cloud responses and G P S are simulated. Sign in using your company username and password. Never share your password.",
+        "start": 0,
+        "end": 1.135
+      },
+      {
+        "title": "1. Register from your company link",
+        "text": "Before your first shift, open the invitation sent by your subcontractor administrator. Enter your own name, username and a strong password. Company and role come from the invitation. Wait for company approval, then sign in.",
+        "start": 1.135,
+        "end": 2.389
+      },
+      {
+        "title": "2. Find your assignment",
+        "text": "My work shows the jobs assigned to you. Check the site photograph, location, work instructions and equipment. Open View assignment before starting. If the job or location is wrong, contact your company administrator.",
+        "start": 2.577,
+        "end": 3.795
+      },
+      {
+        "title": "3. Check in with a fresh location",
+        "text": "Open the assignment and choose Check in. Select the correct assigned crew members. Tap Capture current location and allow precise location on your phone. Save only after capture succeeds. This recording uses simulated coordinates.",
+        "start": 3.795,
+        "end": 5.346
+      },
+      {
+        "title": "4. Complete the task checklist",
+        "text": "During the job, choose Update tasks and loads. Tick only work actually completed, then save. For a hauling job, enter completed whole loads. Keep the assignment instructions in view and report problems to your administrator.",
+        "start": 5.945,
+        "end": 6.929
+      },
+      {
+        "title": "5. Upload your work evidence",
+        "text": "Choose Upload evidence. Select Work photo and choose a clear picture of the actual work. Hauling work also needs the requested timecard. Supported files are images or P D F, up to eight megabytes. Do not substitute the site reference photograph. This demonstration file is labelled training only.",
+        "start": 7.512,
+        "end": 8.428
+      },
+      {
+        "title": "6. Check out with a new location",
+        "text": "When the job is finished, choose Check out and capture your location again. Enter any unpaid break minutes, then save. A check in position cannot replace a new checkout capture. If location fails, enable permission and retry.",
+        "start": 9.015,
+        "end": 10.431
+      },
+      {
+        "title": "7. Submit your hours",
+        "text": "After all crew members check out, select Submit my hours. Usually keep Use the exact recorded time. If you need a different claim, untick it, enter the claimed hours and explain why. Submit for your company administrator to review.",
+        "start": 11.014,
+        "end": 11.895
+      },
+      {
+        "title": "8. Track review and accepted time",
+        "text": "Open My hours to see recorded, claimed and accepted time separately. Your company checks first, then N P I verifies. A submitted claim is not final approval. Return to the work record if a correction is requested and follow the written reason.",
+        "start": 12.484,
+        "end": 13.702
+      },
+      {
+        "title": "9. Site information and help",
+        "text": "Locations shows site names, photographs and addresses. Map links in attendance show the captured check in or checkout position. Contact your company administrator for assignments, approval or password help. Sign out on shared phones.",
+        "start": 13.702,
+        "end": 14.914
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Sign in to your workspace",
+        "duration": 10.748041666666666
+      },
+      {
+        "start": 10.748041666666666,
+        "title": "1. Register from your company link",
+        "duration": 12.582083333333333
+      },
+      {
+        "start": 23.330125,
+        "title": "2. Find your assignment",
+        "duration": 12.064625
+      },
+      {
+        "start": 35.39475,
+        "title": "3. Check in with a fresh location",
+        "duration": 12.940208333333333
+      },
+      {
+        "start": 48.33495833333333,
+        "title": "4. Complete the task checklist",
+        "duration": 12.634875
+      },
+      {
+        "start": 60.969833333333334,
+        "title": "5. Upload your work evidence",
+        "duration": 16.47125
+      },
+      {
+        "start": 77.44108333333334,
+        "title": "6. Check out with a new location",
+        "duration": 12.815916666666666
+      },
+      {
+        "start": 90.257,
+        "title": "7. Submit your hours",
+        "duration": 13.118374999999999
+      },
+      {
+        "start": 103.375375,
+        "title": "8. Track review and accepted time",
+        "duration": 14.032
+      },
+      {
+        "start": 117.407375,
+        "title": "9. Site information and help",
+        "duration": 12.884708333333332
+      }
+    ],
+    "duration": 130.29208333333332
+  }
+]

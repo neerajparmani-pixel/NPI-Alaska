@@ -1,0 +1,205 @@
+WEBVTT
+
+1
+00:00:00.300 --> 00:00:04.107
+This is a recording of the running app with fictional training records.
+
+5
+00:00:04.107 --> 00:00:06.252
+Cloud responses and G P S are simulated.
+
+9
+00:00:06.252 --> 00:00:08.879
+Sign in using your company username and password.
+
+13
+00:00:08.879 --> 00:00:10.274
+Never share your password.
+
+17
+00:00:11.074 --> 00:00:13.046
+N P I oversees every subcontractor.
+
+21
+00:00:13.046 --> 00:00:16.935
+Check active work, company reviews and work waiting for verification.
+
+25
+00:00:16.935 --> 00:00:22.572
+Start by setting up the company, locations, services and contract before inviting its administrator.
+
+29
+00:00:23.372 --> 00:00:25.400
+Open Companies and choose Add company.
+
+33
+00:00:25.400 --> 00:00:27.908
+Enter the subcontractor business name and save.
+
+37
+00:00:27.908 --> 00:00:29.670
+Repeat for future subcontractors.
+
+41
+00:00:29.670 --> 00:00:32.232
+You do not need to create their worker accounts.
+
+45
+00:00:33.032 --> 00:00:34.719
+Open Locations and Add location.
+
+49
+00:00:34.719 --> 00:00:37.356
+Enter the site name and a verified street address.
+
+53
+00:00:37.356 --> 00:00:39.993
+Select the matching bundled photograph, then save.
+
+57
+00:00:39.993 --> 00:00:44.371
+Site pictures identify the building; they are not evidence that work was completed.
+
+61
+00:00:45.171 --> 00:00:50.792
+In Settings, use Add service to define the work your companies can assign, such as snow clearing or hauling.
+
+65
+00:00:50.792 --> 00:00:52.613
+Enter a clear name and description.
+
+69
+00:00:52.613 --> 00:00:55.892
+Billing and prices are deliberately excluded from this release.
+
+73
+00:00:56.692 --> 00:01:00.822
+Open Contracts and add the contract name, customer and optional reference.
+
+77
+00:01:00.822 --> 00:01:02.943
+These details organise responsibility.
+
+81
+00:01:02.943 --> 00:01:07.687
+Do not enter confidential contract documents or prices into these descriptive fields.
+
+85
+00:01:08.487 --> 00:01:10.406
+Choose Assign site to subcontractor.
+
+89
+00:01:10.406 --> 00:01:12.645
+Select the contract, company and location.
+
+93
+00:01:12.645 --> 00:01:14.350
+Save each permitted combination.
+
+97
+00:01:14.350 --> 00:01:17.921
+These assignments control where a company may schedule its workers.
+
+101
+00:01:18.721 --> 00:01:22.230
+Open People and access and invite a subcontractor administrator.
+
+105
+00:01:22.230 --> 00:01:24.970
+Select the company and create its invitation link.
+
+109
+00:01:24.970 --> 00:01:26.341
+Share the link privately.
+
+113
+00:01:26.341 --> 00:01:28.862
+It is single use and expires after seven days.
+
+117
+00:01:28.862 --> 00:01:31.494
+The administrator chooses their own credentials.
+
+121
+00:01:32.294 --> 00:01:33.833
+Review the account register.
+
+125
+00:01:33.833 --> 00:01:37.463
+The company administrator approves their own worker registrations.
+
+129
+00:01:37.463 --> 00:01:41.697
+N P I can oversee accounts, reset company access or pause access when needed.
+
+133
+00:01:41.697 --> 00:01:44.282
+Pausing access preserves original work records.
+
+137
+00:01:45.082 --> 00:01:47.011
+Open a work order waiting for N P I.
+
+141
+00:01:47.011 --> 00:01:49.368
+Compare recorded time with the worker claim.
+
+145
+00:01:49.368 --> 00:01:51.672
+Read both check in and checkout timestamps.
+
+149
+00:01:51.672 --> 00:01:54.834
+Each location link opens the captured coordinates on a map.
+
+153
+00:01:54.834 --> 00:01:57.245
+Check accuracy and the assigned site address.
+
+157
+00:01:58.045 --> 00:02:00.697
+Check completed tasks and open uploaded evidence.
+
+161
+00:02:00.697 --> 00:02:03.456
+Choose Verify and accept hours only when satisfied.
+
+165
+00:02:03.456 --> 00:02:06.487
+Keep exact claimed time, or explain a manual adjustment.
+
+169
+00:02:06.487 --> 00:02:11.682
+To return a record, close this form and choose Return to company with a clear correction reason.
+
+173
+00:02:12.482 --> 00:02:15.215
+Spreadsheet review shows proposed management changes.
+
+177
+00:02:15.215 --> 00:02:18.258
+Check the values and version before accepting or rejecting.
+
+181
+00:02:18.258 --> 00:02:20.218
+Original attendance remains protected.
+
+185
+00:02:20.218 --> 00:02:24.550
+The spreadsheet is a management table view; it is not the same interface as the app.
+
+189
+00:02:25.350 --> 00:02:29.103
+Check the overview, review submitted work, and refresh after changes.
+
+193
+00:02:29.103 --> 00:02:32.149
+Repeat company and site setup for future subcontractors.
+
+197
+00:02:32.149 --> 00:02:34.597
+All working times use the Anchorage timezone.
+
+201
+00:02:34.597 --> 00:02:36.882
+Sign out when finished on a shared device.

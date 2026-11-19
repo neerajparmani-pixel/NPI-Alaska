@@ -1,0 +1,62 @@
+[
+  {
+    "name": "01-sign-in",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "02-npi-overview",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "03-contract-form",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "04-company-team",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "05-worker-invitation",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "06-mobile-signup",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "07-worker-phone",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "08-gps-required",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious"
+      }
+    ]
+  }
+]

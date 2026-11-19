@@ -1,0 +1,62 @@
+[
+  {
+    "start": 0,
+    "title": "Sign in to your workspace",
+    "duration": 10.725083333333332
+  },
+  {
+    "start": 10.725083333333332,
+    "title": "1. Your invitation and company scope",
+    "duration": 12.825958333333332
+  },
+  {
+    "start": 23.551041666666663,
+    "title": "2. Invite your workers",
+    "duration": 12.348791666666665
+  },
+  {
+    "start": 35.899833333333326,
+    "title": "3. Approve worker accounts",
+    "duration": 10.603499999999999
+  },
+  {
+    "start": 46.50333333333332,
+    "title": "4. Create a work assignment",
+    "duration": 11.860083333333332
+  },
+  {
+    "start": 58.36341666666665,
+    "title": "5. Individual and crew work",
+    "duration": 11.968625
+  },
+  {
+    "start": 70.33204166666665,
+    "title": "6. Monitor progress",
+    "duration": 12.828708333333333
+  },
+  {
+    "start": 83.16075,
+    "title": "7. Review attendance and evidence",
+    "duration": 12.560333333333332
+  },
+  {
+    "start": 95.72108333333333,
+    "title": "8. Forward verified work to NPI",
+    "duration": 11.615749999999998
+  },
+  {
+    "start": 107.33683333333332,
+    "title": "9. Request a correction",
+    "duration": 12.122666666666666
+  },
+  {
+    "start": 119.45949999999998,
+    "title": "10. Manage team access",
+    "duration": 13.011916666666666
+  },
+  {
+    "start": 132.47141666666664,
+    "title": "11. Settings and daily close",
+    "duration": 13.846583333333333
+  }
+]

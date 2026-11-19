@@ -1,0 +1,52 @@
+[
+  {
+    "start": 0,
+    "title": "Sign in to your workspace",
+    "duration": 10.748041666666666
+  },
+  {
+    "start": 10.748041666666666,
+    "title": "1. Register from your company link",
+    "duration": 12.582083333333333
+  },
+  {
+    "start": 23.330125,
+    "title": "2. Find your assignment",
+    "duration": 12.064625
+  },
+  {
+    "start": 35.39475,
+    "title": "3. Check in with a fresh location",
+    "duration": 12.940208333333333
+  },
+  {
+    "start": 48.33495833333333,
+    "title": "4. Complete the task checklist",
+    "duration": 12.634875
+  },
+  {
+    "start": 60.969833333333334,
+    "title": "5. Upload your work evidence",
+    "duration": 16.47125
+  },
+  {
+    "start": 77.44108333333334,
+    "title": "6. Check out with a new location",
+    "duration": 12.815916666666666
+  },
+  {
+    "start": 90.257,
+    "title": "7. Submit your hours",
+    "duration": 13.118374999999999
+  },
+  {
+    "start": 103.375375,
+    "title": "8. Track review and accepted time",
+    "duration": 14.032
+  },
+  {
+    "start": 117.407375,
+    "title": "9. Site information and help",
+    "duration": 12.884708333333332
+  }
+]

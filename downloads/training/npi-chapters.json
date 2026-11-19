@@ -1,0 +1,67 @@
+[
+  {
+    "start": 0,
+    "title": "Sign in to your workspace",
+    "duration": 10.773666666666665
+  },
+  {
+    "start": 10.773666666666665,
+    "title": "1. Review the overview",
+    "duration": 12.298208333333333
+  },
+  {
+    "start": 23.071875,
+    "title": "2. Add a subcontractor",
+    "duration": 9.659666666666666
+  },
+  {
+    "start": 32.731541666666665,
+    "title": "3. Add locations and pictures",
+    "duration": 12.139041666666666
+  },
+  {
+    "start": 44.87058333333333,
+    "title": "4. Set up service types",
+    "duration": 11.521416666666665
+  },
+  {
+    "start": 56.391999999999996,
+    "title": "5. Register the main contract",
+    "duration": 11.795166666666667
+  },
+  {
+    "start": 68.18716666666666,
+    "title": "6. Assign contract sites",
+    "duration": 10.234124999999999
+  },
+  {
+    "start": 78.42129166666666,
+    "title": "7. Invite the company administrator",
+    "duration": 13.572291666666667
+  },
+  {
+    "start": 91.99358333333333,
+    "title": "8. Monitor accounts and access",
+    "duration": 12.788124999999999
+  },
+  {
+    "start": 104.78170833333333,
+    "title": "9. Inspect attendance and hours",
+    "duration": 12.963375
+  },
+  {
+    "start": 117.74508333333333,
+    "title": "10. Verify or return work",
+    "duration": 14.436499999999999
+  },
+  {
+    "start": 132.18158333333332,
+    "title": "11. Review spreadsheet changes",
+    "duration": 12.868833333333333
+  },
+  {
+    "start": 145.05041666666665,
+    "title": "12. Daily operating routine",
+    "duration": 12.331166666666666
+  }
+]
