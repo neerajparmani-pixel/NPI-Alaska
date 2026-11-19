@@ -7,11 +7,18 @@ const start = async (p) => {
   if (await p.locator("[data-action=role]").count())
     await p.locator("[data-action=role][data-id=npi]").click();
 };
-const action = async (p, a, id) =>
-  p
+const action = async (p, a, id) => {
+  const button = p
     .locator(`[data-action="${a}"]${id ? '[data-id="' + id + '"]' : ""}`)
-    .first()
-    .click();
+    .first();
+  if (!(await button.isVisible())) {
+    const summary = button
+      .locator("xpath=ancestor::details[not(@open)]/summary")
+      .first();
+    if (await summary.count()) await summary.click();
+  }
+  await button.click();
+};
 const role = async (p, r) => p.locator("#preview-role").selectOption(r);
 test("three views: only requested roles, company scope, no contracts or financial amounts", async ({
   page,
@@ -356,7 +363,7 @@ test("three views: company assigns its own worker before attendance begins", asy
   ).toBeVisible();
 });
 
-test("reference login: three demo roles, masked password and no credential persistence", async ({
+test("sample entry: clear role choices without an unconnected password form", async ({
   page,
 }) => {
   await page.goto("/three-view/");
@@ -365,18 +372,13 @@ test("reference login: three demo roles, masked password and no credential persi
   await page.reload();
   await expect(page.locator(".login-layout")).toBeVisible();
   await expect(page.locator(".login-role-grid .role")).toHaveCount(3);
-  await page.locator("#login-password").fill("example-preview-only");
-  await expect(page.locator("#login-password")).toHaveAttribute(
-    "type",
-    "password",
-  );
-  await action(page, "show-password");
-  await expect(page.locator("#login-password")).toHaveAttribute("type", "text");
-  await page.locator("#preview-login button[type=submit]").click();
-  await expect(page.locator("#login-error")).toContainText("visual preview");
-  expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
-    "example-preview-only",
-  );
+  await expect(page.locator("input[type=password]")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", {
+      name: "Try one complete work record",
+      exact: true,
+    }),
+  ).toBeVisible();
   await action(page, "role", "npi");
   if ((page.viewportSize()?.width || 0) >= 960)
     await expect(page.locator(".reference-sidebar")).toBeVisible();

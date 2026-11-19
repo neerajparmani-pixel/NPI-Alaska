@@ -65,3 +65,5 @@ The conversation's inline images are still unavailable as downloadable workspace
 - For a reusable self-contained copy, open NPI Admin → Settings → **Download with my pictures** from START-HERE.html. It embeds only the selected logo/site pictures, excluding live work records and credentials.
 
 PNG/JPG/WebP artwork up to 8 MB is supported without resizing/recolouring. Larger files use this sample's browser image database to avoid filling its JSON record store. Both the images and operational sample records remain on your device. The personalized-download action requires the standalone HTML; the hosted/PWA view shows guidance to use that file.
+
+Download the sample ZIP, extract it, open GUIDE.html for the 1 minute 53 second synthetic-voice walkthrough, then START-HERE.html to try the transaction. It ends with 1.75 accepted hours. No live accounts, synchronization or priced billing are connected.

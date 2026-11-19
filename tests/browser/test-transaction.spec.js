@@ -1,9 +1,16 @@
 import { test, expect } from "@playwright/test";
-const action = (p, a, id) =>
-  p
+const action = async (p, a, id) => {
+  const button = p
     .locator(`[data-action="${a}"]${id ? '[data-id="' + id + '"]' : ""}`)
-    .first()
-    .click();
+    .first();
+  if (!(await button.isVisible())) {
+    const summary = button
+      .locator("xpath=ancestor::details[not(@open)]/summary")
+      .first();
+    if (await summary.count()) await summary.click();
+  }
+  await button.click();
+};
 const fresh = async (p) => {
   await p.goto("/three-view/");
   await p.evaluate(() => localStorage.removeItem("npi-three-view-v1"));
@@ -155,7 +162,7 @@ test("personalized download embeds artwork but excludes entered credentials and 
   await page.goto("/downloads/NPI-Three-View-Sample.html");
   await page.evaluate(() => localStorage.removeItem("npi-three-view-v1"));
   await page.reload();
-  await page.locator("#login-password").fill("NEVER-EXPORT-THIS-PASSWORD");
+
   await action(page, "paste-image", "logo");
   await pasteImage(page);
   await action(page, "role", "npi");
@@ -166,6 +173,14 @@ test("personalized download embeds artwork but excludes entered credentials and 
     localStorage.setItem(key, JSON.stringify(s));
   });
   await page.goto("/downloads/NPI-Three-View-Sample.html#settings");
+  await page
+    .locator("#app")
+    .evaluate((el) =>
+      el.insertAdjacentHTML(
+        "beforeend",
+        '<input type="password" value="NEVER-EXPORT-THIS-PASSWORD" aria-label="Synthetic export boundary fixture">',
+      ),
+    );
   const downloaded = page.waitForEvent("download");
   await action(page, "export-personalized");
   const download = await downloaded;

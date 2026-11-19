@@ -19,16 +19,21 @@ assert 'href="./style.css"' not in html
 (out/'NPI-Three-View-Sample.html').write_text(html)
 readme='''NPI ALASKA — THREE-VIEW CLICKABLE SAMPLE\n\n1. Extract this ZIP.\n2. Open START-HERE.html in Chrome, Edge or Safari.\n3. Choose NPI Admin, Subcontractor Admin or Subcontractor Worker on the welcome screen or in the top-bar role selector.\n\nThis is a local sample. No real login is needed.\nUploaded contracts, actual prices, private contacts and signatures are NOT included. Billing shows quantities and statuses only, with no financial amounts.\n\nTRY THE FLOW:\nWorker → My work → View assignment → Check in (new location required) → complete checklist/evidence → Check out (another new location required) → submit hours.\nSubcontractor Admin → Review hours → inspect evidence → approve and forward to NPI.\nNPI Admin → Verify hours → compare original evidence and the claim → accept per-worker hours with a reason for any changes.\nFor hauling, add a sample timecard and whole-number load count.\nCompany admin can prepare unpriced quantity claims from NPI-approved work. NPI reviews those separately.\n\nDevice GPS requires permission and a supported secure browser context, usually HTTPS. Use example GPS only to try the sample; it is explicitly simulated.\nPhotos picked in the app stay on your device. The actual site images shown earlier in chat are not embedded because their original files are unavailable.\nNo Supabase/Sheets connection, account provisioning, background sync, invoice delivery or bank payment occurs.\n\nLAYOUT: Refined typography and responsive mobile/desktop layout, based on the NPI identity. Insert the original emblem unchanged in NPI Admin > Settings. No replacement lion has been drawn.\n'''
 readme+='\nMANAGEMENT: Schedule & dispatch, Reports & audit, Management workbook and Workspace settings are available from NPI Admin. Workbook changes are reviewed locally, with stale/protected edits rejected. Original logo image bytes remain pending.\n'
+readme+='\nWATCH FIRST: Open GUIDE.html for the narrated walkthrough, then START-HERE.html. The video uses a synthetic voice instructor and captions. Sample controls below the work screen let you move between review stages.\n'
 readme+='\nTEST: Click Start test transaction. Use check-in, tasks/photo, checkout, then the Company review and NPI approval buttons. This creates one local test work order, never a payment.\nPICTURES: Use Paste your logo on the welcome screen and Paste site photo under Sites & snowfall. Copy the actual chat image, then paste into the portal. Artwork up to 8 MB is stored unchanged on your device. Settings > Download with my pictures creates a standalone copy with artwork only. The default sample has no original chat images embedded.\n'
 with zipfile.ZipFile(out/'NPI-Three-View-Sample.zip','w',zipfile.ZIP_DEFLATED) as z:z.writestr('START-HERE.html',html);z.writestr('READ-ME.txt',readme);z.writestr('SOURCE-SANS-LICENSE.txt',(source/'fonts/SOURCE-SANS-LICENSE.txt').read_text());z.writestr('FEATURES.md',(root/'docs/three-view/FEATURES.md').read_text())
 with zipfile.ZipFile(out/'NPI-Three-View-PWA.zip','w',zipfile.ZIP_DEFLATED) as z:
  for p in source.rglob("*"):
   if p.is_file():z.write(p,'three-view/'+str(p.relative_to(source)))
+ z.writestr('START-HERE.html',html)
  z.write(root/'public/operations/domain.js','operations/domain.js')
  for p in (root/'public/icons').iterdir():z.write(p,'icons/'+p.name)
  for name in ['icon.svg','_headers']:z.write(root/'public'/name,name)
  z.writestr('index.html','<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NPI three-view sample</title><meta http-equiv="refresh" content="0;url=./three-view/"><a href="./three-view/">Open the NPI sample</a></html>')
  z.writestr('READ-ME.txt',readme+'\nPWA: Upload EXTRACTED contents to an HTTPS static host. This is not a connected production app.\n')
+for name in ['NPI-Three-View-Sample.zip','NPI-Three-View-PWA.zip']:
+ with zipfile.ZipFile(out/name,'a',zipfile.ZIP_DEFLATED) as z:
+  for guide in ['GUIDE.html','NPI-Quick-Guide.mp4','NPI-Quick-Guide.vtt','NPI-Quick-Guide-Transcript.md']:z.write(out/guide,guide)
 for name in ['NPI-Three-View-Sample.zip','NPI-Three-View-PWA.zip']:
  with zipfile.ZipFile(out/name) as z:
   assert z.testzip() is None

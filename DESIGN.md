@@ -103,3 +103,5 @@ Keep the current Source Sans 3 type scale and navy/gold structure. Extend the ex
 ## Guided test and image transfer
 
 Use the existing navy/blue outlined/primary action system for Start test transaction, the three-stage test bar and image-paste controls. A visible dashed paste region accepts keyboard paste, drag/drop and file selection. It preserves the approved emblem and each actual building photo without generating substitutes. Supplied bytes remain device-local; the optional standalone personalized export includes artwork only. The test bar is compact and wraps at phone widths; it supplements rather than replaces the original attendance/review UI. Operational records and real finance remain separate from the walkthrough.
+
+Simplified sample: the welcome screen starts one test transaction without a nonfunctional password form. Testing controls are collapsed below the work content. Worker attendance actions and compact hour totals precede the audit trail; admin queues compare recorded, claimed and differing hours. Feedback occupies normal document flow rather than covering controls.

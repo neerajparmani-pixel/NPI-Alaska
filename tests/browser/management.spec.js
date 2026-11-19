@@ -6,11 +6,18 @@ const start = async (p) => {
   await p.reload();
   await p.locator("[data-action=role][data-id=npi]").click();
 };
-const action = (p, a, id) =>
-  p
+const action = async (p, a, id) => {
+  const button = p
     .locator(`[data-action="${a}"]${id ? '[data-id="' + id + '"]' : ""}`)
-    .first()
-    .click();
+    .first();
+  if (!(await button.isVisible())) {
+    const summary = button
+      .locator("xpath=ancestor::details[not(@open)]/summary")
+      .first();
+    if (await summary.count()) await summary.click();
+  }
+  await button.click();
+};
 const saved = (p) =>
   p.evaluate(() => JSON.parse(localStorage.getItem("npi-three-view-v1")));
 test("dispatch changes only unstarted assignments and records an audit event", async ({
