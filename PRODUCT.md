@@ -60,3 +60,7 @@ User requested all conversation context be incorporated into the professional ve
 ## Guided transaction and original-image transfer — 2026-11-18
 
 User requested the original logo/site pictures and one transaction for portal testing. Original inline-image bytes remain inaccessible; courthouse/Wikimedia/reference fetches return network-proxy 403. The sample adds a direct paste/drop/file path for the user's actual images, preserving the artwork without generating substitutes. Large artwork uses device-local IndexedDB. A standalone personalized export includes artwork only and excludes login input and local work records. Start test transaction creates/resumes one clearly labeled synthetic assignment using existing required-location, evidence and company/NPI gates. This is a work transaction, not a payment or real customer invoice.
+
+## Rates and backend setup foundation
+
+The user now authorizes blank price entry settings by location/task and separate customer/subcontractor rate lists. No private rates are copied from contracts. Rates are saved locally as USD integer cents with effective-date overlap validation and explicit version increments. Calculator is a subtotal preview only; existing invoice quantity checklists stay unpriced. No tax/contract quantity assumptions, issued invoices or payment states are added. Supabase and Google accounts do not exist yet; setup/ contains a default-deny database foundation and owner-only blank workbook initializer, not a live backend or a sync implementation.

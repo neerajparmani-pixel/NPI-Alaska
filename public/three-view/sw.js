@@ -1,4 +1,4 @@
-const CACHE = "npi-three-view-v6",
+const CACHE = "npi-three-view-v7",
   SHELL = [
     "./",
     "./index.html",
@@ -8,6 +8,7 @@ const CACHE = "npi-three-view-v6",
     "./fonts/body-700.woff2",
     "./app.js",
     "./workbook.js",
+    "./rates.js",
     "./manifest.webmanifest",
     "../operations/domain.js",
     "/icon.svg",

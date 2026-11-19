@@ -1,3 +1,4 @@
+import { validateRate, pricePreview } from "./rates.js";
 import {
   recordedHours,
   hasBothLocations,
@@ -635,7 +636,7 @@ function render() {
     )
     .join(
       "",
-    )}</select>${btn(icon("bell") + (count ? `<span class="bell-count">${count}</span>` : ""), "notifications", "", "bell-button", `aria-label="Notifications, ${count} item${count === 1 ? "" : "s"}"`)}<span class="top-avatar">${role === "worker" ? "A" : "N"}</span></div><div class="mobile-navigation"><label for="mobile-route">Go to</label><select id="mobile-route" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${nav.map(([id, label]) => `<option value="${id}" ${page === id ? "selected" : ""}>${label}</option>`).join("")}</select></div></header><main id="main" class="main"><p class="sample-label">Review sample · saved on this device</p>${!navigator.onLine ? '<p class="notice warning mt12" role="status">Offline · Changes stay on this device. No server sync occurs.</p>' : ""}${conflict ? `<p class="notice error mt12" role="alert">Another tab changed this sample. Reload before saving. ${btn("Reload", "reload")}</p>` : ""}<div id="inline-feedback">${escape($("#notice").textContent)}</div><div class="reference-content">${content()}</div><details id="sample-tools" class="sample-tools"><summary>Sample controls · change view / follow the test</summary><div class="reference-demo"><span>Demo workspace · Sample records, stored on this device.</span><div class="row">${btn(state.testTransactionId ? "Open test" : "Start test transaction", "test-transaction", "", "compact")}${btn(phonePreview ? "Desktop layout" : "Phone layout", "phone", "", "compact")}${btn("Online demo", "guide", "", "compact")}</div></div>${testGuide()}</details><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Sample only · Contracts and prices excluded · Backends unconnected</span></footer></main>${role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span></a>`).join("")}</nav>` : ""}</div></div>`;
+    )}</select>${btn(icon("bell") + (count ? `<span class="bell-count">${count}</span>` : ""), "notifications", "", "bell-button", `aria-label="Notifications, ${count} item${count === 1 ? "" : "s"}"`)}<span class="top-avatar">${role === "worker" ? "A" : "N"}</span></div><div class="mobile-navigation"><label for="mobile-route">Go to</label><select id="mobile-route" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${nav.map(([id, label]) => `<option value="${id}" ${page === id ? "selected" : ""}>${label}</option>`).join("")}</select></div></header><main id="main" class="main"><p class="sample-label">Review sample · saved on this device</p>${!navigator.onLine ? '<p class="notice warning mt12" role="status">Offline · Changes stay on this device. No server sync occurs.</p>' : ""}${conflict ? `<p class="notice error mt12" role="alert">Another tab changed this sample. Reload before saving. ${btn("Reload", "reload")}</p>` : ""}<div id="inline-feedback">${escape($("#notice").textContent)}</div><div class="reference-content">${content()}</div><details id="sample-tools" class="sample-tools"><summary>Sample controls · change view / follow the test</summary><div class="reference-demo"><span>Demo workspace · Sample records, stored on this device.</span><div class="row">${btn(state.testTransactionId ? "Open test" : "Start test transaction", "test-transaction", "", "compact")}${btn(phonePreview ? "Desktop layout" : "Phone layout", "phone", "", "compact")}${btn("Online demo", "guide", "", "compact")}</div></div>${testGuide()}</details><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Local package · Private contracts excluded · Backends unconnected</span></footer></main>${role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${nav.map(([id, label, i]) => `<a href="#${id}" ${page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span></a>`).join("")}</nav>` : ""}</div></div>`;
 }
 function login() {
   return `<div class="login-layout"><section class="login-brand-panel"><p class="login-wordmark">NPI <span>/</span> ALASKA OPERATIONS</p><div class="login-emblem">${brandImage("login")}</div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2>Every site. Every shift. Accounted for.</h2><p>One clear record of the work, the hours and the approval.</p><small>NEESON PERFORMANCE INDUSTRIES</small></div></section><main id="main" class="login-main"><div class="login-form-wrap"><span class="login-tag">REVIEW SAMPLE</span><h1>Try one complete work record</h1><p class="login-subtitle">Follow a worker’s shift through company review and NPI approval. No password is needed for this sample.</p><div class="welcome-start">${btn("Start test transaction " + icon("arrow"), "test-transaction", "", "primary wide")}<p class="small muted">One test record · no real invoice or payment</p></div><section class="demo-roles"><h2>Or choose your view</h2><div class="login-role-grid">${Object.entries(
@@ -1598,6 +1599,78 @@ function reviewWorkbookInput() {
     $("#workbook-csv").focus();
   }
 }
+const money = (cents) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    cents / 100,
+  );
+function ratesPanel() {
+  if (role !== "npi") return "";
+  const rates = state.rates || [];
+  return panel(
+    "Location & task prices",
+    `<p class="small muted">Customer charges and subcontractor costs are separate. Prices are USD per billing unit. Saved only on this device; workers cannot see this screen. Do not use shared demo devices for confidential prices.</p><div class="actions">${btn("Add rate", "new-rate", "", "primary")}${rates.length ? btn("Download private rates CSV", "export-rates") : ""}</div>${
+      rates.length
+        ? table(
+            [
+              "Price list / company",
+              "Location / task",
+              "Unit price",
+              "Effective dates",
+              "Actions",
+            ],
+            rates.map((r) => [
+              escape(
+                r.side === "customer"
+                  ? "Customer → NPI"
+                  : "NPI → " +
+                      (state.companies.find((c) => c.id === r.company)?.name ||
+                        r.company),
+              ),
+              `${escape(site(r.site).name)}<br>${escape(r.task)}`,
+              `${money(r.cents)}<br><small>${escape(basisName(r.basis))}</small>`,
+              `${escape(r.from)} → ${escape(r.to || "Open-ended")}`,
+              btn("Edit rate", "edit-rate", r.id) +
+                btn("Calculate", "calculate-rate", r.id),
+            ]),
+            "Private rates entered on this device",
+          )
+        : '<p class="notice mt12">No prices entered. Add a customer rate and a separate subcontractor rate for each location and task.</p>'
+    }<p class="small muted mt12">Calculate previews quantity × rate only. Tax, invoice issuance and payment are not connected. Changing a rate does not change any existing work record or invoice checklist.</p>`,
+  );
+}
+function rateForm(id) {
+  if (role !== "npi") return;
+  const r = (state.rates || []).find((x) => x.id === id) || {};
+  modal(
+    r.id ? "Edit location & task rate" : "Add location & task rate",
+    `<form id="rate-form" data-id="${escape(r.id || "")}" novalidate><p class="notice">Private local rate entry · USD. The downloadable public package always starts without prices.</p>${field(
+      "rate-side",
+      "Price list",
+      "select",
+      r.side || "customer",
+      [
+        ["customer", "Customer charges"],
+        ["subcontractor", "Subcontractor costs"],
+      ],
+    )}${field("rate-company", "Subcontractor (used for costs only)", "select", r.company || "", [["", "Choose company"], ...state.companies.map((c) => [c.id, c.name])])}${field(
+      "rate-site",
+      "Location",
+      "select",
+      r.site || state.sites[0].id,
+      state.sites.map((x) => [x.id, x.name]),
+    )}${field("rate-task", "Task / service", "text", r.task || "", [], "Use the same service name as the work order, such as Snow clearing or Hauling.")}${field("rate-basis", "Billing unit", "select", r.basis || "hourly", basisOptions)}${field("rate-amount", "Price per unit (USD)", "text", r.id ? (r.cents / 100).toFixed(2) : "")}${field("rate-from", "Effective from", "date", r.from || "")}${field("rate-to", "Effective through (optional)", "date", r.to || "")}<div class="actions">${btn("Cancel", "close")}<button type="submit" class="btn primary">Save rate</button></div></form>`,
+  );
+  $("#rate-amount").inputMode = "decimal";
+}
+function calculateRate(id) {
+  if (role !== "npi") return;
+  const r = (state.rates || []).find((x) => x.id === id);
+  if (!r) return;
+  modal(
+    "Calculate price preview",
+    `<form id="rate-calculator" data-id="${escape(id)}" novalidate><p>${escape(site(r.site).name)} · ${escape(r.task)}</p><p>${money(r.cents)} · ${escape(basisName(r.basis))}</p>${field("rate-quantity", "Billable quantity", "text", "1", [], "Use approved hours, completed visits or loads. Fixed service uses 1. Worker-hours and equipment-hours may differ; verify the contract unit.")}<p id="rate-total" class="notice" aria-live="polite">No calculation yet.</p><div class="actions">${btn("Close", "close")}<button type="submit" class="btn primary">Calculate total</button></div><p class="small muted mt12">Subtotal only; no tax or invoice is created or sent.</p></form>`,
+  );
+}
 function configurationView() {
   const config = state.workspace || {};
   return (
@@ -1608,6 +1681,7 @@ function configurationView() {
         ? btn("Edit workspace", "edit-workspace", "", "primary")
         : "",
     ) +
+    ratesPanel() +
     `<div class="two"><div class="stack">${panel("Company identity", `<div class="settings-brand">${brandImage("settings")}<div><h3>${escape(config.name || "Alaska NPI")}</h3><p class="small muted">${escape(config.note || "Operations & contract oversight")}</p></div></div><p class="small muted mt12">Approved identity: silver lion, navy wings and gold stars. Select the original image unchanged; no substitute lion is used.</p>${role === "npi" ? btn("Paste original logo", "paste-image", "logo", "mt12") + btn("Download with my pictures", "export-personalized", "", "mt12") + '<label class="photo-input">Choose original NPI logo (PNG, JPG or WebP, up to 8 MB)<input type="file" data-brand-logo="true" accept="image/jpeg,image/png,image/webp"></label>' : ""}<div class="line"><span>Work timezone</span><b>America/Anchorage</b></div>`)}${panel("Company-issued logins", `<p class="small muted">Username/password access will use managed authentication. This sample stores profiles, never passwords.</p><div class="line"><span>Account service</span><b>Not connected</b></div><div class="line"><span>Invitations & resets</span><b>Not sent in preview</b></div><div class="actions">${btn("View people & access", "goto", "people")}${role === "sub" ? btn("Add sample worker", "new-person") : ""}</div>`)}${panel("Sample controls", `<p class="small muted">Reset this sample’s local records, images and settings.</p>${btn("Reset sample", "reset", "", "danger mt12")}`)}</div><div class="stack">${panel("Connection readiness", `<div class="integration-row"><span class="integration-icon">${icon("building")}</span><div><b>Supabase</b><p>Primary records, managed identity and private evidence storage.</p></div><span class="badge">Not connected</span></div><div class="integration-row"><span class="integration-icon">${icon("file")}</span><div><b>Management spreadsheet</b><p>Versioned planning changes with protected original attendance.</p></div><span class="badge">Local preview</span></div><div class="integration-row"><span class="integration-icon">${icon("bell")}</span><div><b>Alerts</b><p>Local attention queue; external notifications are not sent.</p></div><span class="badge">Local only</span></div>${role === "npi" ? btn("Try workbook review", "goto", "sheets", "mt12") : ""}`)}${panel(
       "Role responsibilities",
       table(
@@ -2344,6 +2418,39 @@ const actions = {
       ),
     ),
   "new-bill": () => quantityDoc(false),
+  "new-rate": () => rateForm(),
+  "edit-rate": (el) => rateForm(el.dataset.id),
+  "calculate-rate": (el) => calculateRate(el.dataset.id),
+  "export-rates": () => {
+    if (role !== "npi") return;
+    const rows = (state.rates || []).map((r) => [
+      r.id,
+      r.side,
+      r.company,
+      site(r.site).name,
+      r.task,
+      r.basis,
+      (r.cents / 100).toFixed(2),
+      "USD",
+      r.from,
+      r.to || "",
+    ]);
+    downloadCsv("NPI-private-rates.csv", [
+      [
+        "ID",
+        "Price list",
+        "Company",
+        "Location",
+        "Task",
+        "Unit",
+        "Price",
+        "Currency",
+        "From",
+        "Through",
+      ],
+      ...rows,
+    ]);
+  },
   "new-invoice": () => quantityDoc(true),
   "revise-bill": (el) =>
     quantityDoc(
@@ -2463,6 +2570,78 @@ function submit(e) {
       ) {
         close(true);
         render();
+      }
+      return;
+    }
+    if (f.id === "rate-form") {
+      if (role !== "npi") return;
+      const input = {
+        side: value("rate-side"),
+        company: value("rate-company"),
+        site: value("rate-site"),
+        task: value("rate-task"),
+        basis: value("rate-basis"),
+        amount: value("rate-amount"),
+        from: value("rate-from"),
+        to: value("rate-to"),
+      };
+      const check = validateRate(input, state.rates || [], id || null);
+      if (!state.sites.some((s) => s.id === input.site))
+        check.errors["rate-site"] = "Choose an existing location.";
+      if (
+        input.side === "subcontractor" &&
+        !state.companies.some((c) => c.id === input.company)
+      )
+        check.errors["rate-company"] = "Choose an existing company.";
+      if (!validate(check.errors)) return;
+      if (!id && (state.rates || []).length >= 100) {
+        fail("This local package supports 100 rate entries.");
+        return;
+      }
+      if (
+        save((n) => {
+          n.rates ||= [];
+          const previous = n.rates.find((r) => r.id === id);
+          const next = {
+            id: previous?.id || "RATE-" + Date.now(),
+            side: input.side,
+            company: input.side === "customer" ? "" : input.company,
+            site: input.site,
+            task: input.task.trim(),
+            basis: input.basis,
+            cents: check.cents,
+            currency: "USD",
+            from: input.from,
+            to: input.to,
+            version: (previous?.version || 0) + 1,
+          };
+          if (previous) n.rates[n.rates.indexOf(previous)] = next;
+          else n.rates.push(next);
+          n.audit.unshift({
+            text: `${next.id}: rate settings saved (version ${next.version}); no work or invoice changed.`,
+            company: "npi",
+            actor: "NPI Admin",
+            at: new Date().toISOString(),
+          });
+        }, "Rate saved on this device. No invoice changed.")
+      ) {
+        close(true);
+        render();
+      }
+      return;
+    }
+    if (f.id === "rate-calculator") {
+      if (role !== "npi") return;
+      const r = (state.rates || []).find((x) => x.id === id);
+      if (!r) return;
+      try {
+        const total = pricePreview(r, value("rate-quantity"));
+        if (!validate({})) return;
+        $("#rate-total").textContent =
+          "Subtotal: " + money(total) + " USD · excludes tax";
+        dirty = false;
+      } catch (e) {
+        validate({ "rate-quantity": e.message });
       }
       return;
     }

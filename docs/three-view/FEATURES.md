@@ -55,3 +55,7 @@ Before field use, configure managed identities and company scope, transactional 
 A single user-started test work order can be created/resumed from the welcome screen or demo bar. It uses the existing required-location and approval gates. The test controls switch preview roles; they do not bypass company/NPI review transitions or create real permissions. No payment transaction occurs.
 
 The original chat images are not automatically embedded. Direct paste/drop/file artwork controls preserve supplied PNG/JPG/WebP bytes, with an 8 MB limit. Large artwork is stored separately in browser IndexedDB and represented by references in the record store. The personalized standalone export embeds only resolved logo/site image data and clears rendered forms/work content. It does not export real login values or local operational records. Proxy-blocked web sources and unavailable image bytes remain documented rather than replaced by invented likenesses.
+
+## Location and task rates
+
+NPI Admin → Settings → Location & task prices. Add/edit separate customer and subcontractor rates with site, task/service, billing basis, USD unit price and effective dates. Overlapping periods within the same scope are rejected. A calculator previews quantities without issuing an invoice. Private CSV export is explicit. Rates are local-only and never seeded into public downloads. A new NPI-Setup-Package.zip includes Supabase SQL foundation and owner-only Google workbook initializer; neither service is created or connected automatically.

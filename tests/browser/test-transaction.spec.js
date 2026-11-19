@@ -87,6 +87,11 @@ test("pasted original logo and separate site image are saved and rendered unchan
   await page.goto("/three-view/#sites");
   await action(page, "paste-image", "boney");
   await pasteImage(page);
+  await expect
+    .poll(
+      async () => (await state(page)).sites.find((x) => x.id === "boney").photo,
+    )
+    .toBe("data:image/png;base64," + png);
   const s = await state(page);
   expect(s.brandLogo).toBe("data:image/png;base64," + png);
   expect(s.sites.find((x) => x.id === "boney").photo).toBe(

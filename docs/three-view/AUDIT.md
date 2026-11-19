@@ -52,3 +52,13 @@ No actual logo/courthouse image is bundled: inline assets remain inaccessible to
 Simplification review: removed the unconnected sample login fields, collapsed test controls, compacted worker totals and added recorded/claimed/difference comparisons to approval queues. The narrated tutorial uses actual sample screenshots and completes DEMO-105 at 1.75 accepted hours. Video playback and complete H.264/AAC decode passed. Strict static audit still reports 17 pre-existing actionless-button heuristic findings in older surfaces; the repository audit is not clean. Original chat logo/site photographs remain unavailable as local assets and are not represented as embedded.
 
 Validation for the simplified sample: 98 Playwright checks passed across desktop and mobile; 27 unit tests passed; Cloudflare build and changed-file formatting checks passed. Both downloadable ZIPs pass integrity checks and include the offline guide.
+
+## Local rates and setup foundation
+
+Rates use shared Settings panels, fields, dialogs, tables and save guards. Blank customer/subcontractor lists, integer-cent calculations, effective-date overlap checks, edits, explicit CSV export and NPI-only preview access were exercised on phone and desktop. Actual database policies, real authentication, live workbook sync and invoice issuance are not implemented by the setup foundation. SQL was not run against a live Supabase project. Apps Script initializer is unit-tested with mocked Google services; actual owner authorization remains unverified.
+
+Standalone package screenshots: rates-desktop.png, rates-phone.png, rate-form-desktop.png and rate-form-phone.png. Exact packaged HTML renders with no JavaScript errors on both widths. The original asset files remain pending; Google, official court and Wikimedia URLs returned proxy 403. No generated or unverified building substitutes were added. Strict audit still reports 17 legacy actionless-button heuristic findings, with none added by rate settings. DESIGN.md lint: zero errors, eight warnings.
+
+An image-paste regression test originally read browser storage before asynchronous artwork persistence finished. It now waits for the saved image before asserting; the ten image/transaction tests pass. Unit suite: 32 passed. Cloudflare build and changed-file formatting passed. Both backend setup files are foundations, not evidence of deployed services.
+
+Final full browser rerun after the image-persistence test correction: 100 passed across desktop and mobile. Final unit rerun: 32 passed. The setup archive passes integrity and expected-file checks and contains no private document files.
