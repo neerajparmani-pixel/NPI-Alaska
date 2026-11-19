@@ -92,6 +92,61 @@ async function backend(page, { denyProfile = false } = {}) {
         });
       }
       if (path.endsWith("/logout")) return reply({});
+      if (path.endsWith("/npi_account_status"))
+        return reply({
+          status: state.accountStatus || "approved",
+          company: "Test contractor",
+          display_name: role,
+        });
+      if (path.endsWith("/npi_ops_context"))
+        return reply({
+          contracts: state.contracts || [],
+          scopes: state.scopes || [],
+          invitations: state.invitations || [],
+        });
+      if (
+        path.endsWith("/functions/v1/npi-admin") &&
+        ["invite_preview", "register_invitation"].includes(body.operation)
+      ) {
+        if (state.invitationInvalid)
+          return reply(
+            { error: "This invitation is expired or disabled." },
+            400,
+          );
+        if (body.operation === "invite_preview")
+          return reply({
+            company: "Test contractor",
+            role: state.invitationRole || "worker",
+            expires_at: new Date(Date.now() + 86400000).toISOString(),
+          });
+        if (state.registrationFails)
+          return reply(
+            { error: "Registration could not complete. Try again." },
+            400,
+          );
+        writes.push(body);
+        state.accountStatus =
+          state.invitationRole === "sub" ? "approved" : "pending";
+        return reply({ status: state.accountStatus });
+      }
+      if (path.endsWith("/npi_ops_action")) {
+        if (state.expireNext) {
+          state.expireNext = false;
+          return reply({ message: "Session expired" }, 401);
+        }
+        if (body.p_action === "create_contract" && !body.p_body.name)
+          return reply({ message: "Check contract details" }, 400);
+        if (body.p_action === "approve_worker") {
+          state.accountStatus = "approved";
+          const p = state.people.find((p) => p.id === body.p_body.id);
+          if (p) {
+            p.account_status = "approved";
+            p.active = true;
+          }
+        }
+        writes.push(body);
+        return reply({ id: crypto.randomUUID() });
+      }
       if (path.endsWith("/npi_live_snapshot"))
         return denyProfile
           ? reply(
@@ -102,11 +157,29 @@ async function backend(page, { denyProfile = false } = {}) {
             )
           : reply({
               ...state,
+              accountStatus: undefined,
+              people:
+                role === "sub"
+                  ? state.people.filter((p) => p.company_id === company)
+                  : role === "worker"
+                    ? state.people.filter((p) => p.role === "worker")
+                    : state.people,
               profile: state.people.find((p) => p.role === role),
             });
       if (path.endsWith("/functions/v1/npi-admin") && state.expireAdminNext) {
         state.expireAdminNext = false;
         return reply({ error: "Session expired" }, 401);
+      }
+      if (path.startsWith("/storage/v1/object/sign/work-evidence/")) {
+        if (req.method() === "POST")
+          return reply({
+            signedURL: path.replace("/storage/v1", "") + "?token=fixture",
+          });
+        return route.fulfill({
+          status: 200,
+          contentType: "image/png",
+          body: Buffer.from(png, "base64"),
+        });
       }
       if (path.startsWith("/storage/v1/object/"))
         return reply({ Key: "stored" });

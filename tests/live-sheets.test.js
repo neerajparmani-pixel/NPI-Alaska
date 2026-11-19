@@ -7,14 +7,9 @@ const code = fs.readFileSync("setup/google-sheets/LiveSync.gs", "utf8");
 const record = {
   id: "90000000-0000-0000-0000-000000000001",
   version: 3,
-  side: "customer",
-  company_id: null,
-  site_id: "30000000-0000-0000-0000-000000000001",
-  task_id: "40000000-0000-0000-0000-000000000001",
-  basis: "hourly",
-  amount_cents: 2500,
-  effective_from: "2026-01-01",
-  effective_through: null,
+  planned_date: "2026-11-19",
+  equipment: "Loader 01",
+  status: "draft",
 };
 function harness(actor = "owner@npi.test") {
   const props = new Map([["NPI_SHEETS_TOKEN", "s".repeat(48)]]),
@@ -23,7 +18,7 @@ function harness(actor = "owner@npi.test") {
   const rows = [
     headers,
     headers.map((k) =>
-      k === "amount_cents" ? "3000" : String(record[k] ?? ""),
+      k === "equipment" ? "Loader 02" : String(record[k] ?? ""),
     ),
   ];
   const sheet = (values) => ({
@@ -39,9 +34,9 @@ function harness(actor = "owner@npi.test") {
   const tabs = {
     __NPI_BASE: sheet([
       ["Table", "ID", "Server snapshot"],
-      ["npi_rates", record.id, JSON.stringify(record)],
+      ["npi_work_orders", record.id, JSON.stringify(record)],
     ]),
-    Live_rates: sheet(rows),
+    Live_work_orders: sheet(rows),
   };
   const book = {
     getId: () => "1FJkmwHbZaNLwT4awsSshJpysi95dwBtOOKadig_Ibz8",
@@ -96,8 +91,8 @@ test("live workbook submits only permitted versioned fields and reuses proposal 
     b = h.requests[1].body.change;
   assert.equal(a.id, b.id);
   assert.equal(a.expected_version, 3);
-  assert.equal(a.proposal.amount_cents, 3000);
-  assert.equal(a.record_table, "npi_rates");
+  assert.equal(a.proposal.equipment, "Loader 02");
+  assert.equal(a.record_table, "npi_work_orders");
   assert.equal(a.proposal.version, undefined);
   assert.equal(a.proposal.id, undefined);
 });
@@ -105,7 +100,10 @@ test("unsent workbook edits stop refresh before any source overwrite or network 
   const h = harness();
   assert.throws(() => h.context.npiPullLive(), /Submit unsent edits/);
   assert.equal(h.requests.length, 0);
-  assert.equal(h.rows[1][Object.keys(record).indexOf("amount_cents")], "3000");
+  assert.equal(
+    h.rows[1][Object.keys(record).indexOf("equipment")],
+    "Loader 02",
+  );
 });
 test("workbook rejects other editors and neutralizes formula cells", () => {
   const h = harness("foreign@npi.test");

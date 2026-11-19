@@ -1,4 +1,5 @@
 import { api } from "./api.js";
+import { showEnrollment } from "./enrollment.js";
 import { icon } from "../three-view/icons.js";
 import { config } from "./config.js";
 import { suppliedArtwork } from "../three-view/assets.js";
@@ -12,10 +13,6 @@ const esc = (v) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
         c
       ],
-  );
-const money = (v) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    Number(v || 0) / 100,
   );
 const hour = (v) => (Number(v || 0) / 60).toFixed(2);
 const timestamp = (v) =>
@@ -35,12 +32,6 @@ const names = {
   approved: "NPI approved",
   returned: "Correction requested",
 };
-const basis = [
-  ["hourly", "Hourly"],
-  ["fixed", "Fixed service"],
-  ["per-visit", "Per visit"],
-  ["per-load", "Per load"],
-];
 let data = null,
   busy = false,
   selected = null,
@@ -52,13 +43,18 @@ let data = null,
   captured = null,
   pending = new Map(),
   dialogRoute = "",
-  suspendedDraft = null;
+  suspendedDraft = null,
+  accountState = null,
+  opsData = { contracts: [], scopes: [], invitations: [] };
 const person = (x) => data.people.find((p) => p.id === x),
   site = (x) => data.sites.find((s) => s.id === x),
   task = (x) => data.tasks.find((t) => t.id === x),
   company = (x) => data.companies.find((c) => c.id === x),
   job = () => data.work.find((w) => w.id === selected);
-const photo = (s) => suppliedArtwork.sites[s?.photo_path] || "";
+const photo = (s) =>
+  Object.hasOwn(suppliedArtwork.sites, s?.photo_path)
+    ? suppliedArtwork.sites[s.photo_path]
+    : "";
 const button = (label, action, value = "", classes = "") =>
   `<button type="button" class="btn ${classes}" data-action="${action}" data-id="${esc(value)}">${label}</button>`;
 const panel = (title, body, action = "") =>
@@ -69,14 +65,13 @@ const roles = {
   worker: "Subcontractor Worker",
 };
 const routeIcons = {
+  contracts: "building",
   overview: "home",
   work: "work",
   review: "check",
   hours: "clock",
   sites: "snow",
   companies: "building",
-  rates: "file",
-  documents: "file",
   people: "users",
   sheets: "file",
   settings: "settings",
@@ -130,6 +125,10 @@ function nav() {
       ]
     : [
         ["overview", "Overview"],
+        [
+          "contracts",
+          data.profile.role === "npi" ? "Contracts & sites" : "My subcontract",
+        ],
         ["work", "Work orders"],
         [
           "review",
@@ -139,9 +138,8 @@ function nav() {
         ...(data.profile.role === "npi"
           ? [["companies", "Subcontractors"]]
           : []),
-        ...(data.profile.role === "npi" ? [["rates", "Rates"]] : []),
-        ["documents", "Billing drafts"],
-        ["people", "People & access"],
+
+        ["people", data.profile.role === "sub" ? "My team" : "People & access"],
         ...(data.profile.role === "npi"
           ? [["sheets", "Spreadsheet review"]]
           : []),
@@ -152,6 +150,32 @@ function login(error = "") {
   document.body.dataset.role = "";
   document.title = "Sign in · Alaska NPI";
   app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Sessions end when you reload this page; saved work stays in Supabase.</p></div></main></div>`;
+}
+function pendingAccount(status) {
+  accountState = status;
+  data = null;
+  login();
+  const content = $(".login-form-wrap");
+  const title =
+    {
+      pending: "Your account is awaiting approval",
+      rejected: "Your registration was not approved",
+      suspended: "Your account is paused",
+      unassigned: "Account setup is incomplete",
+    }[status.status] || "Account unavailable";
+  content.innerHTML = `<h1>${title}</h1><p>${esc(status.display_name || "")}${status.company ? " · " + esc(status.company) : ""}</p><p>Contact your subcontractor administrator for help. Work access becomes available only after approval.</p><div class="live-card-actions">${button("Check approval", "check-approval", "", "primary")}${button("Sign out", "logout")}</div><p id="feedback" class="live-feedback" role="status"></p>`;
+}
+async function enterInvitation(token) {
+  if (api.session) await api.logout();
+  data = null;
+  accountState = null;
+  return showEnrollment({
+    token,
+    api,
+    root: app,
+    prepareLogin: login,
+    escape: esc,
+  });
 }
 function render() {
   if (!data) {
@@ -166,12 +190,12 @@ function render() {
     (pages.find(([p]) => p === page)?.[1] || "Work details") + " · Alaska NPI";
   const content = (
     {
+      contracts: contractsView,
       overview: overviewView,
       work: workView,
       review: reviewView,
       sites: siteView,
-      rates: rateView,
-      documents: documentView,
+
       people: peopleView,
       companies: companiesView,
       sheets: sheetView,
@@ -204,6 +228,7 @@ async function load() {
     route === "detail" ? selected : null,
   );
   data = snapshot;
+  if (data.profile.role !== "worker") opsData = await api.opsContext();
   latest = Date.now();
   render();
 }
@@ -259,10 +284,10 @@ function overviewView() {
     head(
       npi ? "NPI contract oversight" : "Subcontractor operations",
       npi
-        ? "Monitor activity. Verify delivery. Review contractor charges."
+        ? "Monitor activity. Verify tasks, photos and hours."
         : "Coordinate crews. Review hours. Keep NPI updated.",
     ) +
-    `<section class="oversight-hero"><div><p>CUSTOMER → NPI → SUBCONTRACTOR</p><h2>Work visibility, before the invoice.</h2><span>Crews belong to the subcontractor. NPI monitors and verifies service.</span></div><div class="hero-stat"><strong>${s.approved}/${s.work_count ?? data.work.length}</strong><span>NPI verified</span></div></section><section class="metrics" aria-label="Operational summary">${metric("Active work", s.active, "Recorded work in progress", "work")}${metric(npi ? "NPI review" : "Company review", awaiting, "Hours awaiting verification", "check")}${metric("Verified records", s.approved, "Accepted after NPI review", "pin")}${metric(npi ? "Company review" : "NPI review", npi ? s.company_review : s.npi_review, "Next approval handoff", "users")}</section><div class="two oversight-grid"><div class="stack">${panel("Worker activity", activityRows || '<div class="live-empty"><span class="activity-symbol">' + icon("work") + "</span><h3>No work activity yet</h3><p>Assign work to see crew activity, locations and approval progress here.</p></div>", button("All work", "goto", "work", "compact"))}${panel("Hours by location", '<p class="small muted">Worker-hours for assignments loaded in this view.</p><div class="site-summary">' + (siteHours || '<p class="live-empty-copy">Recorded and accepted hours will appear after workers start their assignments.</p>') + "</div>")}${panel("Work register", workRegister(activity), npi ? button("New work order", "new-work", "", "primary") : "")}</div><aside class="stack" aria-label="Review and setup">${panel("Attention queue", queue)}${panel("Approval handoff", '<ol class="flow"><li><span class="step">1</span><div><b>Subcontractor Worker</b><p>Check in, complete tasks, upload evidence and check out.</p></div></li><li><span class="step">2</span><div><b>Subcontractor Admin</b><p>Review workers’ hours and forward them to NPI.</p></div></li><li><span class="step">3</span><div><b>NPI Admin</b><p>Cross-check original records and accept hours.</p></div></li></ol>')}${!data.work.length && npi ? panel("Set up your workspace", '<p>Add your subcontractor, locations and worker accounts, then create the first work order.</p><div class="live-setup-links">' + button("Add subcontractor", "new-company") + button("Add location", "new-site") + button("Add service", "new-task") + button("Manage people", "goto", "people") + "</div>") : ""}</aside></div>`
+    `<section class="oversight-hero"><div><p>CUSTOMER → NPI → SUBCONTRACTOR</p><h2>Every site. Every shift. Verified.</h2><span>Crews belong to the subcontractor. NPI monitors and verifies service.</span></div><div class="hero-stat"><strong>${s.approved}/${s.work_count ?? data.work.length}</strong><span>NPI verified</span></div></section><section class="metrics" aria-label="Operational summary">${metric("Active work", s.active, "Recorded work in progress", "work")}${metric(npi ? "NPI review" : "Company review", awaiting, "Hours awaiting verification", "check")}${metric("Verified records", s.approved, "Accepted after NPI review", "pin")}${metric(npi ? "Company review" : "NPI review", npi ? s.company_review : s.npi_review, "Next approval handoff", "users")}</section><div class="two oversight-grid"><div class="stack">${panel("Worker activity", activityRows || '<div class="live-empty"><span class="activity-symbol">' + icon("work") + "</span><h3>No work activity yet</h3><p>Assign work to see crew activity, locations and approval progress here.</p></div>", button("All work", "goto", "work", "compact"))}${panel("Hours by location", '<p class="small muted">Worker-hours for assignments loaded in this view.</p><div class="site-summary">' + (siteHours || '<p class="live-empty-copy">Recorded and accepted hours will appear after workers start their assignments.</p>') + "</div>")}${panel("Work register", workRegister(activity), npi ? button("View subcontractors", "goto", "companies") : button("New assignment", "new-work", "", "primary"))}</div><aside class="stack" aria-label="Review and setup">${panel("Attention queue", queue)}${panel("Approval handoff", '<ol class="flow"><li><span class="step">1</span><div><b>Subcontractor Worker</b><p>Check in, complete tasks, upload evidence and check out.</p></div></li><li><span class="step">2</span><div><b>Subcontractor Admin</b><p>Review workers’ hours and forward them to NPI.</p></div></li><li><span class="step">3</span><div><b>NPI Admin</b><p>Cross-check original records and accept hours.</p></div></li></ol>')}${!data.work.length && npi ? panel("Set up your workspace", '<p>Set up the contract and sites, then invite your subcontractor. They will manage their own workers and assignments.</p><div class="live-setup-links">' + button("Add subcontractor", "new-company") + button("Add location", "new-site") + button("Add service", "new-task") + button("Contracts & sites", "goto", "contracts") + "</div>") : ""}</aside></div>`
   );
 }
 function workRegister(list) {
@@ -287,8 +312,8 @@ function workView() {
       worker
         ? "Your assignments, locations and next steps."
         : "Assigned work, site evidence and approval progress.",
-      data.profile.role === "npi"
-        ? button("New work order", "new-work", "", "primary")
+      data.profile.role === "sub"
+        ? button("New assignment", "new-work", "", "primary")
         : "",
     ) +
     (data.work.length
@@ -296,7 +321,7 @@ function workView() {
       : panel(
           "No assignments yet",
           data.profile.role === "npi"
-            ? '<p>First add a company, location, service and worker profiles. Then create a work order.</p><div class="live-card-actions">' +
+            ? '<p>Invite your subcontractor and assign its contract sites. Their administrator will create worker assignments.</p><div class="live-card-actions">' +
                 button("Add company", "new-company") +
                 button("Add location", "new-site") +
                 button("Add service", "new-task") +
@@ -336,7 +361,21 @@ function comparison(w) {
         );
         return [
           esc(person(m.worker_id)?.display_name),
-          hour(recorded(w, m.worker_id)),
+          hour(recorded(w, m.worker_id)) +
+            (() => {
+              const latestEvent = data.events
+                .filter(
+                  (e) => e.work_id === w.id && e.worker_id === m.worker_id,
+                )
+                .sort(
+                  (a, b) =>
+                    Date.parse(a.received_at) - Date.parse(b.received_at),
+                )
+                .at(-1);
+              return latestEvent?.event_kind === "check-in"
+                ? `<br><small>Active shift: ${hour(Math.max(0, (Date.now() - Date.parse(latestEvent.received_at)) / 60000))} h elapsed at refresh</small>`
+                : "";
+            })(),
           r?.claimed_minutes == null ? "—" : hour(r.claimed_minutes),
           r?.accepted_minutes == null ? "—" : hour(r.accepted_minutes),
         ];
@@ -404,7 +443,7 @@ function detailView() {
           ? button("Verify & accept hours", "npi-approve", w.id, "primary") +
             button("Return to company", "return", w.id)
           : "";
-  return `<h1 class="live-detail-name">${esc(site(w.site_id)?.name)}</h1><p>${esc(w.title)} · ${esc(names[w.status])}</p><p>${esc(w.equipment)} · ${esc(site(w.site_id)?.address || "Address not set")}</p>${w.review_note ? `<p class="live-banner live-note">${esc(w.review_note)}</p>` : ""}<div class="live-card-actions">${data.profile.role === "npi" && w.status === "draft" ? button("Edit plan", "plan", w.id) : ""}${actions}</div>${panel("Hours comparison", comparison(w))}${panel("Tasks", `<ul>${w.checklist.map((t, i) => `<li>${w.completed_tasks.includes(i) ? "✓" : "○"} ${esc(t)}</li>`).join("")}</ul><p>Recorded loads: ${w.loads}</p>`)}${panel(
+  return `<h1 class="live-detail-name">${esc(site(w.site_id)?.name)}</h1><p>${esc(w.title)} · ${esc(names[w.status])}</p><p>${esc(w.equipment)} · ${esc(site(w.site_id)?.address || "Address not set")}</p>${w.review_note ? `<p class="live-banner live-note">${esc(w.review_note)}</p>` : ""}<div class="live-card-actions">${["npi", "sub"].includes(data.profile.role) && w.status === "draft" ? button("Edit plan", "plan", w.id) : ""}${actions}</div>${panel("Hours comparison", comparison(w))}${panel("Tasks", `<ul>${w.checklist.map((t, i) => `<li>${w.completed_tasks.includes(i) ? "✓" : "○"} ${esc(t)}</li>`).join("")}</ul><p>Recorded loads: ${w.loads}</p>`)}${panel(
     "Attendance evidence",
     table(
       ["Worker / event", "Device time", "Server received", "Location"],
@@ -437,31 +476,6 @@ function siteView() {
     "</div>"
   );
 }
-function rateView() {
-  return (
-    '<div class="page-head"><h1>Location & task rates</h1>' +
-    button("Add rate", "new-rate", "", "primary") +
-    "</div>" +
-    table(
-      [
-        "Price list",
-        "Location / service",
-        "Unit",
-        "Price",
-        "Effective dates",
-        "Action",
-      ],
-      data.rates.map((r) => [
-        esc(r.side),
-        esc(site(r.site_id)?.name) + "<br>" + esc(task(r.task_id)?.name),
-        esc(r.basis),
-        money(r.amount_cents),
-        esc(r.effective_from) + " → " + esc(r.effective_through || "Open"),
-        button("Edit", "edit-rate", r.id),
-      ]),
-    )
-  );
-}
 function companiesView() {
   return (
     head(
@@ -487,48 +501,134 @@ function companiesView() {
   );
 }
 function peopleView() {
+  const npi = data.profile.role === "npi";
+  const pendingWorkers = data.people.filter(
+    (p) => p.role === "worker" && p.account_status === "pending",
+  );
+  const accountButtons = (p) =>
+    p.role === "npi" || (!npi && p.role !== "worker")
+      ? "—"
+      : p.account_status === "pending" && npi
+        ? "Company approval pending"
+        : p.account_status === "pending"
+          ? button("Approve", "access-approve_worker", p.id, "primary") +
+            button("Reject", "access-reject_worker", p.id)
+          : button("Reset password", "reset-password", p.id) +
+            (p.account_status === "suspended"
+              ? button("Restore access", "access-restore_account", p.id)
+              : p.active
+                ? button("Pause access", "access-suspend_account", p.id)
+                : "");
   return (
-    '<div class="page-head"><h1>People & companies</h1><div class="live-card-actions">' +
-    (data.profile.role === "npi" ? button("Add company", "new-company") : "") +
-    button("Create company account", "new-person", "", "primary") +
-    "</div></div>" +
-    table(
-      ["Person", "Company", "Username", "Role", "Active", "Action"],
-      data.people.map((p) => [
-        esc(p.display_name),
-        esc(company(p.company_id)?.name || "NPI"),
-        esc(p.username),
-        esc(p.role),
-        p.active ? "Yes" : "No",
-        p.role === "npi"
-          ? "—"
-          : button("Reset password", "reset-password", p.id),
-      ]),
+    head(
+      npi ? "People & access" : "My team",
+      npi
+        ? "Invite subcontractor administrators. Each company manages its own workers."
+        : "Invite workers, approve registrations and manage your team.",
+      button(
+        npi ? "Invite subcontractor admin" : "Invite workers",
+        "new-invitation",
+        "",
+        "primary",
+      ),
     ) +
     panel(
-      "Company register",
+      "Pending workers",
+      pendingWorkers.length
+        ? table(
+            ["Worker", "Company", "Username", "Action"],
+            pendingWorkers.map((p) => [
+              esc(p.display_name),
+              esc(company(p.company_id)?.name),
+              esc(p.username),
+              accountButtons(p),
+            ]),
+          )
+        : "<p>No worker registrations are waiting for approval.</p>",
+    ) +
+    panel(
+      npi ? "Account register" : "Team accounts",
       table(
-        ["Name", "Active"],
-        data.companies.map((c) => [esc(c.name), c.active ? "Yes" : "No"]),
+        ["Person", "Company", "Username", "Role", "Status", "Action"],
+        data.people.map((p) => [
+          esc(p.display_name),
+          esc(company(p.company_id)?.name || "NPI"),
+          esc(p.username),
+          roles[p.role],
+          esc(p.account_status || (p.active ? "approved" : "paused")),
+          accountButtons(p),
+        ]),
       ),
-    )
+    ) +
+    panel(
+      "Invitation links",
+      table(
+        ["Company", "Access", "Expires", "Status", "Action"],
+        opsData.invitations.map((i) => [
+          esc(company(i.company_id)?.name),
+          i.role === "sub" ? "Subcontractor admin" : "Worker signup",
+          esc(timestamp(i.expires_at)),
+          i.revoked
+            ? "Disabled"
+            : Date.parse(i.expires_at) < Date.now()
+              ? "Expired"
+              : Number(i.uses) >= i.max_uses
+                ? "Used / full"
+                : "Active",
+          !i.revoked ? button("Disable link", "revoke-invitation", i.id) : "—",
+        ]),
+      ),
+    ) +
+    '<p class="small muted">Links expire after 7 days. Admin invitations work once; worker signup links allow up to 100 registrations. A worker’s access needs company approval.</p>'
   );
 }
-function documentView() {
+function contractsView() {
+  const npi = data.profile.role === "npi";
   return (
-    '<div class="page-head"><h1>Billing drafts</h1>' +
-    button("New priced draft", "new-document", "", "primary") +
-    "</div><p>Draft subtotals only. Confirm tax, legal invoice details and payment terms before issuance. No invoice is sent and no payment is recorded.</p>" +
-    table(
-      ["Reference", "Kind", "Status", "Subtotal", "Action"],
-      data.documents.map((d) => [
-        esc(d.reference),
-        esc(d.kind),
-        esc(d.status),
-        money(d.subtotal_cents),
-        button("View / print draft", "document", d.id),
-      ]),
-    )
+    head(
+      npi ? "Contracts & sites" : "My subcontract",
+      npi
+        ? "Set the contract, then assign sites to the subcontractor responsible."
+        : "Your company can assign work only at these contracted sites.",
+      npi ? button("Add contract", "new-contract", "", "primary") : "",
+    ) +
+    panel(
+      "Contracts",
+      table(
+        ["Contract", "Customer", "Reference"],
+        opsData.contracts.map((c) => [
+          esc(c.name),
+          esc(c.client),
+          esc(c.reference),
+        ]),
+      ),
+    ) +
+    panel(
+      "Site responsibilities",
+      table(
+        ["Contract", "Company", "Site", "Status"],
+        opsData.scopes.map((x) => [
+          esc(opsData.contracts.find((c) => c.id === x.contract_id)?.name),
+          esc(company(x.company_id)?.name),
+          esc(site(x.site_id)?.name),
+          x.active ? "Active" : "Inactive",
+        ]),
+      ),
+      npi
+        ? button("Assign site to subcontractor", "new-scope", "", "primary")
+        : "",
+    ) +
+    (npi
+      ? panel(
+          "Setup order",
+          '<p>Add your company and locations, create the contract, then assign the sites and send the administrator invitation.</p><div class="live-card-actions">' +
+            button("Add subcontractor", "new-company") +
+            button("Add location", "new-site") +
+            button("Add service", "new-task") +
+            button("Invite subcontractor admin", "new-invitation") +
+            "</div>",
+        )
+      : "")
   );
 }
 function hoursView() {
@@ -580,11 +680,15 @@ function settingsView() {
     ) +
     (data.profile.role === "npi"
       ? panel(
-          "Location & task prices",
-          "<p>Manage separate customer charges and subcontractor costs, with effective dates.</p>" +
-            button("Manage rates", "goto", "rates"),
+          "Contracts and subcontractors",
+          "<p>Assign sites to companies, then invite each company administrator.</p>" +
+            button("Manage contracts & sites", "goto", "contracts"),
         )
-      : "") +
+      : panel(
+          "Company team",
+          "<p>Invite workers and approve their accounts before assigning work.</p>" +
+            button("Manage my team", "goto", "people"),
+        )) +
     panel(
       "Services",
       table(
@@ -614,7 +718,30 @@ function modal(title, body) {
 function form(title, kind, body, record = "") {
   modal(
     title,
-    `<form id="action-form" class="live-form" data-kind="${kind}" data-id="${esc(record)}" data-version="${(data.work.find((w) => w.id === record) || data.rates.find((r) => r.id === record) || {}).version || 0}" novalidate>${body}<div class="actions">${button("Cancel", "close")}<button type="submit" class="btn primary">${{ create_work: "Create work order", staff: "Create account", company_approve: "Approve & forward", npi_approve: "Accept hours", submit_hours: "Submit hours", return_work: "Request correction", clock: "Record attendance", draft_document: "Create draft", tasks: "Save tasks", upload: "Upload evidence", reset_password: "Reset password", review_sheet: "Confirm review" }[kind] || "Save changes"}</button></div></form>`,
+    `<form id="action-form" class="live-form" data-kind="${kind}" data-id="${esc(record)}" data-version="${(data.work.find((w) => w.id === record) || {}).version || 0}" novalidate>${body}<div class="actions">${button("Cancel", "close")}<button type="submit" class="btn primary">${
+      {
+        create_work: "Create assignment",
+        invitation: "Create invitation link",
+        "ops:create_contract": "Save contract",
+        "ops:assign_scope": "Assign site",
+        "ops:approve_worker": "Approve worker",
+        "ops:reject_worker": "Reject registration",
+        "ops:suspend_account": "Pause access",
+        "ops:restore_account": "Restore access",
+        "ops:revoke_invite": "Disable link",
+        staff: "Create account",
+        company_approve: "Approve & forward",
+        npi_approve: "Accept hours",
+        submit_hours: "Submit hours",
+        return_work: "Request correction",
+        clock: "Record attendance",
+        draft_document: "Create draft",
+        tasks: "Save tasks",
+        upload: "Upload evidence",
+        reset_password: "Reset password",
+        review_sheet: "Confirm review",
+      }[kind] || "Save changes"
+    }</button></div></form>`,
   );
 }
 function close(force = false) {
@@ -677,17 +804,56 @@ function taskForm() {
   );
 }
 function workForm() {
+  if (
+    !opsData.scopes.some(
+      (x) =>
+        x.active &&
+        (data.profile.role === "npi" ||
+          x.company_id === data.profile.company_id),
+    )
+  ) {
+    message(
+      "NPI must assign contract sites to your company before work can be scheduled.",
+      true,
+    );
+    return;
+  }
+  if (!data.people.some((p) => p.role === "worker" && p.active)) {
+    modal(
+      "Add your team first",
+      "<p>Invite your workers and approve their accounts. You can then assign their work.</p>" +
+        button("Invite workers", "new-invitation", "", "primary") +
+        button("Manage my team", "goto", "people"),
+    );
+    return;
+  }
+  if (!data.tasks.some((t) => t.active !== false)) {
+    message("Ask NPI to add a service type before scheduling work.", true);
+    return;
+  }
   form(
     "Create assignment",
     "create_work",
     field(
-      "company_id",
-      "Subcontractor",
+      "scope_id",
+      "Contract / site",
       "select",
       "",
-      options(data.companies),
+      opsData.scopes
+        .filter(
+          (x) =>
+            x.active &&
+            (data.profile.role === "npi" ||
+              x.company_id === data.profile.company_id),
+        )
+        .map((x) => [
+          x.id,
+          (opsData.contracts.find((c) => c.id === x.contract_id)?.name ||
+            "Contract") +
+            " · " +
+            (site(x.site_id)?.name || "Site"),
+        ]),
     ) +
-      field("site_id", "Location", "select", "", options(data.sites)) +
       field("task_id", "Service", "select", "", options(data.tasks)) +
       field("title", "Work instructions") +
       field("planned_date", "Planned date", "date") +
@@ -709,69 +875,6 @@ function workForm() {
         "textarea",
         "Complete assigned work\nInspect work area",
       ),
-  );
-}
-function rateForm(record) {
-  const r = data.rates.find((r) => r.id === record) || {};
-  form(
-    "Location & task rate",
-    "save_rate",
-    field("side", "Price list", "select", r.side || "customer", [
-      ["customer", "Customer charges"],
-      ["subcontractor", "Subcontractor costs"],
-    ]) +
-      field(
-        "company_id",
-        "Company (costs only)",
-        "select",
-        r.company_id || "",
-        [["", "Not applicable"], ...options(data.companies)],
-      ) +
-      field("site_id", "Location", "select", r.site_id, options(data.sites)) +
-      field("task_id", "Service", "select", r.task_id, options(data.tasks)) +
-      field("basis", "Billing unit", "select", r.basis || "hourly", basis) +
-      field(
-        "price",
-        "Unit price (USD)",
-        "text",
-        r.id ? (Number(r.amount_cents) / 100).toFixed(2) : "",
-      ) +
-      field("effective_from", "Effective from", "date", r.effective_from) +
-      field(
-        "effective_through",
-        "Effective through (optional)",
-        "date",
-        r.effective_through,
-      ),
-    r.id || "",
-  );
-}
-function staffForm() {
-  const companies =
-    data.profile.role === "sub"
-      ? data.companies.filter((c) => c.id === data.profile.company_id)
-      : data.companies;
-  form(
-    "Create company-issued account",
-    "staff",
-    field("display_name", "Full name") +
-      field("username", "Company username") +
-      field("password", "Temporary password (12–72 characters)", "password") +
-      button("Show temporary password", "show-staff-password") +
-      field("company_id", "Company", "select", "", options(companies)) +
-      field(
-        "role",
-        "Role",
-        "select",
-        "worker",
-        data.profile.role === "npi"
-          ? [
-              ["worker", "Subcontractor Worker"],
-              ["sub", "Subcontractor Admin"],
-            ]
-          : [["worker", "Subcontractor Worker"]],
-      ) +
-      "<p>Share the temporary password privately. Accounts use managed Supabase authentication; passwords are not stored in the workbook.</p>",
   );
 }
 function clockForm(kind) {
@@ -835,78 +938,106 @@ function approveForm() {
     .forEach((e) => (e.disabled = true));
 }
 
-function documentForm() {
-  form(
-    "Prepare priced draft",
-    "draft_document",
-    field(
-      "kind",
-      "Document type",
-      "select",
-      data.profile.role === "npi" ? "customer-invoice" : "subcontractor-bill",
-      data.profile.role === "npi"
-        ? [
-            ["customer-invoice", "Customer invoice draft"],
-            ["subcontractor-bill", "Subcontractor bill draft"],
-          ]
-        : [["subcontractor-bill", "Subcontractor bill draft"]],
-    ) +
-      field("reference", "Document reference") +
-      field(
-        "work_id",
-        "NPI-approved assignment",
-        "select",
-        "",
-        data.work
-          .filter((w) => w.status === "approved")
-          .map((w) => [
-            w.id,
-            (site(w.site_id)?.name || "") +
-              " · " +
-              w.planned_date +
-              " · " +
-              w.title,
-          ]),
-      ) +
-      field(
-        "rate_id",
-        "Agreed rate (must match side, location, company, task and service date)",
-        "select",
-        "",
-        data.rates.map((r) => [
-          r.id,
-          r.side +
-            " · " +
-            (site(r.site_id)?.name || "") +
-            " · " +
-            money(r.amount_cents) +
-            " / " +
-            r.basis,
-        ]),
-      ) +
-      field("quantity", "Billable quantity", "number", "1") +
-      "<p>Verify the contract unit: equipment-hours may differ from worker-hours. This creates a subtotal draft with a rate snapshot. Tax, legal invoice details and issuance remain for review.</p>",
-  );
+async function operation(action, body) {
+  const signature = "ops:" + action + JSON.stringify(body);
+  let nonce = pending.get(signature);
+  if (!nonce) {
+    nonce = id();
+    pending.set(signature, nonce);
+  }
+  const result = await api.opsAction(action, body, nonce);
+  pending.delete(signature);
+  return result;
 }
-function docView(docid) {
-  const d = data.documents.find((d) => d.id === docid);
-  if (!d) return;
-  modal(
-    "Draft " + d.reference,
-    `<p><b>DRAFT · NOT ISSUED</b></p><p>${d.kind === "customer-invoice" ? "Customer invoice draft · Performed by" : "Subcontractor bill draft · Supplier"}: ${esc(company(d.company_id)?.name)}</p>${table(
-      ["Description", "Quantity", "Unit price", "Subtotal"],
-      data.lines
-        .filter((l) => l.document_id === d.id)
-        .map((l) => [
-          esc(l.description),
-          esc(l.quantity),
-          money(l.unit_cents),
-          money(l.line_cents),
-        ]),
-    )}<h3>Subtotal: ${money(d.subtotal_cents)}</h3><p>Tax and final invoice details are not confirmed. No payment is recorded.</p>${button("Print draft / Save PDF", "print")}`,
+function inviteForm() {
+  if (data.profile.role === "npi" && !data.companies.some((c) => c.active)) {
+    message("Add the subcontractor company first.");
+    return;
+  }
+  form(
+    "Invite " +
+      (data.profile.role === "npi" ? "subcontractor administrator" : "workers"),
+    "invitation",
+    data.profile.role === "npi"
+      ? field(
+          "company_id",
+          "Subcontractor",
+          "select",
+          "",
+          options(data.companies.filter((c) => c.active)),
+        ) +
+          "<p>This single-use link lets the subcontractor administrator choose their own username and password. They then invite their workers.</p>"
+      : "<p>This link belongs to your company. Workers register themselves and await your approval. It expires after 7 days.</p>",
   );
 }
 const actions = {
+  "new-invitation": inviteForm,
+  "new-contract": () =>
+    form(
+      "Add contract",
+      "ops:create_contract",
+      field("name", "Contract name") +
+        field("client", "Customer / main source") +
+        field("reference", "Reference (optional)"),
+    ),
+  "new-scope": () =>
+    form(
+      "Assign site to subcontractor",
+      "ops:assign_scope",
+      field(
+        "contract_id",
+        "Contract",
+        "select",
+        "",
+        options(opsData.contracts),
+      ) +
+        field(
+          "company_id",
+          "Subcontractor",
+          "select",
+          "",
+          options(data.companies.filter((c) => c.active)),
+        ) +
+        field("site_id", "Site", "select", "", options(data.sites)),
+    ),
+  "revoke-invitation": (el) =>
+    form(
+      "Disable invitation link",
+      "ops:revoke_invite",
+      "<p>New registrations using this link will be blocked. Existing accounts stay unchanged.</p>",
+      el.dataset.id,
+    ),
+  "check-approval": async () => {
+    const status = await api.accountStatus();
+    if (status.status === "approved") {
+      accountState = null;
+      data = await api.snapshot();
+      if (data.profile.role !== "worker") opsData = await api.opsContext();
+      latest = Date.now();
+      history.replaceState(
+        null,
+        "",
+        location.pathname +
+          (data.profile.role === "worker" ? "#work" : "#overview"),
+      );
+      render();
+    } else {
+      pendingAccount(status);
+      message("Approval status checked.");
+    }
+  },
+  "copy-invitation": async () => {
+    const input = $("#invitation-url", dialog);
+    input.select();
+    try {
+      await navigator.clipboard.writeText(input.value);
+      $("#dialog-error").textContent =
+        "Link copied. Share it privately with the intended company or workers.";
+    } catch {
+      $("#dialog-error").textContent = "Select and copy the link above.";
+    }
+  },
+
   "show-staff-password": (el) => {
     const p = $("#password", dialog);
     p.type = p.type === "password" ? "text" : "password";
@@ -932,6 +1063,7 @@ const actions = {
   logout: async () => {
     await api.logout();
     data = null;
+    accountState = null;
     selected = null;
     pending.clear();
     $("#print-document")?.remove();
@@ -958,20 +1090,6 @@ const actions = {
   "new-site": siteForm,
   "new-task": taskForm,
   "new-work": workForm,
-  "new-rate": () => rateForm(),
-  "edit-rate": (el) => rateForm(el.dataset.id),
-  "new-person": staffForm,
-  "new-document": documentForm,
-  document: (el) => docView(el.dataset.id),
-  print: () => {
-    const root = document.createElement("section");
-    root.id = "print-document";
-    root.innerHTML = $(".dialog-body", dialog).innerHTML;
-    root.querySelectorAll("button").forEach((b) => b.remove());
-    document.body.append(root);
-    window.addEventListener("afterprint", () => root.remove(), { once: true });
-    window.print();
-  },
   "clock-in": () => clockForm("check-in"),
   "clock-out": () => clockForm("check-out"),
   claim: claimForm,
@@ -1026,8 +1144,8 @@ const actions = {
     if (!e) return;
     const url = await api.fileUrl(e.path);
     modal(
-      "Private evidence",
-      `<p>This link expires after one minute.</p><a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open private file</a>`,
+      "Work evidence",
+      `${e.kind === "photo" ? `<img class="live-modal-photo" src="${esc(url)}" alt="Uploaded work evidence">` : ""}<p>Private access link expires after one minute.</p><a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open original file</a>`,
     );
   },
   gps: async (el) => {
@@ -1084,17 +1202,14 @@ function validateForm(f, action) {
   f.querySelectorAll(".err").forEach((e) => (e.textContent = ""));
   const required =
     {
+      "ops:create_contract": ["name"],
+      "ops:assign_scope": ["contract_id", "company_id", "site_id"],
+      invitation: ["company_id"],
       save_company: ["name"],
       save_site: ["name"],
       save_task: ["name"],
       plan_work: ["planned_date"],
-      create_work: [
-        "company_id",
-        "site_id",
-        "task_id",
-        "planned_date",
-        "checklist",
-      ],
+      create_work: ["scope_id", "task_id", "planned_date", "checklist"],
       save_rate: ["side", "site_id", "task_id", "price", "effective_from"],
       staff: ["display_name", "username", "password", "company_id", "role"],
       submit_hours: ["claimed_hours"],
@@ -1175,6 +1290,28 @@ function restoreDraft() {
     "Draft restored after sign-in. Reselect any file and capture location again if required. The original record version is preserved.";
   dialog.showModal();
 }
+for (const op of [
+  "approve_worker",
+  "reject_worker",
+  "suspend_account",
+  "restore_account",
+])
+  actions["access-" + op] = (el) => {
+    const p = person(el.dataset.id);
+    if (!p) return;
+    const labels = {
+      approve_worker: "Approve worker",
+      reject_worker: "Reject registration",
+      suspend_account: "Pause access",
+      restore_account: "Restore access",
+    };
+    form(
+      labels[op],
+      "ops:" + op,
+      `<p>${esc(p.display_name)} · ${esc(company(p.company_id)?.name)}</p><p>${op === "approve_worker" ? "This grants worker access. Work hours will still need separate review." : op === "reject_worker" ? "This registration will not receive work access." : op === "suspend_account" ? "This account will lose work access. Original work records are preserved." : "This restores access to the company’s permitted work."}</p><input type="hidden" name="version" value="${p.access_version || 1}">`,
+      p.id,
+    );
+  };
 async function guarded(fn) {
   if (busy) return;
   busy = true;
@@ -1184,7 +1321,7 @@ async function guarded(fn) {
   } catch (e) {
     if (dialog.open) $("#dialog-error").textContent = e.message;
     else message(e.message, true);
-    if (!api.session && data) {
+    if (!api.session && (data || accountState)) {
       suspendDraft();
       data = null;
       close(true);
@@ -1216,6 +1353,14 @@ document.addEventListener("submit", (e) => {
         $("#password").value = "";
         throw e;
       }
+      if (data.accountStatus) {
+        const status = data.accountStatus;
+        f.reset();
+        pendingAccount(status);
+        return;
+      }
+      accountState = null;
+      if (data.profile.role !== "worker") opsData = await api.opsContext();
       latest = Date.now();
       f.reset();
       feedback = "";
@@ -1239,6 +1384,50 @@ document.addEventListener("submit", (e) => {
     );
     const action = f.dataset.kind;
     if (!validateForm(f, action)) return;
+    if (action === "invitation") {
+      let token = f.dataset.token;
+      if (!token) {
+        token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+          .map((x) => x.toString(16).padStart(2, "0"))
+          .join("");
+        f.dataset.token = token;
+      }
+      const hash = Array.from(
+        new Uint8Array(
+          await crypto.subtle.digest(
+            "SHA-256",
+            new TextEncoder().encode(token),
+          ),
+        ),
+      )
+        .map((x) => x.toString(16).padStart(2, "0"))
+        .join("");
+      await operation("create_invite", {
+        company_id:
+          data.profile.role === "npi"
+            ? body.company_id
+            : data.profile.company_id,
+        role: data.profile.role === "npi" ? "sub" : "worker",
+        token_hash: hash,
+      });
+      const url = location.origin + location.pathname + "#join=" + token;
+      close(true);
+      await load();
+      modal(
+        "Share invitation link",
+        `<p>Share this privately. It is shown only now; you can disable it from People & access.</p><div class="field"><label for="invitation-url">Invitation link</label><input id="invitation-url" readonly value="${esc(url)}"></div>${button("Copy link", "copy-invitation", "", "primary")}`,
+      );
+      return;
+    }
+    if (action.startsWith("ops:")) {
+      if (f.dataset.id) body.id = f.dataset.id;
+      await operation(action.slice(4), body);
+      close(true);
+      await load();
+      message("Saved.");
+      return;
+    }
+    if (!validateForm(f, action)) return;
     const w = data.work.find((w) => w.id === f.dataset.id);
     if (f.dataset.id) {
       body.id = f.dataset.id;
@@ -1249,12 +1438,6 @@ document.addEventListener("submit", (e) => {
         f.dataset.id,
         String(values.get("password") || ""),
       );
-    } else if (action === "staff") {
-      await api.staff({
-        ...body,
-        username: body.username.toLowerCase(),
-        password: String(values.get("password") || ""),
-      });
     } else if (action === "upload") {
       const file = values.get("file");
       if (!file?.size) throw Error("Choose a file.");
@@ -1265,20 +1448,17 @@ document.addEventListener("submit", (e) => {
       );
     } else {
       if (action === "create_work") {
+        const scope = opsData.scopes.find((x) => x.id === body.scope_id);
+        if (!scope) throw Error("Choose a site assigned to your subcontract.");
+        body.company_id = scope.company_id;
+        body.site_id = scope.site_id;
+        body.contract_id = scope.contract_id;
+        delete body.scope_id;
         body.members = values.getAll("members");
         body.checklist = body.checklist
           .split("\n")
           .map((v) => v.trim())
           .filter(Boolean);
-      }
-      if (action === "save_rate") {
-        const r = data.rates.find((r) => r.id === f.dataset.id);
-        if (r) body.version = Number(f.dataset.version);
-        if (!/^\d{1,7}(\.\d{1,2})?$/.test(body.price))
-          throw Error("Enter a USD price with at most two decimals.");
-        const [whole, part = ""] = body.price.split(".");
-        body.amount_cents = Number(whole) * 100 + Number(part.padEnd(2, "0"));
-        delete body.price;
       }
       if (action === "clock") {
         if (!captured || Date.now() - Date.parse(captured.device_time) > 120000)
@@ -1346,6 +1526,16 @@ document.addEventListener("change", (e) => {
   if (e.target.id === "live-nav") location.hash = e.target.value;
 });
 window.addEventListener("hashchange", () => {
+  if (location.hash.startsWith("#join=")) {
+    location.reload();
+    return;
+  }
+  if (location.hash === "#signin") {
+    accountState = null;
+    login();
+    return;
+  }
+  if (!data && (location.hash === "#register" || accountState)) return;
   if (dialog.open && dirty) {
     history.replaceState(
       null,
@@ -1373,4 +1563,6 @@ window.addEventListener("offline", () => {
 });
 if ("serviceWorker" in navigator && location.protocol === "https:")
   navigator.serviceWorker.register("./sw.js").catch(() => {});
-login();
+if (location.hash.startsWith("#join="))
+  guarded(() => enterInvitation(location.hash.slice(6)));
+else login();

@@ -81,6 +81,8 @@ export class LiveAPI {
           authenticated: false,
         }),
       );
+      const status = await this.accountStatus();
+      if (status.status !== "approved") return { accountStatus: status };
       return await this.snapshot();
     } catch (e) {
       this.session = null;
@@ -121,6 +123,31 @@ export class LiveAPI {
       this.session = null;
       this.uploadTasks.clear();
     }
+  }
+  accountStatus() {
+    return this.request("/rest/v1/rpc/npi_account_status", {
+      method: "POST",
+      body: {},
+    });
+  }
+  opsContext() {
+    return this.request("/rest/v1/rpc/npi_ops_context", {
+      method: "POST",
+      body: {},
+    });
+  }
+  opsAction(action, body, requestId = crypto.randomUUID()) {
+    return this.request("/rest/v1/rpc/npi_ops_action", {
+      method: "POST",
+      body: { p_action: action, p_body: body, p_request: requestId },
+    });
+  }
+  invitation(operation, body) {
+    return this.request("/functions/v1/npi-admin", {
+      method: "POST",
+      authenticated: false,
+      body: { operation, ...body },
+    });
   }
   snapshot(stage = "all", workId = null) {
     return this.request("/rest/v1/rpc/npi_live_snapshot", {

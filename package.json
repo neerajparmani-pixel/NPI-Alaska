@@ -17,7 +17,8 @@
     "package:sample": "python3 scripts/package-sample.py",
     "package:operations": "python3 scripts/package-operations.py",
     "package:three-view": "python3 scripts/package-three-view.py",
-    "package:live": "python3 scripts/package-live.py"
+    "package:live": "python3 scripts/package-live.py",
+    "package:release": "python3 scripts/package-live.py"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

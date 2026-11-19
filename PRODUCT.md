@@ -82,3 +82,13 @@ The workbook bridge uses a server-only token and a fixed workbook ID; editable l
 ## Restore approved UI on connected backend
 
 User reported the connected interface differed from the approved sample and requested correction. Restore its oversight composition while keeping real Supabase APIs and exactly three roles. This is a frontend upgrade: no migration rerun, account recreation or workbook reinitialization. Do not add dummy records or claim unsupported service-request, issued-invoice/payment or contract workflows are implemented. The original backend installation and existing records stay in place; the changed package is deployed to the same Cloudflare project/domain.
+
+## Current release: Operations 1.0 (supersedes earlier billing scope)
+
+NPI receives customer contracts, then assigns contract/site responsibilities to subcontractors. NPI invites the company administrator using a single-use, seven-day link. That administrator chooses its own managed credentials, invites workers using its own company link, approves registrations and assigns daily work to approved workers at its permitted sites. NPI does not need the worker roster before inviting the company. Future contracts and companies use separate scoped responsibilities. Exactly three roles remain.
+
+A worker signs up through the company link and remains inactive/pending until that company's administrator approves. Pending/rejected/paused accounts cannot access operational records. NPI oversees all work and can pause access, but normal worker registration approval belongs to the company. Subcontractors review hours/evidence before NPI can accept them. NPI sees original check-in/out GPS, device/server times, task/photo evidence, claimed and accepted hours. No original evidence is replaced by an adjustment.
+
+Billing, rates, invoices and payments are deferred. Earlier finance tables/records are preserved for migration compatibility, but the operations snapshot returns empty finance collections and finance mutations are blocked. UI finance routes and form handlers are removed. Workbook defaults now cover contracts, responsibilities, people, work, attendance, hour reviews, changes and audit, with existing planning/location proposal safeguards. Private contracts, prices and actual source files remain excluded from the release archive.
+
+Authoritative implementation: setup/supabase/004-operations-invitations.sql and supabase/functions/npi-admin/handler.js. Complete release archive and four-step existing-install upgrade: setup/OPERATIONS-START-HERE.md. It is an installer, not a remote deployment or a claim of final cloud acceptance.

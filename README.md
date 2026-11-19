@@ -1,4 +1,16 @@
-> **Latest: exactly three views.** [Download the NPI three-view sample](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Three-View-Sample.zip), extract, then open **START-HERE.html**. NPI Admin → Subcontractor Admin → Subcontractor Worker. Includes dispatch, reports, protected workbook review and workspace settings. No contract documents or prices. [Guide and feature map](docs/three-view/README.md).
+# Alaska NPI Operations — current release
+
+**[Download one complete Operations 1.0 package](https://raw.githubusercontent.com/neerajparmani-pixel/NPI-Alaska/main/downloads/NPI-Alaska-Operations-v1.0.zip)** and open **START-HERE.html** after extraction.
+
+NPI invites subcontractor administrators → companies invite/approve their own workers → companies assign work at their contracted sites → workers record GPS, tasks, photos and hours → company review → NPI verification. Exactly three roles; approved layout retained. **Billing is excluded from this release.**
+
+Existing installation: apply **004 only**, redeploy **npi-admin**, update **LiveSync.gs** using your existing secrets, and deploy the contents of **frontend/** to the existing Cloudflare Pages project. Preserve the current accounts, workbook and domain. The package contains full frontend/SQL/Edge/workbook source and local verification notes; cloud installation and real acceptance testing remain necessary. See [setup guide](setup/OPERATIONS-START-HERE.md).
+
+Run locally with `npm ci` and `npm run dev`; the current app is at `/live/` and requires the configured backend. Build the single archive with `npm run package:release`. Earlier browser-local prototypes below are historical references, not the current operational release.
+
+---
+
+> **Earlier three-view review sample.** [Download the NPI three-view sample](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Three-View-Sample.zip), extract, then open **START-HERE.html**. NPI Admin → Subcontractor Admin → Subcontractor Worker. Includes dispatch, reports, protected workbook review and workspace settings. No contract documents or prices. [Guide and feature map](docs/three-view/README.md).
 
 > **Revised subcontracting sample:** [Download ZIP](https://github.com/neerajparmani-pixel/NPI-Alaska/raw/refs/heads/main/downloads/NPI-Subcontract-Operations-Sample.zip), extract and open **START-HERE.html**. Includes individual/crew GPS check-in/out, contractor-first hours approval, NPI cross-verification and mixed customer/subcontractor billing. [Plan and guide](docs/operations/README.md).
 

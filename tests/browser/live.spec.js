@@ -87,6 +87,17 @@ test("live worker sends fresh GPS and evidence, then company and NPI approve sha
   await act(page, "logout");
   await login(page, "owner@npi.test");
   await act(page, "open-work");
+  const maps = page.locator('a.live-map[href*="google.com/maps"]');
+  await expect(maps).toHaveCount(2);
+  expect(await maps.first().getAttribute("href")).toContain("61.2,-149.9");
+  await act(page, "view-file");
+  await expect(page.locator("img.live-modal-photo")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator("img.live-modal-photo").evaluate((img) => img.naturalWidth),
+    )
+    .toBeGreaterThan(0);
+  await act(page, "close");
   await act(page, "npi-approve");
   await save(page);
   await expect(page.getByRole("dialog")).not.toBeVisible();
@@ -94,17 +105,17 @@ test("live worker sends fresh GPS and evidence, then company and NPI approve sha
   expect(state.reviews[0].accepted_minutes).toBe(105);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
 });
-test("live admin screen and rate form are accessible, with native controls and no phone overflow", async ({
+test("live admin contract form is accessible, with native controls and no phone overflow", async ({
   page,
 }) => {
   await backend(page);
   await page.goto("/live/");
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await login(page, "owner@npi.test");
-  await page.goto("/live/#rates");
-  await act(page, "new-rate");
+  await page.goto("/live/#contracts");
+  await act(page, "new-contract");
   await save(page);
-  await expect(page.locator("#price")).toHaveAttribute("aria-invalid", "true");
+  await expect(page.locator("#name")).toHaveAttribute("aria-invalid", "true");
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   expect(
     await page.evaluate(
@@ -158,34 +169,6 @@ test("live session expiry restores same-user draft without silently changing its
   expect(writes.at(-1).p_body.version).toBe(1);
 });
 
-test("shown temporary passwords are excluded when a staff form is restored after session expiry", async ({
-  page,
-}) => {
-  const { state } = await backend(page);
-  await page.goto("/live/");
-  await login(page, "owner@npi.test");
-  await page.goto("/live/#people");
-  await act(page, "new-person");
-  await page.locator("#display_name").fill("Unfinished worker");
-  await page.getByRole("dialog").locator("#username").fill("unfinished.worker");
-  await page
-    .getByRole("dialog")
-    .locator("#password")
-    .fill("never-restore-this-pass");
-  await act(page, "show-staff-password");
-  state.expireAdminNext = true;
-  await save(page);
-  await expect(page.locator("#login-form")).toBeVisible();
-  await login(page, "owner@npi.test");
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.locator("#display_name")).toHaveValue("Unfinished worker");
-  await expect(page.getByRole("dialog").locator("#password")).toHaveValue("");
-  await expect(page.getByRole("dialog").locator("#password")).toHaveAttribute(
-    "type",
-    "password",
-  );
-});
-
 test("approved oversight layout uses scoped counts, real empty states and accessible role navigation", async ({
   page,
 }) => {
@@ -203,7 +186,7 @@ test("approved oversight layout uses scoped counts, real empty states and access
   await page.goto("/live/");
   await login(page, "owner@npi.test");
   await expect(page.locator(".oversight-hero")).toContainText(
-    "Work visibility, before the invoice.",
+    "Every site. Every shift. Verified.",
   );
   await expect(page.locator(".hero-stat strong")).toHaveText("0/0");
   await expect(
@@ -256,4 +239,183 @@ test("approved oversight layout uses scoped counts, real empty states and access
       () => document.documentElement.scrollWidth > innerWidth,
     ),
   ).toBe(false);
+});
+
+test("company invitation signup, pending access and company approval preserve the simple three-role flow", async ({
+  page,
+}) => {
+  const { state, writes } = await backend(page);
+  await page.goto("/live/");
+  await login(page, "supervisor");
+  await page.goto("/live/#people");
+  await act(page, "new-invitation");
+  await save(page);
+  await expect(page.locator("#invitation-url")).toBeVisible();
+  const link = await page.locator("#invitation-url").inputValue();
+  expect(link).toContain("#join=");
+  await act(page, "close");
+  await act(page, "logout");
+  await page.goto(link);
+  await expect(page.locator("#registration-form")).toBeVisible();
+  expect(page.url()).not.toContain("join=");
+  await expect(
+    page.locator("select[name=role],select[name=company_id]"),
+  ).toHaveCount(0);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.locator("#join-name").fill("Alex Test");
+  await page.locator("#join-username").fill("alex.test");
+  await page.locator("#join-password").fill("safe-password-123");
+  await page.locator("#join-confirm").fill("wrong");
+  await page
+    .getByRole("button", { name: "Create account", exact: true })
+    .click();
+  await expect(page.locator("#join-confirm")).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  await page.locator("#join-confirm").fill("safe-password-123");
+  await page
+    .getByRole("button", { name: "Create account", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Your account is awaiting approval" }),
+  ).toBeVisible();
+  expect(
+    writes.find((w) => w.operation === "register_invitation").role,
+  ).toBeUndefined();
+  await page.getByRole("link", { name: "Go to sign in" }).click();
+  await page.locator("#username").fill("alex.test");
+  await page.locator("#password").fill("safe-password-123");
+  await page.locator("#login-form button[type=submit]").click();
+  await expect(
+    page.getByRole("heading", { name: "Your account is awaiting approval" }),
+  ).toBeVisible();
+  await expect(page.locator(".reference-sidebar")).toHaveCount(0);
+  await act(page, "logout");
+  state.accountStatus = "approved";
+  state.people.find((p) => p.role === "worker").account_status = "pending";
+  state.people.find((p) => p.role === "worker").active = false;
+  await login(page, "supervisor");
+  await page.goto("/live/#people");
+  await act(page, "access-approve_worker");
+  await save(page);
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await act(page, "logout");
+  await login(page, "alex.test");
+  await expect(
+    page.getByRole("heading", { name: "My work", exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() => localStorage.length + sessionStorage.length),
+  ).toBe(0);
+});
+test("invalid links fail closed and registration failures clear revealed passwords", async ({
+  page,
+}) => {
+  const { state } = await backend(page);
+  state.invitationInvalid = true;
+  await page.goto("/live/#join=" + "a".repeat(64));
+  await expect(
+    page.getByRole("heading", { name: "Invitation unavailable" }),
+  ).toBeVisible();
+  await expect(page.locator("#registration-form")).toHaveCount(0);
+  state.invitationInvalid = false;
+  state.registrationFails = true;
+  await page.goto("/live/#join=" + "b".repeat(64));
+  await expect(page.locator("#registration-form")).toBeVisible();
+  await page.locator("#join-name").fill("Alex");
+  await page.locator("#join-username").fill("alex.test");
+  await page.locator("#join-password").fill("safe-password-123");
+  await page.locator("#join-confirm").fill("safe-password-123");
+  await page.getByRole("button", { name: "Show passwords" }).click();
+  await page
+    .getByRole("button", { name: "Create account", exact: true })
+    .click();
+  await expect(page.locator("#join-error")).toContainText("could not complete");
+  await expect(page.locator("#join-password")).toHaveValue("");
+  await expect(page.locator("#join-confirm")).toHaveValue("");
+  await expect(page.locator("#join-password")).toHaveAttribute(
+    "type",
+    "password",
+  );
+});
+test("NPI invites the subcontractor admin, who sees assigned scope and can dispatch only its own workers", async ({
+  page,
+}) => {
+  const { state, writes } = await backend(page);
+  const scope = crypto.randomUUID(),
+    contract = crypto.randomUUID();
+  state.contracts = [
+    { id: contract, name: "Court services", client: "Court", active: true },
+  ];
+  state.scopes = [
+    {
+      id: scope,
+      contract_id: contract,
+      company_id: state.companies[0].id,
+      site_id: state.sites[0].id,
+      active: true,
+    },
+  ];
+  await page.goto("/live/");
+  await login(page, "owner@npi.test");
+  await page.goto("/live/#people");
+  await act(page, "new-invitation");
+  await save(page);
+  const link = await page.locator("#invitation-url").inputValue();
+  await act(page, "close");
+  await act(page, "logout");
+  state.invitationRole = "sub";
+  await page.goto(link);
+  await expect(
+    page.getByRole("heading", { name: "Set up your company account" }),
+  ).toBeVisible();
+  await page.locator("#join-name").fill("Company Administrator");
+  await page.locator("#join-username").fill("supervisor");
+  await page.locator("#join-password").fill("safe-password-123");
+  await page.locator("#join-confirm").fill("safe-password-123");
+  await page
+    .getByRole("button", { name: "Create account", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Your company account is ready" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Go to sign in" }).click();
+  await login(page, "supervisor");
+  await page.goto("/live/#work");
+  await act(page, "new-work");
+  await page.locator("#scope_id").selectOption(scope);
+  await page.locator("#planned_date").fill("2026-11-19");
+  await page.locator("input[name=members]").first().check();
+  await save(page);
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  const body = writes.find((w) => w.p_action === "create_work").p_body;
+  expect(body.company_id).toBe(state.companies[0].id);
+  expect(body.contract_id).toBe(contract);
+  expect(body.site_id).toBe(state.sites[0].id);
+  await expect(
+    page.locator('a[href="#documents"],a[href="#rates"]'),
+  ).toHaveCount(0);
+});
+
+test("company password reset recovery never restores a revealed password", async ({
+  page,
+}) => {
+  const { state } = await backend(page);
+  await page.goto("/live/");
+  await login(page, "supervisor");
+  await page.goto("/live/#people");
+  await act(page, "reset-password");
+  await page.locator("#password").fill("private-password-123");
+  await act(page, "show-staff-password");
+  state.expireAdminNext = true;
+  await save(page);
+  await expect(page.locator("#login-form")).toBeVisible();
+  await login(page, "supervisor");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.locator("dialog #password")).toHaveValue("");
+  await expect(page.locator("dialog #password")).toHaveAttribute(
+    "type",
+    "password",
+  );
 });

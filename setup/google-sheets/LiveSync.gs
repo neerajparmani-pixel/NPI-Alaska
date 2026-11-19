@@ -8,26 +8,16 @@ const NPI_LIVE = {
     "npi_sites",
     "npi_tasks",
     "npi_companies",
-    "npi_rates",
+    "npi_contracts",
+    "npi_contract_scopes",
     "npi_work_orders",
     "npi_attendance_events",
     "npi_hour_reviews",
-    "npi_documents",
     "npi_sync_changes",
     "npi_audit",
   ],
   editable: {
     npi_sites: ["name", "address"],
-    npi_rates: [
-      "side",
-      "company_id",
-      "site_id",
-      "task_id",
-      "basis",
-      "amount_cents",
-      "effective_from",
-      "effective_through",
-    ],
     npi_work_orders: ["planned_date", "equipment"],
   },
 };
@@ -78,7 +68,7 @@ function npiLiveCall_(ctx, body) {
   });
   const result = JSON.parse(response.getContentText());
   if (response.getResponseCode() >= 300)
-    throw new Error(result.error || "Supabase bridge request failed.");
+    throw new Error("HTTP " + response.getResponseCode() + ": " + (result.error || result.message || result.msg || "Supabase bridge request failed."));
   return result;
 }
 function npiTab_(table) {
@@ -102,6 +92,9 @@ function npiLabel_(table, key) {
     username: "Username",
     role: "Role",
     active: "Active",
+    contract_id: "Contract ID",
+    client: "Customer / main source",
+    account_status: "Account status",
     side: "Price list",
     company_id: "Company ID",
     site_id: "Location ID",
@@ -141,6 +134,7 @@ function npiLabel_(table, key) {
     proposal: "Proposed change",
     message: "Review message",
     description: "Description",
+    _contract_name: "Contract name",
     _site_name: "Location name",
     _task_name: "Service name",
     _company_name: "Company name",
@@ -296,6 +290,7 @@ function npiPullLive() {
       const displayRecords = records.map((r) => {
         const x = Object.assign({}, r);
         for (const spec of [
+          ["contract_id", "_contract_name", "npi_contracts", "name"],
           ["site_id", "_site_name", "npi_sites", "name"],
           ["task_id", "_task_name", "npi_tasks", "name"],
           ["company_id", "_company_name", "npi_companies", "name"],

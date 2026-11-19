@@ -1,9 +1,10 @@
-const CACHE = "npi-live-v2";
+const CACHE = "npi-live-v3";
 const SHELL = [
   "./",
   "./index.html",
   "./app.js",
   "./api.js",
+  "./enrollment.js",
   "./config.js",
   "./style.css",
   "./manifest.webmanifest",

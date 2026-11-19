@@ -61,10 +61,134 @@ export async function handleAdmin(request, env, fetcher = fetch) {
       signal: AbortSignal.timeout(25000),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw Error("Server data operation failed");
+    if (!res.ok) {
+      const error = Error("Server data operation failed");
+      error.detail = data.message || "";
+      throw error;
+    }
     return data;
   };
   try {
+    if (!body || typeof body !== "object" || Array.isArray(body))
+      return json({ error: "Invalid request" }, 400, allowed);
+
+    if (["invite_preview", "register_invitation"].includes(body.operation)) {
+      if (typeof body.token !== "string" || !/^[0-9a-f]{64}$/.test(body.token))
+        return json(
+          {
+            error:
+              "This invitation is invalid or unavailable. Ask your company administrator for a new link.",
+          },
+          400,
+          allowed,
+        );
+      const hash = Array.from(
+        new Uint8Array(
+          await crypto.subtle.digest(
+            "SHA-256",
+            new TextEncoder().encode(body.token),
+          ),
+        ),
+      )
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      const rpc = (payload) =>
+        service("/rest/v1/rpc/npi_enroll", { method: "POST", body: payload });
+      if (body.operation === "invite_preview") {
+        try {
+          return json(
+            await rpc({ p_mode: "preview", p_hash: hash }),
+            200,
+            allowed,
+          );
+        } catch {
+          return json(
+            {
+              error:
+                "This invitation is expired, disabled or full. Ask your company administrator for a new link.",
+            },
+            400,
+            allowed,
+          );
+        }
+      }
+      if (
+        !uuid(body.request_id) ||
+        typeof body.username !== "string" ||
+        !/^[a-z0-9][a-z0-9._-]{2,49}$/.test(body.username) ||
+        typeof body.display_name !== "string" ||
+        !body.display_name.trim() ||
+        body.display_name.length > 150 ||
+        typeof body.password !== "string" ||
+        body.password.length < 12 ||
+        new TextEncoder().encode(body.password).length > 72
+      )
+        return json(
+          {
+            error:
+              "Enter your full name, a username (3–50 lowercase letters/numbers) and a password of 12–72 characters.",
+          },
+          400,
+          allowed,
+        );
+      const attempt = crypto.randomUUID();
+      const common = {
+        p_hash: hash,
+        p_request: body.request_id,
+        p_attempt: attempt,
+      };
+      try {
+        const registration = await rpc({
+          ...common,
+          p_mode: "begin",
+          p_username: body.username,
+          p_name: body.display_name.trim(),
+        });
+        if (registration.complete)
+          return json({ status: registration.status }, 200, allowed);
+        let userId = registration.user_id;
+        if (!userId) {
+          const created = await service("/auth/v1/admin/users", {
+            method: "POST",
+            body: {
+              email: body.username + "@users.npi6030.com",
+              password: body.password,
+              email_confirm: true,
+              app_metadata: { npi_enrollment_id: body.request_id },
+            },
+          });
+          userId = created.id;
+          if (!uuid(userId)) throw Error("Identity could not be created");
+        }
+        return json(
+          await rpc({ ...common, p_mode: "finish", p_user: userId }),
+          200,
+          allowed,
+        );
+      } catch (error) {
+        // Release only this attempt. An uncertain Auth result remains recoverable by its server-owned metadata.
+        await rpc({ ...common, p_mode: "release" }).catch(() => {});
+        const messages = {
+          "Username unavailable":
+            "That username is unavailable. If you already registered, sign in instead.",
+          "Registration busy":
+            "Registration is still processing. Wait 90 seconds and retry this form, or try signing in.",
+          "Invitation unavailable":
+            "This invitation is expired, disabled or full. Ask your company administrator for a new link.",
+          "Registration changed":
+            "Registration details changed. Reopen the invitation link to start again.",
+        };
+        return json(
+          {
+            error:
+              messages[error.detail] ||
+              "Registration could not complete. Try signing in if already submitted, or contact your company administrator.",
+          },
+          400,
+          allowed,
+        );
+      }
+    }
     if (
       body.operation === "sheet_export" ||
       body.operation === "sheet_propose"
@@ -78,21 +202,20 @@ export async function handleAdmin(request, env, fetcher = fetch) {
       )
         return json({ error: "Workbook authorization failed" }, 403, allowed);
       const fields = {
+        npi_contracts: "id,name,client,reference,active",
+        npi_contract_scopes: "id,contract_id,company_id,site_id,active",
         npi_audit: "id,actor_id,action,record_id,event_time",
-        npi_profiles: "id,company_id,username,display_name,role,active",
+        npi_profiles:
+          "id,company_id,username,display_name,role,active,account_status",
         npi_sites: "id,name,address,timezone,photo_path,version",
         npi_tasks: "id,name,description,active,version",
         npi_companies: "id,name,active,version",
-        npi_rates:
-          "id,side,company_id,site_id,task_id,basis,amount_cents,currency,effective_from,effective_through,version",
         npi_work_orders:
-          "id,company_id,site_id,task_id,planned_date,equipment,title,status,version",
+          "id,contract_id,company_id,site_id,task_id,planned_date,equipment,title,status,version",
         npi_attendance_events:
           "id,work_id,worker_id,event_kind,device_time,received_at,latitude,longitude,accuracy_metres,break_minutes",
         npi_hour_reviews:
           "id,work_id,worker_id,claimed_minutes,accepted_minutes,company_reviewer,npi_reviewer,reason,version",
-        npi_documents:
-          "id,kind,company_id,reference,status,subtotal_cents,tax_cents,total_cents,currency,version",
         npi_sync_changes:
           "id,record_table,record_id,expected_version,proposal,status,message,received_at",
       };
@@ -123,16 +246,6 @@ export async function handleAdmin(request, env, fetcher = fetch) {
       const permitted = {
         npi_sites: ["name", "address"],
         npi_work_orders: ["planned_date", "equipment"],
-        npi_rates: [
-          "side",
-          "company_id",
-          "site_id",
-          "task_id",
-          "basis",
-          "amount_cents",
-          "effective_from",
-          "effective_through",
-        ],
       };
       if (
         !change ||
@@ -145,7 +258,7 @@ export async function handleAdmin(request, env, fetcher = fetch) {
         typeof change.proposal !== "object" ||
         Array.isArray(change.proposal) ||
         Object.keys(change.proposal).some(
-          (k) => !Object.hasOwn(permitted, change.record_table).includes(k),
+          (k) => !permitted[change.record_table].includes(k),
         )
       )
         return json(

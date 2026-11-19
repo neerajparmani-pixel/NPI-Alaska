@@ -9,6 +9,8 @@ test("live API authenticates through Supabase and never grants a preview role", 
   const calls = [];
   const api = new LiveAPI(async (url, opts) => {
     calls.push({ url, opts });
+    if (url.endsWith("/npi_account_status"))
+      return json({ status: "approved" });
     return url.includes("/token?")
       ? json({
           access_token: "access",
@@ -23,13 +25,13 @@ test("live API authenticates through Supabase and never grants a preview role", 
     email: "alex.morgan@users.npi6030.com",
     password: "private-pass",
   });
-  assert.equal(calls[1].opts.headers.Authorization, "Bearer access");
+  assert.equal(calls[2].opts.headers.Authorization, "Bearer access");
   await api.action(
     "tasks",
     { id: user, version: 1 },
     "90000000-0000-0000-0000-000000000001",
   );
-  assert.equal(JSON.parse(calls[2].opts.body).p_action, "tasks");
+  assert.equal(JSON.parse(calls[3].opts.body).p_action, "tasks");
   await api.logout();
   assert.equal(api.session, null);
 });
@@ -231,4 +233,49 @@ test("account provisioning rolls back a new Auth identity if profile creation fa
   );
   assert.equal(calls.at(-1).opts.method, "DELETE");
   assert.ok(!(await res.text()).includes("not-for-persistence"));
+});
+
+test("sheet bridge accepts permitted planning proposals and rejects finance in the operations release", async () => {
+  const env = {
+    SUPABASE_URL: "https://test.supabase.co",
+    SUPABASE_SERVICE_ROLE_KEY: "server-only",
+    NPI_SHEETS_TOKEN: "a".repeat(48),
+    NPI_SHEETS_ID: "our-sheet",
+  };
+  const change = {
+    id: crypto.randomUUID(),
+    record_id: crypto.randomUUID(),
+    record_table: "npi_work_orders",
+    expected_version: 1,
+    proposal: { equipment: "Loader 02", planned_date: "2026-11-19" },
+  };
+  const req = (c) =>
+    new Request("https://edge.test", {
+      method: "POST",
+      headers: { "x-npi-sheet-token": env.NPI_SHEETS_TOKEN },
+      body: JSON.stringify({
+        operation: "sheet_propose",
+        spreadsheetId: "our-sheet",
+        change: c,
+      }),
+    });
+  let writes = 0;
+  const fetcher = async (url, options) => {
+    if (options.method === "POST") writes++;
+    return json([]);
+  };
+  const accepted = await handleAdmin(req(change), env, fetcher);
+  assert.equal(accepted.status, 200);
+  assert.equal(writes, 1);
+  const rejected = await handleAdmin(
+    req({
+      ...change,
+      record_table: "npi_rates",
+      proposal: { amount_cents: 2000 },
+    }),
+    env,
+    fetcher,
+  );
+  assert.equal(rejected.status, 400);
+  assert.equal(writes, 1);
 });
