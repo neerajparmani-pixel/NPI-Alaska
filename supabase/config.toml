@@ -1,0 +1,4 @@
+project_id = "fyfjsqhnxcktjdihcaks"
+[functions.npi-admin]
+# The handler verifies user JWTs with Auth /user. Sheets uses a separate server-only token.
+verify_jwt = false

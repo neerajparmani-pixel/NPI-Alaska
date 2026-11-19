@@ -16,10 +16,12 @@
     "package": "npm run build:cloudflare && python3 scripts/package.py",
     "package:sample": "python3 scripts/package-sample.py",
     "package:operations": "python3 scripts/package-operations.py",
-    "package:three-view": "python3 scripts/package-three-view.py"
+    "package:three-view": "python3 scripts/package-three-view.py",
+    "package:live": "python3 scripts/package-live.py"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@electric-sql/pglite": "^0.5.16",
     "@playwright/test": "^1.58.0",
     "prettier": "^3.9.10",
     "vite": "^7.3.0",

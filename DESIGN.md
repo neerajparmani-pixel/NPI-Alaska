@@ -115,3 +115,9 @@ Settings keeps operational configuration in primary shared panels. Installation 
 The supplied image ZIP is now accessible. Four site photos are bundled unchanged. The selected emblem appears inside the desktop reference, so brandImage() presents that region with CSS clipping; no invented replacement or generative enhancement is used. The source reference is only 1024×576 and its emblem region about 260px wide, limiting logo sharpness. Site galleries use contain framing to retain building context; worker assignment photos use a reserved 170px phone frame. Existing user-selected artwork takes precedence over bundled defaults. Shared typography and colors are unchanged.
 
 The user requested removal of the square logo backdrop. The shared brandImage() now uses a transparent PNG prepared with the image-editing tool from the supplied reference, replacing the screenshot crop. The result is an edited derivative; original source remains preserved. No other layout/palette changes are authorized.
+
+## Live application adapter
+
+public/live retains the approved navy/blue/silver/gold palette, bundled Source Sans 3, selected transparent emblem, supplied site photos, split welcome/login and desktop-sidebar/mobile-select workspace. public/three-view/style.css remains the token/visual owner. public/live/style.css supplies only live forms, feedback and print variants. Functional helpers in live/app.js are shared within this authenticated runtime and deliberately do not reuse the prototype localStorage mutation owner. No new brand direction is introduced.
+
+Live context: English, Alaska work timezone, exactly three roles. The UI shows a Supabase connection only after an authenticated database snapshot, never from presence of a key or sample state. The install ZIP excludes the prototype runtime. The old reference remains in the repository for regression and is not silently migrated.

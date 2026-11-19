@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 // Match static-host directory indexes while retaining the original app routes.
 const directoryIndex = (server) => {
   server.middlewares.use((req, _res, next) => {
+    if (req.url?.split("?")[0] === "/live/")
+      req.url = req.url.replace("/live/", "/live/index.html");
     if (req.url?.split("?")[0] === "/three-view/")
       req.url = req.url.replace("/three-view/", "/three-view/index.html");
     if (req.url?.split("?")[0] === "/operations/")
