@@ -1,4 +1,5 @@
 import { api } from "./api.js";
+import { icon } from "../three-view/icons.js";
 import { config } from "./config.js";
 import { suppliedArtwork } from "../three-view/assets.js";
 const $ = (s, r = document) => r.querySelector(s),
@@ -60,8 +61,50 @@ const person = (x) => data.people.find((p) => p.id === x),
 const photo = (s) => suppliedArtwork.sites[s?.photo_path] || "";
 const button = (label, action, value = "", classes = "") =>
   `<button type="button" class="btn ${classes}" data-action="${action}" data-id="${esc(value)}">${label}</button>`;
-const panel = (title, body) =>
-  `<section class="panel"><header class="panel-head"><h2>${esc(title)}</h2></header>${body}</section>`;
+const panel = (title, body, action = "") =>
+  `<section class="panel"><header class="panel-head"><h2>${esc(title)}</h2>${action}</header>${body}</section>`;
+const roles = {
+  npi: "NPI Admin",
+  sub: "Subcontractor Admin",
+  worker: "Subcontractor Worker",
+};
+const routeIcons = {
+  overview: "home",
+  work: "work",
+  review: "check",
+  hours: "clock",
+  sites: "snow",
+  companies: "building",
+  rates: "file",
+  documents: "file",
+  people: "users",
+  sheets: "file",
+  settings: "settings",
+};
+const emblem = (kind) =>
+  `<img class="brand-image ${kind}" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem">`;
+const head = (title, description, action = "") =>
+  `<header class="pagehead"><div><p class="eyebrow">${data.profile.role === "worker" ? "YOUR WORKDAY" : "ALASKA OPERATIONS"}</p><h1>${esc(title)}</h1><p>${esc(description)}</p></div>${action}</header>`;
+const initials = () =>
+  data.profile.display_name
+    .trim()
+    .split(/\s+/)
+    .map((word) => word[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "N";
+function summary() {
+  return (
+    data.summary || {
+      active: data.work.filter((w) => w.status === "in-progress").length,
+      company_review: data.work.filter((w) => w.status === "contractor-review")
+        .length,
+      npi_review: data.work.filter((w) => w.status === "npi-review").length,
+      approved: data.work.filter((w) => w.status === "approved").length,
+      work_count: data.work.length,
+    }
+  );
+}
 function field(name, label, type = "text", value = "", options = []) {
   return `<div class="field"><label for="${name}">${esc(label)}</label>${type === "select" ? `<select id="${name}" name="${name}">${options.map(([v, l]) => `<option value="${esc(v)}" ${String(v) === String(value) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>` : type === "textarea" ? `<textarea id="${name}" name="${name}" style="resize:none" maxlength="2000">${esc(value)}</textarea>` : `<input id="${name}" name="${name}" type="${type}" value="${esc(value)}" ${type === "password" ? 'autocomplete="new-password"' : type === "number" ? 'min="0" max="1000000" step="0.0001"' : `maxlength="${{ name: 150, display_name: 150, username: 50, equipment: 150, title: 200, address: 300, reference: 100 }[name] || 300}"`}>`}<span class="err" id="${name}-error"></span></div>`;
 }
@@ -88,11 +131,17 @@ function nav() {
     : [
         ["overview", "Overview"],
         ["work", "Work orders"],
-        ["review", "Review hours"],
-        ["sites", "Locations"],
+        [
+          "review",
+          data.profile.role === "npi" ? "NPI verification" : "Review hours",
+        ],
+        ["sites", "Sites & locations"],
+        ...(data.profile.role === "npi"
+          ? [["companies", "Subcontractors"]]
+          : []),
         ...(data.profile.role === "npi" ? [["rates", "Rates"]] : []),
         ["documents", "Billing drafts"],
-        ["people", "People"],
+        ["people", "People & access"],
         ...(data.profile.role === "npi"
           ? [["sheets", "Spreadsheet review"]]
           : []),
@@ -102,7 +151,7 @@ function nav() {
 function login(error = "") {
   document.body.dataset.role = "";
   document.title = "Sign in · Alaska NPI";
-  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2>Every site. Every shift. Accounted for.</h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Sessions end when you reload this page; saved work stays in Supabase.</p></div></main></div>`;
+  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Sessions end when you reload this page; saved work stays in Supabase.</p></div></main></div>`;
 }
 function render() {
   if (!data) {
@@ -124,13 +173,20 @@ function render() {
       rates: rateView,
       documents: documentView,
       people: peopleView,
+      companies: companiesView,
       sheets: sheetView,
       settings: settingsView,
       hours: hoursView,
       detail: detailView,
     }[page] || workView
   )();
-  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar"><div class="side-brand"><img class="live-logo" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem"><h2>ALASKA NPI</h2><p>OPERATIONS</p></div><nav class="side-nav" aria-label="Main navigation">${pages.map(([p, l]) => `<a href="#${p}" ${page === p ? 'aria-current="page"' : ""}>${esc(l)}</a>`).join("")}</nav><div class="side-bottom"><div><b>${esc(data.profile.display_name)}</b><p>${esc({ npi: "NPI Admin", sub: "Subcontractor Admin", worker: "Worker" }[data.profile.role])}</p></div>${button("Sign out", "logout")}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b><img class="live-logo" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem"> ALASKA NPI</b><p>${esc(data.profile.display_name)}</p></div><div class="top-controls">${button("Refresh", "refresh")}${button("Sign out", "logout")}</div><div class="live-nav"><label for="live-nav">Go to</label><select id="live-nav">${pages.map(([p, l]) => `<option value="${p}" ${p === page ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div></header><main id="main" class="main live-main"><div class="live-banner">Connected to Supabase · Updated ${esc(timestamp(latest))}. ${data.work.length >= 500 ? "Showing the latest 500 permitted assignments." : ""}</div>${!navigator.onLine ? '<p class="live-banner error">Offline. New changes cannot be saved until your connection returns.</p>' : ""}<p id="feedback" class="live-feedback ${feedbackError ? "error" : ""}" role="status">${esc(feedback)}</p><div class="reference-content">${content}</div></main></div></div>`;
+  const label = pages.find(([p]) => p === page)?.[1] || "Work details";
+  const reviewCount =
+    data.profile.role === "npi"
+      ? summary().npi_review
+      : summary().company_review;
+  const initialsText = esc(initials());
+  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar" aria-label="Workspace navigation"><div class="side-brand">${emblem("sidebar")}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Main navigation">${pages.map(([p, l]) => `<a href="#${p}" ${page === p ? 'aria-current="page"' : ""}>${icon(routeIcons[p])}<span>${esc(l)}</span>${p === "review" && reviewCount ? `<b class="side-count">${reviewCount}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${initialsText}</span><div class="grow"><b>${esc(data.profile.display_name)}</b><p>${roles[data.profile.role]}</p></div>${button("Sign out", "logout", "", "ghost")}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>${emblem("header")} ALASKA NPI</b><p>Operations / ${esc(label)}</p></div><div class="top-controls"><span class="live-role">${roles[data.profile.role]}</span>${button(icon("clock") + "<span>Refresh</span>", "refresh")}${button("Sign out", "logout", "", "live-top-signout")}<span class="top-avatar" aria-label="${esc(data.profile.display_name)}">${initialsText}</span></div><div class="mobile-navigation"><label for="live-nav">Go to</label><select id="live-nav" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${pages.map(([p, l]) => `<option value="${p}" ${p === page ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div></header><main id="main" class="main live-main"><div class="live-banner live-connection"><span class="live-connection-label">${icon("check")} Connected to Supabase</span><span>Updated ${esc(timestamp(latest))}</span></div>${!navigator.onLine ? '<p class="live-banner error">Offline. New changes cannot be saved until your connection returns.</p>' : ""}${data.work.length >= 500 ? '<p class="notice">Showing the latest 500 permitted assignments in this view.</p>' : ""}<p id="feedback" class="live-feedback ${feedbackError ? "error" : ""}" role="status">${esc(feedback)}</p><div class="reference-content">${content}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Alaska work time · ${roles[data.profile.role]}</span></footer></main>${data.profile.role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${pages.map(([p, l]) => `<a href="#${p}" ${page === p ? 'aria-current="page"' : ""}>${icon(routeIcons[p])}<span>${esc(l)}</span></a>`).join("")}</nav>` : ""}</div></div>`;
   document.querySelectorAll("button").forEach((b) => (b.disabled = busy));
 }
 async function load() {
@@ -152,17 +208,103 @@ async function load() {
   render();
 }
 function overviewView() {
-  const s = data.summary || {
-    active: data.work.filter((w) => w.status === "in-progress").length,
-    company_review: data.work.filter((w) => w.status === "contractor-review")
-      .length,
-    npi_review: data.work.filter((w) => w.status === "npi-review").length,
-    approved: data.work.filter((w) => w.status === "approved").length,
+  const s = summary(),
+    npi = data.profile.role === "npi";
+  const awaiting = npi ? s.npi_review : s.company_review;
+  const priority = {
+    "npi-review": 0,
+    "contractor-review": 1,
+    "in-progress": 2,
+    returned: 3,
+    draft: 4,
+    approved: 5,
   };
-  return `<h1>${data.profile.role === "npi" ? "NPI contract oversight" : "Company operations"}</h1><p>Monitor activity, verify work and review billing drafts.</p><section class="metrics"><div class="metric"><label>Active work</label><strong>${s.active}</strong></div><div class="metric"><label>Company review</label><strong>${s.company_review}</strong></div><div class="metric"><label>NPI verification</label><strong>${s.npi_review}</strong></div><div class="metric"><label>Approved work</label><strong>${s.approved}</strong></div></section>${workView()}`;
+  const activity = [...data.work]
+    .sort((a, b) => (priority[a.status] ?? 6) - (priority[b.status] ?? 6))
+    .slice(0, 6);
+  const metric = (label, value, detail, glyph) =>
+    `<div class="metric"><div class="row"><span class="metric-label">${label}</span>${icon(glyph)}</div><strong>${value}</strong><small>${detail}</small></div>`;
+  const queue = `<ul class="attention-list"><li>${awaiting} work order(s) await ${npi ? "NPI verification" : "company review"}.</li><li>${s.active} work order(s) are in progress.</li><li>${s.approved} work order(s) have NPI approval.</li></ul><div class="live-card-actions">${button("Review records", "goto", "review", "primary")}${button("Work orders", "goto", "work")}</div>`;
+  const activityRows = activity
+    .map((w) => {
+      const workers = data.members
+        .filter((m) => m.work_id === w.id)
+        .map((m) => person(m.worker_id)?.display_name)
+        .filter(Boolean);
+      return `<div class="activity-row"><span class="activity-symbol">${icon(w.kind === "hauling" ? "truck" : "snow")}</span><div class="grow"><b>${esc(workers.join(", ") || w.title || "Assignment")}</b><p>${esc(site(w.site_id)?.name || "Location unavailable")} · ${esc(w.equipment || task(w.task_id)?.name)}</p><small>${esc(company(w.company_id)?.name || "")}</small></div>${button(esc(names[w.status]), "open-work", w.id, "activity-status")}</div>`;
+    })
+    .join("");
+  const siteHours = data.sites
+    .filter((s) => data.work.some((w) => w.site_id === s.id))
+    .map((s) => {
+      const work = data.work.filter((w) => w.site_id === s.id);
+      const totals = work.reduce(
+        (sum, w) => {
+          for (const m of data.members.filter((m) => m.work_id === w.id)) {
+            sum.recorded += recorded(w, m.worker_id);
+            sum.accepted += Number(
+              data.reviews.find(
+                (r) => r.work_id === w.id && r.worker_id === m.worker_id,
+              )?.accepted_minutes || 0,
+            );
+          }
+          return sum;
+        },
+        { recorded: 0, accepted: 0 },
+      );
+      return `<article class="mini-site"><h3>${esc(s.name)}</h3><div class="row between"><div><b>${hour(totals.recorded)}</b><small> recorded h</small><p class="small muted">${hour(totals.accepted)} NPI-accepted h</p></div>${button("View work", "goto", "work")}</div></article>`;
+    })
+    .join("");
+  return (
+    head(
+      npi ? "NPI contract oversight" : "Subcontractor operations",
+      npi
+        ? "Monitor activity. Verify delivery. Review contractor charges."
+        : "Coordinate crews. Review hours. Keep NPI updated.",
+    ) +
+    `<section class="oversight-hero"><div><p>CUSTOMER → NPI → SUBCONTRACTOR</p><h2>Work visibility, before the invoice.</h2><span>Crews belong to the subcontractor. NPI monitors and verifies service.</span></div><div class="hero-stat"><strong>${s.approved}/${s.work_count ?? data.work.length}</strong><span>NPI verified</span></div></section><section class="metrics" aria-label="Operational summary">${metric("Active work", s.active, "Recorded work in progress", "work")}${metric(npi ? "NPI review" : "Company review", awaiting, "Hours awaiting verification", "check")}${metric("Verified records", s.approved, "Accepted after NPI review", "pin")}${metric(npi ? "Company review" : "NPI review", npi ? s.company_review : s.npi_review, "Next approval handoff", "users")}</section><div class="two oversight-grid"><div class="stack">${panel("Worker activity", activityRows || '<div class="live-empty"><span class="activity-symbol">' + icon("work") + "</span><h3>No work activity yet</h3><p>Assign work to see crew activity, locations and approval progress here.</p></div>", button("All work", "goto", "work", "compact"))}${panel("Hours by location", '<p class="small muted">Worker-hours for assignments loaded in this view.</p><div class="site-summary">' + (siteHours || '<p class="live-empty-copy">Recorded and accepted hours will appear after workers start their assignments.</p>') + "</div>")}${panel("Work register", workRegister(activity), npi ? button("New work order", "new-work", "", "primary") : "")}</div><aside class="stack" aria-label="Review and setup">${panel("Attention queue", queue)}${panel("Approval handoff", '<ol class="flow"><li><span class="step">1</span><div><b>Subcontractor Worker</b><p>Check in, complete tasks, upload evidence and check out.</p></div></li><li><span class="step">2</span><div><b>Subcontractor Admin</b><p>Review workers’ hours and forward them to NPI.</p></div></li><li><span class="step">3</span><div><b>NPI Admin</b><p>Cross-check original records and accept hours.</p></div></li></ol>')}${!data.work.length && npi ? panel("Set up your workspace", '<p>Add your subcontractor, locations and worker accounts, then create the first work order.</p><div class="live-setup-links">' + button("Add subcontractor", "new-company") + button("Add location", "new-site") + button("Add service", "new-task") + button("Manage people", "goto", "people") + "</div>") : ""}</aside></div>`
+  );
+}
+function workRegister(list) {
+  return table(
+    ["Location / task", "Company", "Status", "Action"],
+    list.map((w) => [
+      esc(site(w.site_id)?.name) +
+        "<br><small>" +
+        esc(w.title || task(w.task_id)?.name) +
+        "</small>",
+      esc(company(w.company_id)?.name),
+      `<span class="badge">${esc(names[w.status])}</span>`,
+      button("Open", "open-work", w.id),
+    ]),
+  );
 }
 function workView() {
-  return `<div class="page-head"><div><h1>${data.profile.role === "worker" ? "My work" : "Work orders"}</h1><p>Shared assignments and server-recorded progress.</p></div>${data.profile.role === "npi" ? button("New work order", "new-work", "", "primary") : ""}</div>${data.work.length ? `<div class="two">${data.work.map((w) => `<article class="panel">${photo(site(w.site_id)) ? `<img class="live-photo" src="../three-view/${photo(site(w.site_id)).replace("./", "")}" alt="${esc(site(w.site_id)?.name)}">` : ""}<p class="badge">${esc(names[w.status])}</p><h2>${esc(site(w.site_id)?.name)}</h2><p>${esc(w.title || task(w.task_id)?.name)}</p><p>${esc(w.planned_date)} · ${esc(w.equipment)}</p>${button("View assignment", "open-work", w.id, "primary")}</article>`).join("")}</div>` : panel("No assignments yet", data.profile.role === "npi" ? '<p>First add a company, location, service and worker profiles. Then create a work order.</p><div class="live-card-actions">' + button("Add company", "new-company") + button("Add location", "new-site") + button("Add service", "new-task") + button("Manage people", "goto", "people") + "</div>" : "<p>Your administrator has not assigned any work yet.</p>")}`;
+  const worker = data.profile.role === "worker";
+  return (
+    head(
+      worker ? "My work" : "Work orders",
+      worker
+        ? "Your assignments, locations and next steps."
+        : "Assigned work, site evidence and approval progress.",
+      data.profile.role === "npi"
+        ? button("New work order", "new-work", "", "primary")
+        : "",
+    ) +
+    (data.work.length
+      ? `<div class="live-work-grid">${data.work.map((w) => `<article class="panel live-work-card">${photo(site(w.site_id)) ? `<img class="live-photo" src="../three-view/${photo(site(w.site_id)).replace("./", "")}" alt="${esc(site(w.site_id)?.name)}">` : ""}<div class="live-work-card-body"><span class="badge">${esc(names[w.status])}</span><h2>${esc(site(w.site_id)?.name)}</h2><p>${esc(w.title || task(w.task_id)?.name)}</p><p class="small muted">${esc(w.planned_date)} · ${esc(w.equipment)}</p>${button("View assignment", "open-work", w.id, "primary")}</div></article>`).join("")}</div>`
+      : panel(
+          "No assignments yet",
+          data.profile.role === "npi"
+            ? '<p>First add a company, location, service and worker profiles. Then create a work order.</p><div class="live-card-actions">' +
+                button("Add company", "new-company") +
+                button("Add location", "new-site") +
+                button("Add service", "new-task") +
+                button("Manage people", "goto", "people") +
+                "</div>"
+            : "<p>Your administrator has not assigned any work yet.</p>",
+        ))
+  );
 }
 function recorded(work, worker) {
   const review = data.reviews.find(
@@ -317,6 +459,30 @@ function rateView() {
         esc(r.effective_from) + " → " + esc(r.effective_through || "Open"),
         button("Edit", "edit-rate", r.id),
       ]),
+    )
+  );
+}
+function companiesView() {
+  return (
+    head(
+      "Subcontractors",
+      "Companies delivering work for NPI.",
+      button("Add company", "new-company", "", "primary"),
+    ) +
+    panel(
+      "Company register",
+      table(
+        ["Name", "Status"],
+        data.companies.map((c) => [
+          esc(c.name),
+          c.active ? "Active" : "Inactive",
+        ]),
+      ),
+    ) +
+    panel(
+      "Company accounts",
+      "<p>Assign each subcontractor administrator and worker to the correct company.</p>" +
+        button("Manage people & access", "goto", "people"),
     )
   );
 }

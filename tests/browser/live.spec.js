@@ -185,3 +185,75 @@ test("shown temporary passwords are excluded when a staff form is restored after
     "password",
   );
 });
+
+test("approved oversight layout uses scoped counts, real empty states and accessible role navigation", async ({
+  page,
+}) => {
+  const { state } = await backend(page);
+  state.work = [];
+  state.members = [];
+  state.reviews = [];
+  state.summary = {
+    active: 0,
+    company_review: 0,
+    npi_review: 0,
+    approved: 0,
+    work_count: 0,
+  };
+  await page.goto("/live/");
+  await login(page, "owner@npi.test");
+  await expect(page.locator(".oversight-hero")).toContainText(
+    "Work visibility, before the invoice.",
+  );
+  await expect(page.locator(".hero-stat strong")).toHaveText("0/0");
+  await expect(
+    page.getByRole("heading", { name: "Worker activity", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Hours by location", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Attention queue", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "No work activity yet" }),
+  ).toBeVisible();
+  await expect(page.locator("#preview-role")).toHaveCount(0);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  const narrow = page.viewportSize().width < 960;
+  if (narrow) {
+    await page.locator("#live-nav").focus();
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Escape");
+    await page.locator("#live-nav").selectOption("companies");
+  } else {
+    await expect(
+      page.locator('.side-nav a[href="#companies"] svg'),
+    ).toHaveCount(1);
+    await page
+      .getByRole("link", { name: "Subcontractors", exact: true })
+      .click();
+  }
+  await expect(
+    page.getByRole("heading", { name: "Subcontractors", exact: true }),
+  ).toBeVisible();
+  await act(page, "new-company");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await act(page, "close");
+  await act(page, "logout");
+  await login(page, "alex");
+  if (narrow) {
+    await expect(
+      page.getByRole("navigation", { name: "Worker navigation" }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: "My hours", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "My hours", exact: true }),
+    ).toBeVisible();
+  }
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});

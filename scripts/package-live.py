@@ -21,7 +21,7 @@ files=[]
 for folder in ['public/live','public/three-view/fonts','public/icons']:
  for p in (root/folder).rglob('*'):
   if p.is_file():files.append((p,str(p.relative_to(root/'public'))))
-for file in ['style.css','assets.js']:
+for file in ['style.css','assets.js','icons.js']:
  files.append((root/'public/three-view'/file,'three-view/'+file))
 for file in ['logo-transparent.png','boney.jpg','nesbit.jpg','snowden.jpg','youth.jpg']:
  files.append((root/'public/three-view/assets'/file,'three-view/assets/'+file))
@@ -50,3 +50,12 @@ with zipfile.ZipFile(out/'NPI-Alaska-Live-Integration.zip') as z:
  assert not any(n.lower().endswith(('.pdf','.doc','.docx','.env')) for n in z.namelist())
  assert 'sb_secret_' not in z.read('live/config.js').decode()
 print('Built NPI-Alaska-Live-Integration.zip; no demo runtime or private credentials included.')
+
+# Existing installations need only this frontend update: no database/script reruns.
+with zipfile.ZipFile(out/'NPI-Alaska-Interface-Update.zip','w',zipfile.ZIP_DEFLATED) as z:
+ for p,name in files:
+  if not name.startswith('setup/'):z.write(p,name)
+ z.writestr('index.html','<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Alaska NPI</title><meta http-equiv="refresh" content="0;url=/live/"><a href="/live/">Open Alaska NPI</a></html>')
+ z.writestr('_redirects','/three-view /live/ 302\n/three-view/ /live/ 302\n')
+ z.writestr('UPDATE-INSTRUCTIONS.txt','FRONTEND UPDATE ONLY\n\nYour existing Supabase, accounts, storage and Google Sheets setup stay in place. Do not rerun SQL, recreate users or replace Apps Script for this interface update.\n\nExtract this ZIP. In Cloudflare > Workers & Pages > npi-alaska > Create deployment, upload the extracted contents to Production. index.html, _headers, _redirects, live/, three-view/ and icons/ belong at the upload root. Keep the domain/DNS unchanged.\n\nOpen https://alaska.npi6030.com/live/ online and sign in with your existing account. If needed, hard-refresh once with Ctrl+Shift+R. The new interface restores the approved oversight layout while showing your actual records. No sample work, prices or users are seeded.\n\nThe three roles remain server-enforced. Billing remains priced drafts; final invoice issuance and payments are not implemented.\n')
+print('Built NPI-Alaska-Interface-Update.zip; frontend only, existing backend preserved.')

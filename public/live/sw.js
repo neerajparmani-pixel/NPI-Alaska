@@ -1,4 +1,4 @@
-const CACHE = "npi-live-v1";
+const CACHE = "npi-live-v2";
 const SHELL = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const SHELL = [
   "./manifest.webmanifest",
   "../three-view/style.css",
   "../three-view/assets.js",
+  "../three-view/icons.js",
   "../three-view/assets/logo-transparent.png",
   "../three-view/assets/boney.jpg",
   "../three-view/assets/nesbit.jpg",

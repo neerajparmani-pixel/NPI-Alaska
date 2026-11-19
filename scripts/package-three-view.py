@@ -11,7 +11,8 @@ html=re.sub(r'<link\s+[^>]*rel="(?:manifest|icon|apple-touch-icon)"[^>]*>','',ht
 js=(source/'app.js').read_text();js=re.sub(r'import\s*\{[^}]*\}\s*from\s*[\'"]\./rates.js[\'"];?','',js);js=re.sub(r'^\s*import\s*\{.*?\}\s*from\s*[\'"]\.\./operations/domain.js[\'"];?','',js,flags=re.S)
 js=re.sub(r'import\s*\{[^}]*\}\s*from\s*[\'"]\./workbook.js[\'"];?','',js)
 js=re.sub(r'import\s*\{[^}]*\}\s*from\s*[\'"]\./assets.js[\'"];?','',js)
-artwork=(source/'assets.js').read_text().replace('export const','const')
+js=re.sub(r'import\s*\{[^}]*\}\s*from\s*[\'\"]\./icons.js[\'\"];?','',js)
+artwork=(source/'icons.js').read_text().replace('export const','const')+'\n'+(source/'assets.js').read_text().replace('export const','const')
 for photo in (source/'assets').glob('*'):
  if photo.suffix not in ['.jpg','.png']:continue
  artwork=artwork.replace('./assets/'+photo.name,('data:image/png;base64,' if photo.suffix=='.png' else 'data:image/jpeg;base64,')+base64.b64encode(photo.read_bytes()).decode())
