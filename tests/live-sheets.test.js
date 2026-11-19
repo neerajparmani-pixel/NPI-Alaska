@@ -14,12 +14,28 @@ const record = {
 function harness(actor = "owner@npi.test") {
   const props = new Map([["NPI_SHEETS_TOKEN", "s".repeat(48)]]),
     requests = [];
-  const headers = Object.keys(record);
   const rows = [
-    headers,
-    headers.map((k) =>
-      k === "equipment" ? "Loader 02" : String(record[k] ?? ""),
-    ),
+    Array(18).fill("Header"),
+    [
+      "npi_work_orders",
+      record.id,
+      "Work",
+      "",
+      "",
+      "",
+      "",
+      "draft",
+      record.planned_date,
+      "Loader 02",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      3,
+      JSON.stringify(record),
+    ],
   ];
   const sheet = (values) => ({
     getLastRow: () => values.length,
@@ -31,20 +47,14 @@ function harness(actor = "owner@npi.test") {
           .map((r) => r.slice(col - 1, col - 1 + width)),
     }),
   });
-  const tabs = {
-    __NPI_BASE: sheet([
-      ["Table", "ID", "Server snapshot"],
-      ["npi_work_orders", record.id, JSON.stringify(record)],
-    ]),
-    Live_work_orders: sheet(rows),
-  };
+  const tabs = { Work: sheet(rows) };
   const book = {
     getId: () => "1FJkmwHbZaNLwT4awsSshJpysi95dwBtOOKadig_Ibz8",
     getSheetByName: (n) => tabs[n],
     toast() {},
   };
   const context = vm.createContext({
-    SpreadsheetApp: { getActiveSpreadsheet: () => book },
+    SpreadsheetApp: { getActiveSpreadsheet: () => book, openById: () => book },
     DriveApp: {
       getFileById: () => ({
         getOwner: () => ({ getEmail: () => "owner@npi.test" }),
@@ -100,13 +110,11 @@ test("unsent workbook edits stop refresh before any source overwrite or network 
   const h = harness();
   assert.throws(() => h.context.npiPullLive(), /Submit unsent edits/);
   assert.equal(h.requests.length, 0);
-  assert.equal(
-    h.rows[1][Object.keys(record).indexOf("equipment")],
-    "Loader 02",
-  );
+  assert.equal(h.rows[1][9], "Loader 02");
 });
 test("workbook rejects other editors and neutralizes formula cells", () => {
   const h = harness("foreign@npi.test");
+  assert.equal(h.context.npiSafe_(1.75), 1.75);
   assert.throws(() => h.context.npiSubmitLive(), /authorize this manager/);
   assert.equal(h.requests.length, 0);
   assert.equal(

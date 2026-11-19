@@ -1,0 +1,102 @@
+[
+  {
+    "name": "01-sign-in",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "02-npi-overview",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "03-work-register",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "04-assignment-team",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "05-private-gallery",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "06-stamped-photo",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "07-npi-recipients",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "08-company-issue",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "09-worker-home",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "10-multiple-upload-queue",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "11-worker-issue-report",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "12-direct-camera-preview",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "13-submission-confirmation",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "14-explicit-exception-review",
+    "violations": [],
+    "incomplete": []
+  }
+]

@@ -1,0 +1,87 @@
+
+> npi-alaska@0.1.0 test
+> node --test tests/*.test.js
+
+✔ auth fails closed without config, rejects foreign origins and wrong methods (107.561533ms)
+✔ managed verification creates encrypted secure session, no plaintext password or refresh token retained (19.469465ms)
+✔ session rejects tampering, expiry and wrong encryption keys (9.136842ms)
+✔ session checks provider account state without granting work access (7.207414ms)
+✔ generic login errors, network failures and logout (3.193372ms)
+✔ complete worker, correction and supervisor approval lifecycle (3.498061ms)
+✔ port work requires valid loads and signed timecard (0.44728ms)
+✔ invitation registration hashes the link, creates managed identity and never accepts client role/company (116.430258ms)
+✔ unavailable invitation blocks account creation and malformed registration never calls a service (13.293525ms)
+✔ resume after uncertain Auth response reuses the reserved identity without resetting its password (4.501422ms)
+✔ field migration, assignment attribution and notification recipient permissions (6995.634763ms)
+✔ issue reporting creates two-admin email outbox, idempotent retry and foreign isolation (59.943423ms)
+✔ issue workflow enforces resolution reason and preserves comments (30.813758ms)
+✔ before/after evidence and partial-work safeguards are server side (7.379629ms)
+✔ scheduled copies, paginated work search and unchanged worker scope (62.678369ms)
+✔ staged originals, checkout and both review stages preserve immutable evidence (61.169296ms)
+✔ email jobs require service authority and claims do not race or duplicate (16.610925ms)
+✔ partial work can be submitted without fabricated photos, but both approvals require acknowledgement (28.84296ms)
+✔ live API authenticates through Supabase and never grants a preview role (53.017505ms)
+✔ live API fails closed and expires sessions on failed authentication (1.310895ms)
+✔ admin edge function rejects wrong origins and unauthenticated provisioning (6.168853ms)
+✔ sheet bridge rejects protected fields and wrong workbook before service mutation (43.999735ms)
+✔ subcontractor admins cannot provision another company or another admin (11.196089ms)
+✔ upload retry keeps one object and one evidence command identity after uncertain acknowledgement (14.507295ms)
+✔ account provisioning rolls back a new Auth identity if profile creation fails (2.007723ms)
+✔ sheet bridge accepts permitted planning proposals and rejects finance in the operations release (10.109005ms)
+✔ email dispatcher requires workbook authorization and server sender configuration (7.970461ms)
+✔ email sends use durable provider idempotency and record accepted delivery separately (10.039442ms)
+✔ a late refresh response never overwrites a newer signed-in account (0.760031ms)
+✔ a stale authenticated failure cannot clear a newer account session (0.431477ms)
+✔ sign-out clears local access before network completion and cannot clear a subsequent login (0.244491ms)
+✔ database migration installs and RLS denies unauthenticated/foreign mutations (6523.462181ms)
+✔ database preserves original GPS, stages company before NPI and rejects stale/reused mutations (201.362472ms)
+✔ separate effective rates, private customer prices and locked draft snapshots (92.441207ms)
+✔ recorded/claimed acceptance preserves exact server minutes without display-rounding changes (44.029249ms)
+✔ NULL document kinds cannot bypass worker financial permissions (3.105132ms)
+✔ live workbook submits only permitted versioned fields and reuses proposal identity (8.554754ms)
+✔ unsent workbook edits stop refresh before any source overwrite or network call (6.632337ms)
+✔ workbook rejects other editors and neutralizes formula cells (3.573533ms)
+✔ NPI owns contracts and scope; subcontractors cannot assign themselves other sites or invite administrators (6317.879969ms)
+✔ worker invitation fixes role/company, serializes retry, binds trusted Auth identity and blocks pending access (97.717228ms)
+✔ subcontractor dispatch is scoped and NPI can inspect original evidence and accepted hours (44.922568ms)
+✔ new operations database retains both GPS events through company and NPI review (94.515698ms)
+✔ NPI admin invitations are single-use; expired/revoked links cannot register; suspension blocks work (12.466224ms)
+✔ single-use NPI invitation activates the company administrator without creating worker authority for NPI (21.639261ms)
+✔ subcontract: crew elapsed time, person-hours, breaks and missing checkout remain distinct (0.977532ms)
+✔ subcontract: separate reviews preserve evidence and require adjustment reason (5.166784ms)
+✔ subcontract: mixed pricing uses approved units and prevents duplicate allocation (0.288396ms)
+✔ subcontract: both events require valid coordinates; zero coordinates are valid (0.136021ms)
+✔ subcontract: overlapping attendance flags the shared worker (1.49114ms)
+✔ rate cents are exact; zero is valid; invalid dates and fractional cents fail (2.212024ms)
+✔ overlapping rates cannot silently compete, with separate lists and companies (0.353512ms)
+✔ quantity previews round cents; enforce whole visits/loads and single fixed service (0.390497ms)
+✔ spreadsheet schema initializer is repeatable (4.651704ms)
+✔ initializer refuses incompatible existing data before creating tabs (2.899648ms)
+✔ owner-only backend rejects empty identity, other editors and owner-executing impersonation (5.342483ms)
+✔ sheet setup preserves records and full lifecycle saves approvals and real evidence references (31.786484ms)
+✔ retry keys prevent duplicate creation/upload and stale versions cannot overwrite (3.202706ms)
+✔ server validates file signatures, private folders, site tasks, port requirements and formula safety (5.427098ms)
+✔ test dataset is paginated and incompatible headers are never overwritten (85.684347ms)
+✔ multi-tab backend preserves original records and projects assignments, evidence and approvals (5.691749ms)
+✔ report failures never undo the saved work record and can be rebuilt from the record store (2.974349ms)
+✔ full-page route loads saved spreadsheet ID and refuses other users (2.657791ms)
+✔ non-secret workspace settings persist through report rebuilds without changing login access (1.485673ms)
+✔ workbook initializer rejects non-owner before mutation (7.515029ms)
+✔ workbook initializer creates separate empty rate tables and preserves existing rows (8.784573ms)
+✔ CSV round trip preserves quotes, commas, newlines and BOM (15.066582ms)
+✔ worksheet preview changes planning only without mutating source records (1.920475ms)
+✔ stale batches, duplicates, invalid dates and protected decisions fail atomically (8.059011ms)
+✔ CSV export neutralizes spreadsheet formula cells (0.148038ms)
+ℹ tests 70
+ℹ suites 0
+ℹ pass 70
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7933.766107
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice

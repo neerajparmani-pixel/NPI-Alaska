@@ -9,10 +9,14 @@ const company = "20000000-0000-0000-0000-000000000001",
   work = "50000000-0000-0000-0000-000000000001";
 const png =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aD1sAAAAASUVORK5CYII=";
-async function backend(page, { denyProfile = false } = {}) {
+async function backend(
+  page,
+  { denyProfile = false, sharedState = null, sharedFiles = null } = {},
+) {
   let role = "worker";
   const writes = [];
-  const state = {
+  const storedFiles = sharedFiles || new Map();
+  const state = sharedState || {
     companies: [{ id: company, name: "Test contractor", active: true }],
     people: Object.entries(u).map(([role, id]) => ({
       id,
@@ -147,6 +151,121 @@ async function backend(page, { denyProfile = false } = {}) {
         writes.push(body);
         return reply({ id: crypto.randomUUID() });
       }
+      if (path.endsWith("/npi_field_snapshot")) {
+        const f = state.field || {
+          issues: [],
+          comments: [],
+          history: [],
+          notifications: [],
+          email_status: [],
+          settings: [],
+          storage: { files: state.evidence.length, bytes: 0 },
+        };
+        return reply({
+          ...f,
+          settings:
+            role === "worker"
+              ? []
+              : f.settings.filter(
+                  (s) =>
+                    !s.scope || s.scope === (role === "npi" ? "npi" : company),
+                ),
+          notifications: f.notifications.filter(
+            (n) => !n.recipient_id || n.recipient_id === u[role],
+          ),
+          email_status:
+            role === "worker"
+              ? []
+              : f.email_status.filter(
+                  (e) => role === "npi" || !e.scope || e.scope === company,
+                ),
+        });
+      }
+      if (path.endsWith("/npi_work_search"))
+        return reply({ rows: state.work, total: state.work.length });
+      if (path.endsWith("/npi_field_action")) {
+        if (state.expireFieldNext) {
+          state.expireFieldNext = false;
+          return reply({ error: "Session expired" }, 401);
+        }
+        writes.push(body);
+        const b = body.p_body;
+        state.field ||= {
+          issues: [],
+          comments: [],
+          history: [],
+          notifications: [],
+          email_status: [],
+          settings: [],
+        };
+        if (body.p_action === "evidence") {
+          state.evidence.push({
+            ...b,
+            id: crypto.randomUUID(),
+            work_id: b.id,
+            kind: b.stage === "timecard" ? "timecard" : "photo",
+            uploaded_by: u.worker,
+            created_at: new Date().toISOString(),
+          });
+          state.work[0].version++;
+        }
+        if (body.p_action === "report_issue") {
+          const issue = {
+            ...b,
+            id: crypto.randomUUID(),
+            work_id: b.id,
+            reporter_id: u[role],
+            status: "open",
+            version: 1,
+            created_at: new Date().toISOString(),
+          };
+          state.field.issues.push(issue);
+          for (const recipient_id of [u.npi, u.sub])
+            state.field.notifications.push({
+              id: crypto.randomUUID(),
+              recipient_id,
+              work_id: b.id,
+              issue_id: issue.id,
+              title: "Issue reported: " + b.category,
+              message: b.description,
+              created_at: issue.created_at,
+            });
+          for (const setting of state.field.settings)
+            for (const recipient of setting.emails || [])
+              state.field.email_status.push({
+                id: crypto.randomUUID(),
+                scope: setting.scope,
+                recipient,
+                work_id: b.id,
+                issue_id: issue.id,
+                status: "queued",
+                attempts: 0,
+                created_at: issue.created_at,
+              });
+        }
+        if (body.p_action === "notification_settings") {
+          const scope = role === "npi" ? "npi" : company;
+          state.field.settings = state.field.settings.filter(
+            (s) => s.scope !== scope,
+          );
+          state.field.settings.push({ ...b, scope });
+        }
+        if (body.p_action === "read_notifications")
+          state.field.notifications
+            .filter((n) => n.recipient_id === u[role])
+            .forEach((n) => (n.read_at = new Date().toISOString()));
+        if (body.p_action === "issue_update")
+          Object.assign(
+            state.field.issues.find((i) => i.id === b.id),
+            b,
+          );
+        if (body.p_action === "outcome")
+          Object.assign(state.work[0], {
+            outcome: b.outcome,
+            outcome_reason: b.reason,
+          });
+        return reply({ id: b.id || crypto.randomUUID() });
+      }
       if (path.endsWith("/npi_live_snapshot"))
         return denyProfile
           ? reply(
@@ -177,12 +296,22 @@ async function backend(page, { denyProfile = false } = {}) {
           });
         return route.fulfill({
           status: 200,
-          contentType: "image/png",
-          body: Buffer.from(png, "base64"),
+          contentType:
+            storedFiles.get(path.split("/work-evidence/")[1])?.type ||
+            "image/png",
+          body:
+            storedFiles.get(path.split("/work-evidence/")[1])?.bytes ||
+            Buffer.from(png, "base64"),
         });
       }
-      if (path.startsWith("/storage/v1/object/"))
+      if (path.startsWith("/storage/v1/object/")) {
+        if (req.method() === "POST")
+          storedFiles.set(path.split("/work-evidence/")[1], {
+            bytes: req.postDataBuffer(),
+            type: req.headers()["content-type"],
+          });
         return reply({ Key: "stored" });
+      }
       if (path.endsWith("/npi_live_action")) {
         if (state.expireNext) {
           state.expireNext = false;
@@ -248,7 +377,7 @@ async function backend(page, { denyProfile = false } = {}) {
       return reply({ error: "Unexpected API request" }, 400);
     },
   );
-  return { state, writes };
+  return { state, writes, storedFiles };
 }
 
 export { u, company, site, task, work, png, backend };

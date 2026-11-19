@@ -17,15 +17,21 @@
     "package:sample": "python3 scripts/package-sample.py",
     "package:operations": "python3 scripts/package-operations.py",
     "package:three-view": "python3 scripts/package-three-view.py",
-    "package:live": "python3 scripts/package-live.py",
-    "package:release": "python3 scripts/package-live.py"
+    "package:live": "python3 scripts/package-field-release.py",
+    "package:release": "python3 scripts/package-field-release.py",
+    "package:field": "python3 scripts/package-field-release.py"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@electric-sql/pglite": "^0.5.16",
     "@playwright/test": "^1.58.0",
+    "esbuild": "^0.28.2",
     "prettier": "^3.9.10",
     "vite": "^7.3.0",
     "wrangler": "^4.154.0"
+  },
+  "dependencies": {
+    "heic-to": "^1.6.7",
+    "utif": "^3.1.0"
   }
 }

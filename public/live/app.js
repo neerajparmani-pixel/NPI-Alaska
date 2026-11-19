@@ -1,3 +1,5 @@
+import { distanceMetres } from "./field-domain.js";
+import { FieldFeatures } from "./field.js";
 import { api } from "./api.js";
 import { showEnrollment } from "./enrollment.js";
 import { icon } from "../three-view/icons.js";
@@ -31,7 +33,9 @@ const names = {
   "npi-review": "NPI verification",
   approved: "NPI approved",
   returned: "Correction requested",
+  cancelled: "Cancelled",
 };
+let requestedWork = /^#work=([0-9a-f-]{36})$/i.exec(location.hash)?.[1] || null;
 let data = null,
   busy = false,
   selected = null,
@@ -46,6 +50,49 @@ let data = null,
   suspendedDraft = null,
   accountState = null,
   opsData = { contracts: [], scopes: [], invitations: [] };
+const features = new FieldFeatures(() => ({
+  api,
+  data,
+  esc,
+  button,
+  panel,
+  table,
+  field,
+  form,
+  modal,
+  close,
+  head,
+  person,
+  site,
+  task,
+  company,
+  job,
+  photo,
+  names,
+  contracts: opsData.contracts,
+  timestamp,
+  recorded,
+  load,
+  render,
+  message,
+  endSession: () => {
+    suspendDraft();
+    data = null;
+    close(true);
+    login("Session ended. Sign in again to resume the same upload queue.");
+  },
+  markClean: () => {
+    dirty = false;
+  },
+  markDirty: () => {
+    dirty = true;
+  },
+  refreshDataOnly: async () => {
+    const next = await api.snapshot("all", selected);
+    next.field = await api.fieldSnapshot();
+    data = next;
+  },
+}));
 const person = (x) => data.people.find((p) => p.id === x),
   site = (x) => data.sites.find((s) => s.id === x),
   task = (x) => data.tasks.find((t) => t.id === x),
@@ -65,6 +112,9 @@ const roles = {
   worker: "Subcontractor Worker",
 };
 const routeIcons = {
+  issues: "file",
+  reports: "clock",
+  notifications: "file",
   contracts: "building",
   overview: "home",
   work: "work",
@@ -77,7 +127,7 @@ const routeIcons = {
   settings: "settings",
 };
 const emblem = (kind) =>
-  `<img class="brand-image ${kind}" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem">`;
+  `<img class="brand-image ${kind}" src="../three-view/${suppliedArtwork.logo.replace("./", "").replace(".png", ".webp")}" alt="NPI company emblem">`;
 const head = (title, description, action = "") =>
   `<header class="pagehead"><div><p class="eyebrow">${data.profile.role === "worker" ? "YOUR WORKDAY" : "ALASKA OPERATIONS"}</p><h1>${esc(title)}</h1><p>${esc(description)}</p></div>${action}</header>`;
 const initials = () =>
@@ -114,7 +164,7 @@ function message(text, error = false) {
     box.textContent = text;
     box.classList.toggle("error", error);
   }
-  $("#notice").textContent = text;
+  $("#notice").textContent = box?.getAttribute("role") === "alert" ? "" : text;
 }
 function nav() {
   return data.profile.role === "worker"
@@ -122,6 +172,7 @@ function nav() {
         ["work", "My work"],
         ["hours", "My hours"],
         ["sites", "Sites"],
+        ["issues", "Issues"],
       ]
     : [
         ["overview", "Overview"],
@@ -143,6 +194,9 @@ function nav() {
         ...(data.profile.role === "npi"
           ? [["sheets", "Spreadsheet review"]]
           : []),
+        ["issues", "Issues & problems"],
+        ["reports", "Activity & exceptions"],
+        ["notifications", "Notifications"],
         ["settings", "Settings"],
       ];
 }
@@ -150,7 +204,7 @@ function login(error = "") {
   opsData = { contracts: [], scopes: [], invitations: [] };
   document.body.dataset.role = "";
   document.title = "Sign in · Alaska NPI";
-  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Sessions end when you reload this page; saved work stays in Supabase.</p></div></main></div>`;
+  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="../three-view/${suppliedArtwork.logo.replace("./", "").replace(".png", ".webp")}" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Sessions end when you reload this page; saved work stays in Supabase.</p></div></main></div>`;
 }
 function pendingAccount(status) {
   accountState = status;
@@ -185,8 +239,13 @@ function render() {
   }
   document.body.dataset.role = data.profile.role;
   const pages = nav();
-  let page = location.hash.slice(1) || "work";
-  if (!pages.some(([p]) => p === page) && page !== "detail") page = "work";
+  let page = location.hash.slice(1).split("?")[0] || "work";
+  if (
+    !pages.some(([p]) => p === page) &&
+    page !== "detail" &&
+    page !== "notifications"
+  )
+    page = "work";
   document.title =
     (pages.find(([p]) => p === page)?.[1] || "Work details") + " · Alaska NPI";
   const content = (
@@ -203,6 +262,9 @@ function render() {
       settings: settingsView,
       hours: hoursView,
       detail: detailView,
+      issues: () => features.issuesView(),
+      reports: () => features.reports(),
+      notifications: () => features.notificationsView(),
     }[page] || workView
   )();
   const label = pages.find(([p]) => p === page)?.[1] || "Work details";
@@ -211,11 +273,12 @@ function render() {
       ? summary().npi_review
       : summary().company_review;
   const initialsText = esc(initials());
-  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar" aria-label="Workspace navigation"><div class="side-brand">${emblem("sidebar")}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Main navigation">${pages.map(([p, l]) => `<a href="#${p}" ${page === p ? 'aria-current="page"' : ""}>${icon(routeIcons[p])}<span>${esc(l)}</span>${p === "review" && reviewCount ? `<b class="side-count">${reviewCount}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${initialsText}</span><div class="grow"><b>${esc(data.profile.display_name)}</b><p>${roles[data.profile.role]}</p></div>${button("Sign out", "logout", "", "ghost")}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>${emblem("header")} ALASKA NPI</b><p>Operations / ${esc(label)}</p></div><div class="top-controls"><span class="live-role">${roles[data.profile.role]}</span>${button(icon("clock") + "<span>Refresh</span>", "refresh")}${button("Sign out", "logout", "", "live-top-signout")}<span class="top-avatar" aria-label="${esc(data.profile.display_name)}">${initialsText}</span></div><div class="mobile-navigation"><label for="live-nav">Go to</label><select id="live-nav" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${pages.map(([p, l]) => `<option value="${p}" ${p === page ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div></header><main id="main" class="main live-main"><div class="live-banner live-connection"><span class="live-connection-label">${icon("check")} Connected to Supabase</span><span>Updated ${esc(timestamp(latest))}</span></div>${!navigator.onLine ? '<p class="live-banner error">Offline. New changes cannot be saved until your connection returns.</p>' : ""}${data.work.length >= 500 ? '<p class="notice">Showing the latest 500 permitted assignments in this view.</p>' : ""}<p id="feedback" class="live-feedback ${feedbackError ? "error" : ""}" role="status">${esc(feedback)}</p><div class="reference-content">${content}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Alaska work time · ${roles[data.profile.role]}</span></footer></main>${data.profile.role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${pages.map(([p, l]) => `<a href="#${p}" ${page === p ? 'aria-current="page"' : ""}>${icon(routeIcons[p])}<span>${esc(l)}</span></a>`).join("")}</nav>` : ""}</div></div>`;
+  app.innerHTML = `<div class="reference-shell"><aside class="reference-sidebar" aria-label="Workspace navigation"><div class="side-brand">${emblem("sidebar")}<h2>ALASKA NPI</h2><p>CONTRACT OVERSIGHT</p></div><p class="side-label">OPERATIONS WORKSPACE</p><nav class="side-nav" aria-label="Main navigation">${pages.map(([p, l]) => `<a href="#${p}" ${page === p ? 'aria-current="page"' : ""}>${icon(routeIcons[p])}<span>${esc(l)}</span>${p === "review" && reviewCount ? `<b class="side-count">${reviewCount}</b>` : ""}</a>`).join("")}</nav><div class="side-bottom"><span class="avatar">${initialsText}</span><div class="grow"><b>${esc(data.profile.display_name)}</b><p>${roles[data.profile.role]}</p></div>${button("Sign out", "logout", "", "ghost")}</div></aside><div class="reference-workspace"><header class="reference-topbar"><div class="top-crumb"><b>${emblem("header")} ALASKA NPI</b><p>Operations / ${esc(label)}</p></div><div class="top-controls"><span class="live-role">${roles[data.profile.role]}</span>${button(icon("clock") + "<span>Refresh</span>", "refresh")}${button("Alerts (" + (data.field?.notifications?.filter((n) => !n.read_at).length || 0) + ")", "goto", "notifications")}${button("Sign out", "logout", "", "live-top-signout")}<span class="top-avatar" aria-label="${esc(data.profile.display_name)}">${initialsText}</span></div><div class="mobile-navigation"><label for="live-nav">Go to</label><select id="live-nav" aria-label="Go to page">${page === "detail" ? '<option value="detail" selected>Work details</option>' : ""}${pages.map(([p, l]) => `<option value="${p}" ${p === page ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div></header><main id="main" class="main live-main"><div class="live-banner live-connection"><span class="live-connection-label">${icon("check")} Connected to Supabase</span><span>Updated ${esc(timestamp(latest))}</span></div>${!navigator.onLine ? '<p class="live-banner error">Offline. New changes cannot be saved until your connection returns.</p>' : ""}${data.work.length >= 500 ? '<p class="notice">Showing the latest 500 permitted assignments in this view.</p>' : ""}<p id="feedback" class="live-feedback ${feedbackError ? "error" : ""}" >${esc(feedback)}</p><div class="reference-content">${content}</div><footer class="footer"><span>ALASKA NPI · Performance. Power. Precision.</span><span>Alaska work time · ${roles[data.profile.role]}</span></footer></main>${data.profile.role === "worker" ? `<nav class="worker-bottom-nav" aria-label="Worker navigation">${pages.map(([p, l]) => `<a href="#${p}" ${page === p ? 'aria-current="page"' : ""}>${icon(routeIcons[p])}<span>${esc(l)}</span></a>`).join("")}</nav>` : ""}</div></div>`;
   document.querySelectorAll("button").forEach((b) => (b.disabled = busy));
+  features.hydrate();
 }
 async function load() {
-  const route = location.hash.slice(1) || "work";
+  const route = location.hash.slice(1).split("?")[0] || "work";
   const stage =
     route === "review"
       ? data?.profile.role === "npi"
@@ -229,6 +292,16 @@ async function load() {
     route === "detail" ? selected : null,
   );
   data = snapshot;
+  data.field = await api.fieldSnapshot();
+  if (route === "work")
+    data.workSearch = await api.workSearch(
+      Object.fromEntries(
+        new URLSearchParams(location.hash.split("?")[1] || ""),
+      ),
+      Number(
+        new URLSearchParams(location.hash.split("?")[1] || "").get("page") || 1,
+      ),
+    );
   if (data.profile.role !== "worker") opsData = await api.opsContext();
   latest = Date.now();
   render();
@@ -306,31 +379,7 @@ function workRegister(list) {
   );
 }
 function workView() {
-  const worker = data.profile.role === "worker";
-  return (
-    head(
-      worker ? "My work" : "Work orders",
-      worker
-        ? "Your assignments, locations and next steps."
-        : "Assigned work, site evidence and approval progress.",
-      data.profile.role === "sub"
-        ? button("New assignment", "new-work", "", "primary")
-        : "",
-    ) +
-    (data.work.length
-      ? `<div class="live-work-grid">${data.work.map((w) => `<article class="panel live-work-card">${photo(site(w.site_id)) ? `<img class="live-photo" src="../three-view/${photo(site(w.site_id)).replace("./", "")}" alt="${esc(site(w.site_id)?.name)}">` : ""}<div class="live-work-card-body"><span class="badge">${esc(names[w.status])}</span><h2>${esc(site(w.site_id)?.name)}</h2><p>${esc(w.title || task(w.task_id)?.name)}</p><p class="small muted">${esc(w.planned_date)} · ${esc(w.equipment)}</p>${button("View assignment", "open-work", w.id, "primary")}</div></article>`).join("")}</div>`
-      : panel(
-          "No assignments yet",
-          data.profile.role === "npi"
-            ? '<p>Invite your subcontractor and assign its contract sites. Their administrator will create worker assignments.</p><div class="live-card-actions">' +
-                button("Add company", "new-company") +
-                button("Add location", "new-site") +
-                button("Add service", "new-task") +
-                button("Manage people", "goto", "people") +
-                "</div>"
-            : "<p>Your administrator has not assigned any work yet.</p>",
-        ))
-  );
+  return features.workView();
 }
 function recorded(work, worker) {
   const review = data.reviews.find(
@@ -455,7 +504,7 @@ function detailView() {
         `<a class="live-map" href="https://www.google.com/maps?q=${e.latitude},${e.longitude}" target="_blank" rel="noopener noreferrer">${esc(e.latitude)}, ${esc(e.longitude)}</a><br>Accuracy: ${esc(e.accuracy_metres)} m<br>Captured by ${esc(person(e.captured_by)?.display_name)}`,
       ]),
     ),
-  )}${panel("Uploaded evidence", `<div class="live-evidence">${files.map((e) => button("Open " + e.kind, "view-file", e.id)).join("") || "<p>No evidence uploaded.</p>"}</div>`)}${button("Back to work", "goto", "work")}`;
+  )}${features.detail(w)}${button("Back to work", "goto", "work")}`;
 }
 function siteView() {
   return (
@@ -470,7 +519,11 @@ function siteView() {
           s.name,
           (photo(s)
             ? `<img class="live-photo" src="../three-view/${photo(s).replace("./", "")}" alt="${esc(s.name)}">`
-            : "") + `<p>${esc(s.address || "Address not configured")}</p>`,
+            : "") +
+            `<p>${esc(s.address || "Address not configured")}</p><p>${esc(s.instructions || "")}</p><a class="btn" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.address || s.name)}" target="_blank" rel="noopener noreferrer">Open site map</a>` +
+            (data.profile.role === "npi"
+              ? button("Access instructions / map", "field-site", s.id)
+              : ""),
         ),
       )
       .join("") +
@@ -675,9 +728,10 @@ function sheetView() {
 function settingsView() {
   return (
     "<h1>Workspace settings</h1>" +
+    features.settings() +
     panel(
       "Company identity",
-      `<img class="brand-image settings" src="../three-view/${suppliedArtwork.logo.replace("./", "")}" alt="NPI company emblem"><p>Work timezone: America/Anchorage</p>`,
+      `<img class="brand-image settings" src="../three-view/${suppliedArtwork.logo.replace("./", "").replace(".png", ".webp")}" alt="NPI company emblem"><p>Work timezone: America/Anchorage</p>`,
     ) +
     (data.profile.role === "npi"
       ? panel(
@@ -709,6 +763,7 @@ function settingsView() {
 }
 
 function modal(title, body) {
+  $("#notice").textContent = "";
   dialogRoute = location.hash;
   returnFocus = document.activeElement;
   dirty = false;
@@ -721,6 +776,13 @@ function form(title, kind, body, record = "") {
     title,
     `<form id="action-form" class="live-form" data-kind="${kind}" data-id="${esc(record)}" data-version="${(data.work.find((w) => w.id === record) || {}).version || 0}" novalidate>${body}<div class="actions">${button("Cancel", "close")}<button type="submit" class="btn primary">${
       {
+        "field:report_issue": "Report issue & notify admins",
+        "field:notification_settings": "Save recipients",
+        "field:issue_update": "Save issue update",
+        "field:issue_comment": "Add comment",
+        "field:repeat_work": "Create scheduled copies",
+        "field:cancel_work": "Cancel assignment",
+        "field:test_email": "Queue test email",
         create_work: "Create assignment",
         invitation: "Create invitation link",
         "ops:create_contract": "Save contract",
@@ -746,6 +808,10 @@ function form(title, kind, body, record = "") {
   );
 }
 function close(force = false) {
+  if (features.queue?.uploading && !force) {
+    $("#dialog-error").textContent = "Wait for the current upload to finish.";
+    return;
+  }
   if (dirty && !force) {
     $("#dialog-error").textContent =
       "Unsaved changes: save your work or choose Discard changes.";
@@ -756,6 +822,8 @@ function close(force = false) {
       );
     return;
   }
+  features.queue?.dispose();
+  features.queue = null;
   dialog.close();
   dialog.innerHTML = "";
   dirty = false;
@@ -857,6 +925,8 @@ function workForm() {
     ) +
       field("task_id", "Service", "select", "", options(data.tasks)) +
       field("title", "Work instructions") +
+      field("area", "Specific site area") +
+      field("instructions", "Access instructions / hazards", "textarea") +
       field("planned_date", "Planned date", "date") +
       field("equipment", "Equipment") +
       field("kind", "Work category", "select", "site", [
@@ -918,6 +988,9 @@ function approveForm() {
     "NPI verification",
     "npi_approve",
     comparison(w) +
+      ((w.outcome && w.outcome !== "complete") || w.evidence_exception_reason
+        ? `<p class="notice">Reported ${esc(w.outcome)}: ${esc(w.outcome_reason)} ${esc(w.evidence_exception_reason)}</p><label class="taskline"><input type="checkbox" name="acknowledge_outcome"> I reviewed the incomplete-work outcome and evidence exception.</label>`
+        : "") +
       '<label class="taskline"><input type="checkbox" name="accept_claimed" checked> Accept the exact claimed hours without changes</label>' +
       data.reviews
         .filter((r) => r.work_id === w.id)
@@ -972,6 +1045,8 @@ function inviteForm() {
   );
 }
 const actions = {
+  upload: () => features.openUploads(job()),
+  ...features.actions(),
   "new-invitation": inviteForm,
   "new-contract": () =>
     form(
@@ -1062,7 +1137,7 @@ const actions = {
   },
   refresh: () => load(),
   logout: async () => {
-    await api.logout();
+    const signingOut = api.logout();
     data = null;
     accountState = null;
     selected = null;
@@ -1071,6 +1146,7 @@ const actions = {
     suspendedDraft = null;
     feedback = "";
     login();
+    await signingOut;
   },
   close: () => close(),
   discard: () => close(true),
@@ -1107,7 +1183,11 @@ const actions = {
     form(
       "Company approval",
       "company_approve",
-      "<p>Confirm your workers’ claimed hours against the recorded attendance and evidence. This forwards the record to NPI.</p>",
+      "<p>Confirm your workers’ claimed hours against the recorded attendance and evidence. This forwards the record to NPI.</p>" +
+        ((job().outcome && job().outcome !== "complete") ||
+        job().evidence_exception_reason
+          ? `<p class="notice">${esc(job().outcome_reason)} ${esc(job().evidence_exception_reason)}</p><label class="taskline"><input type="checkbox" name="acknowledge_outcome"> I reviewed the incomplete-work outcome.</label>`
+          : ""),
       job().id,
     ),
   return: () =>
@@ -1129,7 +1209,7 @@ const actions = {
       w.id,
     );
   },
-  upload: () =>
+  "legacy-upload": () =>
     form(
       "Upload work evidence",
       "upload",
@@ -1170,7 +1250,14 @@ const actions = {
         device_time: new Date(p.timestamp).toISOString(),
       };
       $("#gps-result").textContent =
-        `Captured ${p.coords.latitude}, ${p.coords.longitude} · accuracy ${Math.round(p.coords.accuracy)} m`;
+        `Captured ${p.coords.latitude}, ${p.coords.longitude} · accuracy ${Math.round(p.coords.accuracy)} m` +
+        (() => {
+          const s = site(job()?.site_id),
+            d = distanceMetres(captured, s);
+          return d != null && d > Number(s?.radius_metres || 200)
+            ? " · Outside configured site radius: management will review this position."
+            : "";
+        })();
     } catch {
       $("#gps-result").textContent =
         "Location unavailable. Enable permission and retry.";
@@ -1258,12 +1345,31 @@ function suspendDraft() {
     fields,
     selected,
     route: dialogRoute,
+    photos: features.queue?.items.map((item) => ({ ...item })),
   };
 }
 function restoreDraft() {
   const draft = suspendedDraft;
   suspendedDraft = null;
   if (!draft || draft.user !== data.profile.id) return;
+  selected = draft.selected;
+  if (draft.photos) {
+    if (!job()) {
+      message(
+        "This work is no longer available. Contact your administrator.",
+        true,
+      );
+      return;
+    }
+    features.openUploads(job());
+    features.queue.items = draft.photos.map((item) => ({
+      ...item,
+      url: item.preview ? URL.createObjectURL(item.preview) : "",
+    }));
+    features.queue.draw();
+    dirty = true;
+    return;
+  }
   dialog.innerHTML = draft.html;
   selected = draft.selected;
   dialogRoute = draft.route;
@@ -1336,12 +1442,38 @@ async function guarded(fn) {
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-action]");
   if (!el) return;
+  if (
+    dialog.open &&
+    dirty &&
+    ![
+      "close",
+      "discard",
+      "gps",
+      "copy-invitation",
+      "show-staff-password",
+      "show-password",
+    ].includes(el.dataset.action)
+  ) {
+    close();
+    return;
+  }
   const fn = actions[el.dataset.action];
   if (fn) guarded(() => fn(el));
 });
 document.addEventListener("submit", (e) => {
   e.preventDefault();
   const f = e.target;
+  if (f.id === "report-filters") {
+    location.hash =
+      "reports?" +
+      new URLSearchParams([...new FormData(f)].filter(([, v]) => v));
+    return;
+  }
+  if (f.id === "work-filters") {
+    const q = new URLSearchParams([...new FormData(f)].filter(([, v]) => v));
+    location.hash = "work?" + q;
+    return;
+  }
   guarded(async () => {
     if (f.id === "login-form") {
       const values = new FormData(f);
@@ -1362,6 +1494,9 @@ document.addEventListener("submit", (e) => {
       }
       accountState = null;
       if (data.profile.role !== "worker") opsData = await api.opsContext();
+      data.field = await api.fieldSnapshot();
+      if (data.profile.role === "worker")
+        data.workSearch = await api.workSearch();
       latest = Date.now();
       f.reset();
       feedback = "";
@@ -1371,7 +1506,12 @@ document.addEventListener("submit", (e) => {
         location.pathname +
           (data.profile.role === "worker" ? "#work" : "#overview"),
       );
-      render();
+      if (requestedWork) {
+        selected = requestedWork;
+        requestedWork = null;
+        history.replaceState(null, "", location.pathname + "#detail");
+        await load();
+      } else render();
       restoreDraft();
       return;
     }
@@ -1385,6 +1525,11 @@ document.addEventListener("submit", (e) => {
     );
     const action = f.dataset.kind;
     if (!validateForm(f, action)) return;
+    if (action.startsWith("field:")) {
+      if (f.dataset.id) body.id = f.dataset.id;
+      await features.submit(action, body, values);
+      return;
+    }
     if (action === "invitation") {
       let token = f.dataset.token;
       if (!token) {
@@ -1425,7 +1570,7 @@ document.addEventListener("submit", (e) => {
       await operation(action.slice(4), body);
       close(true);
       await load();
-      message("Saved.");
+      features.success("Changes saved successfully.");
       return;
     }
     if (!validateForm(f, action)) return;
@@ -1494,7 +1639,34 @@ document.addEventListener("submit", (e) => {
     }
     close(true);
     await load();
-    message("Saved to Supabase.");
+    const outcomes = {
+      clock:
+        body.event_kind === "check-in"
+          ? "Check-in recorded."
+          : "Checkout recorded.",
+      submit_hours: "Work submitted for company review.",
+      company_approve: "Work forwarded to NPI.",
+      npi_approve: "Work verified and hours accepted.",
+      return_work: "Correction requested.",
+      create_work: "Assignment created.",
+      tasks: "Task progress saved.",
+    };
+    features.success(
+      outcomes[action] || "Changes saved successfully.",
+      {
+        submit_hours:
+          "Your company administrator will review your hours and evidence.",
+        company_approve: "NPI can now verify the attendance, photos and hours.",
+        npi_approve: "The accepted hours are now visible in the work record.",
+        return_work: "The correction reason is visible to the team.",
+      }[action] || "",
+      [
+        "submit_hours",
+        "company_approve",
+        "npi_approve",
+        "return_work",
+      ].includes(action),
+    );
   });
 });
 dialog.addEventListener("input", () => (dirty = true));
@@ -1527,6 +1699,15 @@ document.addEventListener("change", (e) => {
   if (e.target.id === "live-nav") location.hash = e.target.value;
 });
 window.addEventListener("hashchange", () => {
+  const workLink = /^#work=([0-9a-f-]{36})$/i.exec(location.hash);
+  if (workLink) {
+    if (data) {
+      selected = workLink[1];
+      history.replaceState(null, "", location.pathname + "#detail");
+      guarded(() => load());
+    } else requestedWork = workLink[1];
+    return;
+  }
   if (location.hash.startsWith("#join=")) {
     location.reload();
     return;
@@ -1567,3 +1748,47 @@ if ("serviceWorker" in navigator && location.protocol === "https:")
 if (location.hash.startsWith("#join="))
   guarded(() => enterInvitation(location.hash.slice(6)));
 else login();
+
+// Foreground notices update without replacing forms, uploads or a different account's view.
+let noticePoll = false;
+async function pollNotices() {
+  if (
+    noticePoll ||
+    busy ||
+    !data ||
+    !api.session ||
+    dialog.open ||
+    document.visibilityState !== "visible" ||
+    !navigator.onLine
+  )
+    return;
+  noticePoll = true;
+  const account = data.profile.id;
+  const previous =
+    data.field?.notifications?.filter((n) => !n.read_at).length || 0;
+  try {
+    const field = await api.fieldSnapshot();
+    if (data?.profile.id !== account) return;
+    data.field = field;
+    const count = field.notifications.filter((n) => !n.read_at).length;
+    const target = document.querySelector(
+      '.top-controls [data-action="goto"][data-id="notifications"]',
+    );
+    if (target) target.textContent = "Alerts (" + count + ")";
+    if (count > previous)
+      document.querySelector("#notice").textContent =
+        "New update received. Open Alerts.";
+  } catch {
+    if (!api.session && data?.profile.id === account && !busy && !dialog.open) {
+      data = null;
+      login("Session ended. Sign in again.");
+    }
+  } finally {
+    noticePoll = false;
+  }
+}
+setInterval(pollNotices, 30000);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") pollNotices();
+  else features.queue?.stop();
+});

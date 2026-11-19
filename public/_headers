@@ -3,7 +3,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Permissions-Policy: geolocation=(self), camera=(self), microphone=()
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://fyfjsqhnxcktjdihcaks.supabase.co; connect-src 'self' https://fyfjsqhnxcktjdihcaks.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://fyfjsqhnxcktjdihcaks.supabase.co; worker-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://fyfjsqhnxcktjdihcaks.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
 /index.html
   Cache-Control: no-cache
 /sw.js

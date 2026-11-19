@@ -1,0 +1,201 @@
+WEBVTT
+
+1
+00:00:00.300 --> 00:00:04.253
+This guide uses the running app with fictional training records.
+
+5
+00:00:04.253 --> 00:00:07.404
+Camera, location and cloud responses are simulated.
+
+9
+00:00:07.404 --> 00:00:10.369
+Sign in with your company username and password.
+
+13
+00:00:10.369 --> 00:00:13.643
+The written guide includes every task and setup step.
+
+17
+00:00:14.443 --> 00:00:17.424
+The overview shows activity and review stages.
+
+21
+00:00:17.424 --> 00:00:21.636
+N P I can inspect every permitted company, assignment and worker.
+
+25
+00:00:21.636 --> 00:00:27.597
+Subcontractors manage their daily scheduling; N P I monitors evidence and verifies the work.
+
+29
+00:00:28.397 --> 00:00:32.379
+Add the subcontractor company, locations and services first.
+
+33
+00:00:32.379 --> 00:00:36.627
+Register the main contract and assign its sites to that company.
+
+37
+00:00:36.627 --> 00:00:38.817
+Repeat for future subcontractors.
+
+41
+00:00:38.817 --> 00:00:42.866
+No rates or invoices are included in this operations release.
+
+45
+00:00:43.666 --> 00:00:47.165
+Invite the company administrator from People and access.
+
+49
+00:00:47.165 --> 00:00:51.477
+Select the correct company and create its single-use, seven-day link.
+
+53
+00:00:51.477 --> 00:00:52.664
+Share it privately.
+
+57
+00:00:52.664 --> 00:01:00.226
+The administrator chooses their credentials and invites their own workers; N P I does not need to know the workers first.
+
+61
+00:01:01.026 --> 00:01:05.444
+Locations shows the supplied building pictures and verified addresses.
+
+65
+00:01:05.444 --> 00:01:11.062
+Add access instructions, hazards and optional site coordinates for advisory G P S checks.
+
+69
+00:01:11.062 --> 00:01:17.059
+In Settings, configure whether each service needs before and after pictures on new assignments.
+
+73
+00:01:17.859 --> 00:01:20.260
+Work orders is the shared register.
+
+77
+00:01:20.260 --> 00:01:24.239
+Filter by contract, company, site, worker, date or status.
+
+81
+00:01:24.239 --> 00:01:27.601
+Every card shows the assignment creator and team.
+
+85
+00:01:27.601 --> 00:01:32.883
+Open a record to inspect each worker’s attendance and the assignment history.
+
+89
+00:01:33.683 --> 00:01:37.331
+Compare recorded, claimed and accepted hours separately.
+
+93
+00:01:37.331 --> 00:01:41.827
+Inspect check in and checkout times, captured positions and accuracy.
+
+97
+00:01:41.827 --> 00:01:44.564
+A map link opens the recorded coordinates.
+
+101
+00:01:44.564 --> 00:01:50.362
+Location flags need investigation; they do not automatically prove that work was invalid.
+
+105
+00:01:51.162 --> 00:01:57.168
+The grouped gallery shows the worker’s before, after and issue pictures from this training transaction.
+
+109
+00:01:57.168 --> 00:02:00.433
+Check who uploaded each file and the server upload time.
+
+113
+00:02:00.433 --> 00:02:03.348
+Capture or preparation stamps are device-reported.
+
+117
+00:02:03.348 --> 00:02:05.680
+Open the unchanged original when needed.
+
+121
+00:02:06.480 --> 00:02:09.992
+After company approval, choose Verify and accept hours.
+
+125
+00:02:09.992 --> 00:02:13.249
+Keep exact claimed hours or explain any adjustment.
+
+129
+00:02:13.249 --> 00:02:17.208
+Review incomplete outcomes and evidence exceptions explicitly.
+
+133
+00:02:17.208 --> 00:02:21.997
+If information is missing, return the work with a useful correction reason.
+
+137
+00:02:22.797 --> 00:02:27.840
+Settings contains N P I’s own recipient list and urgent acknowledgement deadline.
+
+141
+00:02:27.840 --> 00:02:30.891
+Each company maintains its recipients separately.
+
+145
+00:02:30.891 --> 00:02:34.689
+Test delivery after the owner configures the verified sender.
+
+149
+00:02:34.689 --> 00:02:39.545
+The queue distinguishes queued, retry, failed and accepted-by-provider states.
+
+153
+00:02:40.345 --> 00:02:44.137
+Alerts shows assignments, issue reports and review updates.
+
+157
+00:02:44.137 --> 00:02:47.608
+Issues tracks responsibility, comments and resolution.
+
+161
+00:02:47.608 --> 00:02:51.335
+Both N P I and the relevant company receive issue notices.
+
+165
+00:02:51.335 --> 00:02:56.091
+Private photos stay behind sign-in and are not attached publicly to email.
+
+169
+00:02:56.891 --> 00:02:59.932
+The compact management workbook has seven tabs.
+
+173
+00:02:59.932 --> 00:03:02.585
+Operational records mirror from Supabase.
+
+177
+00:03:02.585 --> 00:03:07.180
+Permitted planning and site edits return as proposals for N P I review.
+
+181
+00:03:07.180 --> 00:03:10.156
+Check the values and version before accepting.
+
+185
+00:03:10.156 --> 00:03:14.104
+Original attendance, evidence and approvals remain protected.
+
+189
+00:03:14.904 --> 00:03:19.163
+Activity reports highlight exceptions and export the loaded records.
+
+193
+00:03:19.163 --> 00:03:22.420
+The work register searches older records with pages.
+
+197
+00:03:22.420 --> 00:03:32.004
+Before rollout, apply the backend upgrade, configure email delivery and workbook triggers, deploy the frontend and complete a real phone acceptance test.

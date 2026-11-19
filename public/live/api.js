@@ -4,6 +4,7 @@ export class LiveAPI {
   constructor(fetcher = (...args) => globalThis.fetch(...args)) {
     this.fetcher = fetcher;
     this.session = null;
+    this.sessionEpoch = 0;
     this.refreshing = null;
     this.uploadTasks = new Map();
   }
@@ -21,6 +22,8 @@ export class LiveAPI {
       if (!this.session) throw Error("Sign in to continue.");
       if (Date.now() > this.session.deadline - 30000) await this.refresh();
     }
+    const requestSession = this.session;
+    if (authenticated && !requestSession) throw Error("Sign in to continue.");
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 30000);
     try {
@@ -30,7 +33,7 @@ export class LiveAPI {
         headers: {
           apikey: config.publishableKey,
           ...(authenticated
-            ? { Authorization: "Bearer " + this.session.access_token }
+            ? { Authorization: "Bearer " + requestSession.access_token }
             : {}),
           ...(body && !raw ? { "Content-Type": "application/json" } : {}),
           ...headers,
@@ -39,7 +42,14 @@ export class LiveAPI {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        if (response.status === 401 && authenticated) this.session = null;
+        if (
+          response.status === 401 &&
+          authenticated &&
+          this.session === requestSession
+        ) {
+          this.session = null;
+          this.sessionEpoch++;
+        }
         const error = Error(
           data.message ||
             data.error_description ||
@@ -61,6 +71,7 @@ export class LiveAPI {
     }
   }
   remember(data) {
+    this.sessionEpoch++;
     if (!data.access_token || !data.refresh_token)
       throw Error("Invalid authentication response.");
     this.session = {
@@ -97,18 +108,25 @@ export class LiveAPI {
     if (this.refreshing) return this.refreshing;
     if (!this.session) throw Error("Sign in again.");
     const token = this.session.refresh_token;
+    const epoch = this.sessionEpoch;
     this.refreshing = (async () => {
       try {
-        this.remember(
-          await this.request("/auth/v1/token?grant_type=refresh_token", {
+        const refreshed = await this.request(
+          "/auth/v1/token?grant_type=refresh_token",
+          {
             method: "POST",
             body: { refresh_token: token },
             authenticated: false,
-          }),
+          },
         );
+        if (this.sessionEpoch !== epoch) throw Error("Session changed.");
+        this.remember(refreshed);
       } catch {
-        this.session = null;
-        throw Error("Session expired. Sign in again.");
+        if (this.sessionEpoch === epoch) {
+          this.session = null;
+          this.sessionEpoch++;
+        }
+        throw Error("Session expired or changed. Sign in again.");
       } finally {
         this.refreshing = null;
       }
@@ -116,13 +134,16 @@ export class LiveAPI {
     return this.refreshing;
   }
   async logout() {
-    try {
-      if (this.session)
-        await this.request("/auth/v1/logout", { method: "POST" });
-    } finally {
-      this.session = null;
-      this.uploadTasks.clear();
-    }
+    const session = this.session;
+    this.session = null;
+    this.sessionEpoch++;
+    this.uploadTasks.clear();
+    if (session)
+      await this.request("/auth/v1/logout", {
+        method: "POST",
+        authenticated: false,
+        headers: { Authorization: "Bearer " + session.access_token },
+      });
   }
   accountStatus() {
     return this.request("/rest/v1/rpc/npi_account_status", {
@@ -233,6 +254,90 @@ export class LiveAPI {
         if (this.uploadTasks.size <= 50) break;
       }
     return task.path;
+  }
+  workSearch(filter = {}, page = 1) {
+    return this.request("/rest/v1/rpc/npi_work_search", {
+      method: "POST",
+      body: { p_filter: filter, p_page: page },
+    });
+  }
+  async fieldSnapshot() {
+    try {
+      return await this.request("/rest/v1/rpc/npi_field_snapshot", {
+        method: "POST",
+        body: {},
+      });
+    } catch (e) {
+      if (e.status === 404)
+        throw Error(
+          "Operations 2 backend upgrade is required. Ask the NPI owner to apply migration 005 before using this package.",
+        );
+      throw e;
+    }
+  }
+  fieldAction(action, body, requestId = crypto.randomUUID()) {
+    return this.request("/rest/v1/rpc/npi_field_action", {
+      method: "POST",
+      body: { p_action: action, p_body: body, p_request: requestId },
+    });
+  }
+  async uploadFieldEvidence(work, item, status = () => {}) {
+    const user = (await this.snapshot()).profile.id;
+    const base = work.id + "/" + user + "/" + item.id;
+    item.originalPath ||=
+      base +
+      "-original." +
+      ({
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+        "image/heic": "heic",
+        "image/heif": "heif",
+        "image/tiff": "tif",
+        "image/gif": "gif",
+        "image/bmp": "bmp",
+        "image/avif": "avif",
+        "application/pdf": "pdf",
+      }[item.mime] || "bin");
+    item.previewPath ||= item.preview ? base + "-stamped.jpg" : null;
+    const put = async (path, file, mime) => {
+      try {
+        await this.request("/storage/v1/object/work-evidence/" + path, {
+          method: "POST",
+          raw: true,
+          body: file,
+          headers: { "Content-Type": mime, "x-upsert": "false" },
+        });
+      } catch (e) {
+        if (e.status !== 409) throw e;
+      }
+    };
+    if (!item.originalUploaded) {
+      await put(item.originalPath, item.file, item.mime);
+      item.originalUploaded = true;
+    }
+    if (item.preview && !item.previewUploaded) {
+      status("Uploading viewing copy…");
+      await put(item.previewPath, item.preview, "image/jpeg");
+      item.previewUploaded = true;
+    }
+    status("Saving evidence record…");
+    return this.fieldAction(
+      "evidence",
+      {
+        id: work.id,
+        path: item.originalPath,
+        preview_path: item.previewPath,
+        stage: item.stage,
+        source: item.source,
+        captured_at: item.source === "app-camera" ? item.time : null,
+        filename: item.file.name,
+        original_mime: item.mime,
+        bytes: item.file.size,
+        issue_id: item.issue_id,
+      },
+      item.id,
+    );
   }
   async fileUrl(path) {
     const result = await this.request(

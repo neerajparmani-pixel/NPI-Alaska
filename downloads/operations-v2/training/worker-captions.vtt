@@ -1,0 +1,245 @@
+WEBVTT
+
+1
+00:00:00.300 --> 00:00:04.253
+This guide uses the running app with fictional training records.
+
+5
+00:00:04.253 --> 00:00:07.404
+Camera, location and cloud responses are simulated.
+
+9
+00:00:07.404 --> 00:00:10.369
+Sign in with your company username and password.
+
+13
+00:00:10.369 --> 00:00:13.643
+The written guide includes every task and setup step.
+
+17
+00:00:14.443 --> 00:00:18.302
+First use the invitation from your subcontractor administrator.
+
+21
+00:00:18.302 --> 00:00:20.936
+Enter your own name, username and password.
+
+25
+00:00:20.936 --> 00:00:23.815
+Your company and role come from the invitation.
+
+29
+00:00:23.815 --> 00:00:27.797
+Your administrator must approve your account before you can work.
+
+33
+00:00:28.597 --> 00:00:30.626
+My work shows your assignments.
+
+37
+00:00:30.626 --> 00:00:33.769
+Check the building photo, date and instructions.
+
+41
+00:00:33.769 --> 00:00:37.762
+Open the assignment and read the exact work area and hazards.
+
+45
+00:00:37.762 --> 00:00:40.577
+Your assigned team is listed in the record.
+
+49
+00:00:40.577 --> 00:00:42.933
+Use search filters only when needed.
+
+53
+00:00:43.733 --> 00:00:45.478
+At the site, choose Check in.
+
+57
+00:00:45.478 --> 00:00:47.944
+Select the correct assigned crew members.
+
+61
+00:00:47.944 --> 00:00:52.034
+Capture your current location and allow precise location permission.
+
+65
+00:00:52.034 --> 00:00:55.643
+Check the position and accuracy before recording attendance.
+
+69
+00:00:55.643 --> 00:00:58.230
+Every checkout needs another fresh capture.
+
+73
+00:00:59.030 --> 00:01:02.127
+Choose Upload evidence and select Before work.
+
+77
+00:01:02.127 --> 00:01:04.483
+Tap Take photo, then Capture photo.
+
+81
+00:01:04.483 --> 00:01:05.829
+Inspect the preview.
+
+85
+00:01:05.829 --> 00:01:09.262
+Keep the picture if it is useful, or choose Retake.
+
+89
+00:01:09.262 --> 00:01:12.493
+This demonstration uses a synthetic camera feed.
+
+93
+00:01:13.293 --> 00:01:14.246
+Tap Keep photo.
+
+97
+00:01:14.246 --> 00:01:17.805
+The camera opens again so you can take the next picture.
+
+101
+00:01:17.805 --> 00:01:19.140
+Repeat one at a time.
+
+105
+00:01:19.140 --> 00:01:23.524
+Review your thumbnails and remove unwanted pictures before uploading.
+
+109
+00:01:23.524 --> 00:01:26.321
+Each picture retains its own capture record.
+
+113
+00:01:27.121 --> 00:01:28.312
+Tap Upload photos.
+
+117
+00:01:28.312 --> 00:01:30.696
+Wait until every picture says Saved.
+
+121
+00:01:30.696 --> 00:01:36.124
+Failed items remain available for retry, while saved items are not uploaded again.
+
+125
+00:01:36.124 --> 00:01:42.348
+Originals remain unchanged; management sees a stamped viewing copy and the server upload time.
+
+129
+00:01:43.148 --> 00:01:46.103
+Update the checklist as the work is completed.
+
+133
+00:01:46.103 --> 00:01:49.573
+Hauling jobs also need whole loads and their timecard.
+
+137
+00:01:49.573 --> 00:01:56.640
+If work is only partial, impossible, or required evidence is missing, use Work outcome and explain the reason.
+
+141
+00:01:56.640 --> 00:01:59.146
+Never invent a completed task or photo.
+
+145
+00:01:59.946 --> 00:02:04.820
+Use Report a problem for blocked access, equipment, weather or safety issues.
+
+149
+00:02:04.820 --> 00:02:07.605
+Describe the problem and choose its urgency.
+
+153
+00:02:07.605 --> 00:02:10.706
+Saving creates an issue and in-app notifications.
+
+157
+00:02:10.706 --> 00:02:14.567
+Email delivery uses the configured recipients and dispatcher.
+
+161
+00:02:14.567 --> 00:02:16.909
+Immediate danger needs a direct call.
+
+165
+00:02:17.709 --> 00:02:22.465
+Open the evidence uploader, choose Issue evidence and select the related issue.
+
+169
+00:02:22.465 --> 00:02:24.692
+Take a clear picture or choose files.
+
+173
+00:02:24.692 --> 00:02:26.438
+You can add several pictures.
+
+177
+00:02:26.438 --> 00:02:30.171
+Management can open the issue and its evidence inside the app.
+
+181
+00:02:30.971 --> 00:02:35.040
+When work is finished, choose After work and take the final pictures.
+
+185
+00:02:35.040 --> 00:02:39.640
+Show the same areas clearly enough for management to compare before and after.
+
+189
+00:02:39.640 --> 00:02:44.240
+Upload and wait for the saved confirmation before leaving the evidence screen.
+
+193
+00:02:45.040 --> 00:02:50.009
+Choose Check out, capture a new current location and enter unpaid break minutes.
+
+197
+00:02:50.009 --> 00:02:51.624
+Save the attendance event.
+
+201
+00:02:51.624 --> 00:02:59.078
+If checkout was missed, record the real current event and explain a corrected claim; never backdate original attendance.
+
+205
+00:02:59.878 --> 00:03:01.398
+Choose Submit my hours.
+
+209
+00:03:01.398 --> 00:03:04.174
+Normally keep Use the exact recorded time.
+
+213
+00:03:04.174 --> 00:03:06.950
+A different claim requires a clear reason.
+
+217
+00:03:06.950 --> 00:03:09.461
+All crew members must check out first.
+
+221
+00:03:09.461 --> 00:03:14.286
+Submit, then read the confirmation so you know who reviews the work next.
+
+225
+00:03:15.086 --> 00:03:18.780
+My hours separates recorded, claimed and accepted time.
+
+229
+00:03:18.780 --> 00:03:21.400
+Your company reviews first, then N P I.
+
+233
+00:03:21.400 --> 00:03:24.490
+Issues shows acknowledgements and resolutions.
+
+237
+00:03:24.490 --> 00:03:25.901
+Alerts shows updates.
+
+241
+00:03:25.901 --> 00:03:32.552
+If a correction is requested, follow the reason, update the permitted information and submit again.

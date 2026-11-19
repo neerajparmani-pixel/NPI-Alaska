@@ -1,0 +1,447 @@
+[
+  {
+    "role": "npi",
+    "mobile": false,
+    "scenes": [
+      {
+        "title": "Sign in to your company account",
+        "text": "This guide uses the running app with fictional training records. Camera, location and cloud responses are simulated. Sign in with your company username and password. The written guide includes every task and setup step.",
+        "start": 0,
+        "end": 1.223
+      },
+      {
+        "title": "1. Monitor all subcontractors",
+        "text": "The overview shows activity and review stages. N P I can inspect every permitted company, assignment and worker. Subcontractors manage their daily scheduling; N P I monitors evidence and verifies the work.",
+        "start": 1.223,
+        "end": 2.534
+      },
+      {
+        "title": "2. Set up company and contract responsibility",
+        "text": "Add the subcontractor company, locations and services first. Register the main contract and assign its sites to that company. Repeat for future subcontractors. No rates or invoices are included in this operations release.",
+        "start": 2.534,
+        "end": 4.289
+      },
+      {
+        "title": "3. Invite the subcontractor administrator",
+        "text": "Invite the company administrator from People and access. Select the correct company and create its single-use, seven-day link. Share it privately. The administrator chooses their credentials and invites their own workers; N P I does not need to know the workers first.",
+        "start": 4.749,
+        "end": 6.493
+      },
+      {
+        "title": "4. Configure locations and evidence rules",
+        "text": "Locations shows the supplied building pictures and verified addresses. Add access instructions, hazards and optional site coordinates for advisory G P S checks. In Settings, configure whether each service needs before and after pictures on new assignments.",
+        "start": 6.921,
+        "end": 9.724
+      },
+      {
+        "title": "5. See who assigned each worker",
+        "text": "Work orders is the shared register. Filter by contract, company, site, worker, date or status. Every card shows the assignment creator and team. Open a record to inspect each worker\u2019s attendance and the assignment history.",
+        "start": 9.724,
+        "end": 11.042
+      },
+      {
+        "title": "6. Inspect the original attendance",
+        "text": "Compare recorded, claimed and accepted hours separately. Inspect check in and checkout times, captured positions and accuracy. A map link opens the recorded coordinates. Location flags need investigation; they do not automatically prove that work was invalid.",
+        "start": 11.042,
+        "end": 12.479
+      },
+      {
+        "title": "7. Compare before and after evidence",
+        "text": "The grouped gallery shows the worker\u2019s before, after and issue pictures from this training transaction. Check who uploaded each file and the server upload time. Capture or preparation stamps are device-reported. Open the unchanged original when needed.",
+        "start": 12.479,
+        "end": 13.875
+      },
+      {
+        "title": "8. Accept or return the work",
+        "text": "After company approval, choose Verify and accept hours. Keep exact claimed hours or explain any adjustment. Review incomplete outcomes and evidence exceptions explicitly. If information is missing, return the work with a useful correction reason.",
+        "start": 14.308,
+        "end": 15.707
+      },
+      {
+        "title": "9. Configure NPI email recipients",
+        "text": "Settings contains N P I\u2019s own recipient list and urgent acknowledgement deadline. Each company maintains its recipients separately. Test delivery after the owner configures the verified sender. The queue distinguishes queued, retry, failed and accepted-by-provider states.",
+        "start": 16.62,
+        "end": 18.357
+      },
+      {
+        "title": "10. Review notifications and issues",
+        "text": "Alerts shows assignments, issue reports and review updates. Issues tracks responsibility, comments and resolution. Both N P I and the relevant company receive issue notices. Private photos stay behind sign-in and are not attached publicly to email.",
+        "start": 18.788,
+        "end": 20.102
+      },
+      {
+        "title": "11. Review spreadsheet planning changes",
+        "text": "The compact management workbook has seven tabs. Operational records mirror from Supabase. Permitted planning and site edits return as proposals for N P I review. Check the values and version before accepting. Original attendance, evidence and approvals remain protected.",
+        "start": 20.102,
+        "end": 21.434
+      },
+      {
+        "title": "12. Use reports and complete the rollout",
+        "text": "Activity reports highlight exceptions and export the loaded records. The work register searches older records with pages. Before rollout, apply the backend upgrade, configure email delivery and workbook triggers, deploy the frontend and complete a real phone acceptance test.",
+        "start": 21.436,
+        "end": 22.76
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Sign in to your company account",
+        "duration": 14.142958333333333
+      },
+      {
+        "start": 14.142958333333333,
+        "title": "1. Monitor all subcontractors",
+        "duration": 13.954166666666666
+      },
+      {
+        "start": 28.097125,
+        "title": "2. Set up company and contract responsibility",
+        "duration": 15.268458333333333
+      },
+      {
+        "start": 43.36558333333333,
+        "title": "3. Invite the subcontractor administrator",
+        "duration": 17.360166666666665
+      },
+      {
+        "start": 60.72575,
+        "title": "4. Configure locations and evidence rules",
+        "duration": 16.833541666666665
+      },
+      {
+        "start": 77.55929166666667,
+        "title": "5. See who assigned each worker",
+        "duration": 15.823541666666666
+      },
+      {
+        "start": 93.38283333333334,
+        "title": "6. Inspect the original attendance",
+        "duration": 17.479583333333334
+      },
+      {
+        "start": 110.86241666666668,
+        "title": "7. Compare before and after evidence",
+        "duration": 15.318041666666666
+      },
+      {
+        "start": 126.18045833333335,
+        "title": "8. Accept or return the work",
+        "duration": 16.316583333333334
+      },
+      {
+        "start": 142.4970416666667,
+        "title": "9. Configure NPI email recipients",
+        "duration": 17.548333333333332
+      },
+      {
+        "start": 160.04537500000004,
+        "title": "10. Review notifications and issues",
+        "duration": 16.54554166666667
+      },
+      {
+        "start": 176.59091666666671,
+        "title": "11. Review spreadsheet planning changes",
+        "duration": 18.012708333333332
+      },
+      {
+        "start": 194.60362500000005,
+        "title": "12. Use reports and complete the rollout",
+        "duration": 17.900541666666665
+      }
+    ],
+    "duration": 212.50416666666672
+  },
+  {
+    "role": "sub",
+    "mobile": false,
+    "scenes": [
+      {
+        "title": "Sign in to your company account",
+        "text": "This guide uses the running app with fictional training records. Camera, location and cloud responses are simulated. Sign in with your company username and password. The written guide includes every task and setup step.",
+        "start": 0,
+        "end": 1.202
+      },
+      {
+        "title": "1. Your company scope",
+        "text": "Open your invitation from N P I to create the company administrator account. After signing in, My subcontract shows your permitted contract sites. Ask N P I to add missing responsibilities. Your company manages its own workers and scheduling.",
+        "start": 1.203,
+        "end": 2.533
+      },
+      {
+        "title": "2. Invite your workers",
+        "text": "Open My team and choose Invite workers. Create the company link and share it privately. Workers register themselves and wait for your approval. The link expires after seven days and allows up to one hundred registrations.",
+        "start": 2.533,
+        "end": 4.275
+      },
+      {
+        "title": "3. Approve genuine worker accounts",
+        "text": "Check Pending workers and verify who belongs to your company. Approve genuine registrations or reject unknown people. This grants account access only. Work hours still need a separate review. Reset passwords or pause access from the account register when needed.",
+        "start": 5.206,
+        "end": 6.94
+      },
+      {
+        "title": "4. Assign work to your team",
+        "text": "Create a work order. Choose the permitted contract site and service. Enter the work area, instructions, date, equipment and checklist. Select the approved company workers. Save the assignment; N P I can see who assigned it and every team member.",
+        "start": 7.42,
+        "end": 9.236
+      },
+      {
+        "title": "5. Repeat work and preserve history",
+        "text": "For regular jobs, use Repeat assignment. Choose the first date, interval and number of copies. Review the schedule before creating it. Unstarted crew changes need a reason. After work starts, preserve the crew and create a separate job for additional workers.",
+        "start": 10.07,
+        "end": 11.97
+      },
+      {
+        "title": "6. Configure your notification emails",
+        "text": "In Settings, enter your company recipients and the urgent acknowledgement deadline. N P I has its own recipient list. Send a test email and check the email queue. Queued is not sent; delivery needs the configured sender and scheduled dispatcher.",
+        "start": 12.836,
+        "end": 14.58
+      },
+      {
+        "title": "7. Acknowledge and resolve issues",
+        "text": "Open the issue, acknowledge it and choose a responsible administrator. Add comments as work progresses. A resolution needs an explanation. Urgent issues that remain open are escalated by the dispatcher. The reporter can see the status and resolution.",
+        "start": 15.057,
+        "end": 16.811
+      },
+      {
+        "title": "8. Inspect workers, attendance and photos",
+        "text": "Open submitted work. Compare each worker\u2019s recorded and claimed time. Inspect both G P S events, accuracy, checklist and outcome. Scroll to compare Before, Progress, After and Issue evidence. Clicking a photo opens a viewing copy and its unchanged original.",
+        "start": 17.291,
+        "end": 19.081
+      },
+      {
+        "title": "9. Forward verified work to NPI",
+        "text": "Choose Approve and forward to N P I only after checking the record. Incomplete work or an evidence exception requires explicit acknowledgement. If anything needs correction, return it with a specific reason instead.",
+        "start": 19.082,
+        "end": 20.473
+      },
+      {
+        "title": "10. Daily reports and access controls",
+        "text": "Check activity and exceptions for overdue work, long open shifts, location concerns and hour differences. Filter reports by date, company or site and export the loaded records. Use the paginated work register to find older jobs. Sign out on shared devices.",
+        "start": 21.388,
+        "end": 22.702
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Sign in to your company account",
+        "duration": 14.142958333333333
+      },
+      {
+        "start": 14.142958333333333,
+        "title": "1. Your company scope",
+        "duration": 16.582208333333334
+      },
+      {
+        "start": 30.725166666666667,
+        "title": "2. Invite your workers",
+        "duration": 14.128958333333333
+      },
+      {
+        "start": 44.854124999999996,
+        "title": "3. Approve genuine worker accounts",
+        "duration": 16.875458333333334
+      },
+      {
+        "start": 61.72958333333333,
+        "title": "4. Assign work to your team",
+        "duration": 17.00625
+      },
+      {
+        "start": 78.73583333333333,
+        "title": "5. Repeat work and preserve history",
+        "duration": 17.428708333333333
+      },
+      {
+        "start": 96.16454166666666,
+        "title": "6. Configure your notification emails",
+        "duration": 16.211
+      },
+      {
+        "start": 112.37554166666666,
+        "title": "7. Acknowledge and resolve issues",
+        "duration": 15.745583333333332
+      },
+      {
+        "start": 128.121125,
+        "title": "8. Inspect workers, attendance and photos",
+        "duration": 18.278791666666667
+      },
+      {
+        "start": 146.39991666666668,
+        "title": "9. Forward verified work to NPI",
+        "duration": 14.031541666666666
+      },
+      {
+        "start": 160.43145833333335,
+        "title": "10. Daily reports and access controls",
+        "duration": 18.231791666666666
+      }
+    ],
+    "duration": 178.66325
+  },
+  {
+    "role": "worker",
+    "mobile": true,
+    "scenes": [
+      {
+        "title": "Sign in to your company account",
+        "text": "This guide uses the running app with fictional training records. Camera, location and cloud responses are simulated. Sign in with your company username and password. The written guide includes every task and setup step.",
+        "start": 0.005,
+        "end": 1.285
+      },
+      {
+        "title": "1. Register and wait for approval",
+        "text": "First use the invitation from your subcontractor administrator. Enter your own name, username and password. Your company and role come from the invitation. Your administrator must approve your account before you can work.",
+        "start": 1.285,
+        "end": 3.049
+      },
+      {
+        "title": "2. Open the correct assignment",
+        "text": "My work shows your assignments. Check the building photo, date and instructions. Open the assignment and read the exact work area and hazards. Your assigned team is listed in the record. Use search filters only when needed.",
+        "start": 3.242,
+        "end": 5.008
+      },
+      {
+        "title": "3. Check in with fresh GPS",
+        "text": "At the site, choose Check in. Select the correct assigned crew members. Capture your current location and allow precise location permission. Check the position and accuracy before recording attendance. Every checkout needs another fresh capture.",
+        "start": 5.008,
+        "end": 6.829
+      },
+      {
+        "title": "4. Take the first before photo",
+        "text": "Choose Upload evidence and select Before work. Tap Take photo, then Capture photo. Inspect the preview. Keep the picture if it is useful, or choose Retake. This demonstration uses a synthetic camera feed.",
+        "start": 7.318,
+        "end": 8.939
+      },
+      {
+        "title": "5. Keep it and take another",
+        "text": "Tap Keep photo. The camera opens again so you can take the next picture. Repeat one at a time. Review your thumbnails and remove unwanted pictures before uploading. Each picture retains its own capture record.",
+        "start": 8.94,
+        "end": 11.298
+      },
+      {
+        "title": "6. Upload and confirm every picture",
+        "text": "Tap Upload photos. Wait until every picture says Saved. Failed items remain available for retry, while saved items are not uploaded again. Originals remain unchanged; management sees a stamped viewing copy and the server upload time.",
+        "start": 11.298,
+        "end": 12.389
+      },
+      {
+        "title": "7. Complete tasks and report problems",
+        "text": "Update the checklist as the work is completed. Hauling jobs also need whole loads and their timecard. If work is only partial, impossible, or required evidence is missing, use Work outcome and explain the reason. Never invent a completed task or photo.",
+        "start": 12.811,
+        "end": 14.262
+      },
+      {
+        "title": "8. Report an issue and notify admins",
+        "text": "Use Report a problem for blocked access, equipment, weather or safety issues. Describe the problem and choose its urgency. Saving creates an issue and in-app notifications. Email delivery uses the configured recipients and dispatcher. Immediate danger needs a direct call.",
+        "start": 14.743,
+        "end": 16.142
+      },
+      {
+        "title": "9. Attach pictures to the issue",
+        "text": "Open the evidence uploader, choose Issue evidence and select the related issue. Take a clear picture or choose files. You can add several pictures. Management can open the issue and its evidence inside the app.",
+        "start": 17.06,
+        "end": 19.49
+      },
+      {
+        "title": "10. Add after-work photos",
+        "text": "When work is finished, choose After work and take the final pictures. Show the same areas clearly enough for management to compare before and after. Upload and wait for the saved confirmation before leaving the evidence screen.",
+        "start": 20.058,
+        "end": 22.437
+      },
+      {
+        "title": "11. Check out and record breaks",
+        "text": "Choose Check out, capture a new current location and enter unpaid break minutes. Save the attendance event. If checkout was missed, record the real current event and explain a corrected claim; never backdate original attendance.",
+        "start": 23.03,
+        "end": 24.845
+      },
+      {
+        "title": "12. Submit hours for company review",
+        "text": "Choose Submit my hours. Normally keep Use the exact recorded time. A different claim requires a clear reason. All crew members must check out first. Submit, then read the confirmation so you know who reviews the work next.",
+        "start": 25.324,
+        "end": 26.712
+      },
+      {
+        "title": "13. Track hours, issues and next steps",
+        "text": "My hours separates recorded, claimed and accepted time. Your company reviews first, then N P I. Issues shows acknowledgements and resolutions. Alerts shows updates. If a correction is requested, follow the reason, update the permitted information and submit again.",
+        "start": 27.625,
+        "end": 28.943
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Sign in to your company account",
+        "duration": 14.142958333333333
+      },
+      {
+        "start": 14.142958333333333,
+        "title": "1. Register and wait for approval",
+        "duration": 14.154208333333333
+      },
+      {
+        "start": 28.297166666666666,
+        "title": "2. Open the correct assignment",
+        "duration": 15.135958333333333
+      },
+      {
+        "start": 43.433125,
+        "title": "3. Check in with fresh GPS",
+        "duration": 15.296958333333333
+      },
+      {
+        "start": 58.730083333333326,
+        "title": "4. Take the first before photo",
+        "duration": 14.263083333333332
+      },
+      {
+        "start": 72.99316666666665,
+        "title": "5. Keep it and take another",
+        "duration": 13.827458333333333
+      },
+      {
+        "start": 86.82062499999998,
+        "title": "6. Upload and confirm every picture",
+        "duration": 16.02691666666667
+      },
+      {
+        "start": 102.84754166666664,
+        "title": "7. Complete tasks and report problems",
+        "duration": 16.798750000000002
+      },
+      {
+        "start": 119.64629166666664,
+        "title": "8. Report an issue and notify admins",
+        "duration": 17.762291666666666
+      },
+      {
+        "start": 137.4085833333333,
+        "title": "9. Attach pictures to the issue",
+        "duration": 13.262083333333333
+      },
+      {
+        "start": 150.67066666666662,
+        "title": "10. Add after-work photos",
+        "duration": 14.069666666666667
+      },
+      {
+        "start": 164.7403333333333,
+        "title": "11. Check out and record breaks",
+        "duration": 14.837666666666665
+      },
+      {
+        "start": 179.57799999999997,
+        "title": "12. Submit hours for company review",
+        "duration": 15.207708333333333
+      },
+      {
+        "start": 194.7857083333333,
+        "title": "13. Track hours, issues and next steps",
+        "duration": 18.265916666666666
+      }
+    ],
+    "duration": 213.05162499999997
+  }
+]

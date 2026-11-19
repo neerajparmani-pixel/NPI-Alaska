@@ -1,0 +1,29 @@
+[
+  {
+    "role": "npi",
+    "duration_seconds": 212.621338,
+    "video": "h264",
+    "audio": "aac",
+    "width": 1280,
+    "height": 1000,
+    "av_difference": 0.0046579999999778465
+  },
+  {
+    "role": "sub",
+    "duration_seconds": 178.730631,
+    "video": "h264",
+    "audio": "aac",
+    "width": 1280,
+    "height": 1000,
+    "av_difference": 0.003365000000002283
+  },
+  {
+    "role": "worker",
+    "duration_seconds": 213.119667,
+    "video": "h264",
+    "audio": "aac",
+    "width": 540,
+    "height": 1280,
+    "av_difference": 0.03730999999999085
+  }
+]

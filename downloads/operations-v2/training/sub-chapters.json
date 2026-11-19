@@ -1,0 +1,57 @@
+[
+  {
+    "start": 0,
+    "title": "Sign in to your company account",
+    "duration": 14.142958333333333
+  },
+  {
+    "start": 14.142958333333333,
+    "title": "1. Your company scope",
+    "duration": 16.582208333333334
+  },
+  {
+    "start": 30.725166666666667,
+    "title": "2. Invite your workers",
+    "duration": 14.128958333333333
+  },
+  {
+    "start": 44.854124999999996,
+    "title": "3. Approve genuine worker accounts",
+    "duration": 16.875458333333334
+  },
+  {
+    "start": 61.72958333333333,
+    "title": "4. Assign work to your team",
+    "duration": 17.00625
+  },
+  {
+    "start": 78.73583333333333,
+    "title": "5. Repeat work and preserve history",
+    "duration": 17.428708333333333
+  },
+  {
+    "start": 96.16454166666666,
+    "title": "6. Configure your notification emails",
+    "duration": 16.211
+  },
+  {
+    "start": 112.37554166666666,
+    "title": "7. Acknowledge and resolve issues",
+    "duration": 15.745583333333332
+  },
+  {
+    "start": 128.121125,
+    "title": "8. Inspect workers, attendance and photos",
+    "duration": 18.278791666666667
+  },
+  {
+    "start": 146.39991666666668,
+    "title": "9. Forward verified work to NPI",
+    "duration": 14.031541666666666
+  },
+  {
+    "start": 160.43145833333335,
+    "title": "10. Daily reports and access controls",
+    "duration": 18.231791666666666
+  }
+]

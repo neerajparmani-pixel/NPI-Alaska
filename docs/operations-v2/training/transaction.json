@@ -1,0 +1,28 @@
+{
+  "status": "approved",
+  "evidence": [
+    {
+      "stage": "before",
+      "source": "app-camera",
+      "has_preview": true
+    },
+    {
+      "stage": "before",
+      "source": "app-camera",
+      "has_preview": true
+    },
+    {
+      "stage": "issue",
+      "source": "app-camera",
+      "has_preview": true
+    },
+    {
+      "stage": "after",
+      "source": "app-camera",
+      "has_preview": true
+    }
+  ],
+  "events": 2,
+  "accepted_minutes": 105,
+  "issue_status": "resolved"
+}

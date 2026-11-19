@@ -1,0 +1,193 @@
+WEBVTT
+
+1
+00:00:00.300 --> 00:00:04.253
+This guide uses the running app with fictional training records.
+
+5
+00:00:04.253 --> 00:00:07.404
+Camera, location and cloud responses are simulated.
+
+9
+00:00:07.404 --> 00:00:10.369
+Sign in with your company username and password.
+
+13
+00:00:10.369 --> 00:00:13.643
+The written guide includes every task and setup step.
+
+17
+00:00:14.443 --> 00:00:19.462
+Open your invitation from N P I to create the company administrator account.
+
+21
+00:00:19.462 --> 00:00:24.018
+After signing in, My subcontract shows your permitted contract sites.
+
+25
+00:00:24.018 --> 00:00:26.791
+Ask N P I to add missing responsibilities.
+
+29
+00:00:26.791 --> 00:00:30.225
+Your company manages its own workers and scheduling.
+
+33
+00:00:31.025 --> 00:00:33.410
+Open My team and choose Invite workers.
+
+37
+00:00:33.410 --> 00:00:36.283
+Create the company link and share it privately.
+
+41
+00:00:36.283 --> 00:00:39.646
+Workers register themselves and wait for your approval.
+
+45
+00:00:39.646 --> 00:00:44.354
+The link expires after seven days and allows up to one hundred registrations.
+
+49
+00:00:45.154 --> 00:00:48.955
+Check Pending workers and verify who belongs to your company.
+
+53
+00:00:48.955 --> 00:00:52.382
+Approve genuine registrations or reject unknown people.
+
+57
+00:00:52.382 --> 00:00:54.376
+This grants account access only.
+
+61
+00:00:54.376 --> 00:00:56.868
+Work hours still need a separate review.
+
+65
+00:00:56.868 --> 00:01:01.230
+Reset passwords or pause access from the account register when needed.
+
+69
+00:01:02.030 --> 00:01:03.375
+Create a work order.
+
+73
+00:01:03.375 --> 00:01:06.535
+Choose the permitted contract site and service.
+
+77
+00:01:06.535 --> 00:01:10.906
+Enter the work area, instructions, date, equipment and checklist.
+
+81
+00:01:10.906 --> 00:01:13.327
+Select the approved company workers.
+
+85
+00:01:13.327 --> 00:01:18.236
+Save the assignment; N P I can see who assigned it and every team member.
+
+89
+00:01:19.036 --> 00:01:21.644
+For regular jobs, use Repeat assignment.
+
+93
+00:01:21.644 --> 00:01:25.100
+Choose the first date, interval and number of copies.
+
+97
+00:01:25.100 --> 00:01:27.644
+Review the schedule before creating it.
+
+101
+00:01:27.644 --> 00:01:30.056
+Unstarted crew changes need a reason.
+
+105
+00:01:30.056 --> 00:01:35.665
+After work starts, preserve the crew and create a separate job for additional workers.
+
+109
+00:01:36.465 --> 00:01:41.750
+In Settings, enter your company recipients and the urgent acknowledgement deadline.
+
+113
+00:01:41.750 --> 00:01:43.852
+N P I has its own recipient list.
+
+117
+00:01:43.852 --> 00:01:46.654
+Send a test email and check the email queue.
+
+121
+00:01:46.654 --> 00:01:51.876
+Queued is not sent; delivery needs the configured sender and scheduled dispatcher.
+
+125
+00:01:52.676 --> 00:01:56.928
+Open the issue, acknowledge it and choose a responsible administrator.
+
+129
+00:01:56.928 --> 00:01:58.872
+Add comments as work progresses.
+
+133
+00:01:58.872 --> 00:02:00.938
+A resolution needs an explanation.
+
+137
+00:02:00.938 --> 00:02:04.766
+Urgent issues that remain open are escalated by the dispatcher.
+
+141
+00:02:04.766 --> 00:02:07.621
+The reporter can see the status and resolution.
+
+145
+00:02:08.421 --> 00:02:09.803
+Open submitted work.
+
+149
+00:02:09.803 --> 00:02:13.119
+Compare each worker’s recorded and claimed time.
+
+153
+00:02:13.119 --> 00:02:17.195
+Inspect both G P S events, accuracy, checklist and outcome.
+
+157
+00:02:17.195 --> 00:02:21.409
+Scroll to compare Before, Progress, After and Issue evidence.
+
+161
+00:02:21.409 --> 00:02:25.900
+Clicking a photo opens a viewing copy and its unchanged original.
+
+165
+00:02:26.700 --> 00:02:30.862
+Choose Approve and forward to N P I only after checking the record.
+
+169
+00:02:30.862 --> 00:02:35.521
+Incomplete work or an evidence exception requires explicit acknowledgement.
+
+173
+00:02:35.521 --> 00:02:39.931
+If anything needs correction, return it with a specific reason instead.
+
+177
+00:02:40.731 --> 00:02:47.966
+Check activity and exceptions for overdue work, long open shifts, location concerns and hour differences.
+
+181
+00:02:47.966 --> 00:02:52.789
+Filter reports by date, company or site and export the loaded records.
+
+185
+00:02:52.789 --> 00:02:56.303
+Use the paginated work register to find older jobs.
+
+189
+00:02:56.303 --> 00:02:58.163
+Sign out on shared devices.

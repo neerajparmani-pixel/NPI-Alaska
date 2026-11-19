@@ -1,0 +1,5 @@
+# Generated third-party bundle and release artifacts.
+public/live/vendor/*.js
+dist/
+downloads/
+docs/

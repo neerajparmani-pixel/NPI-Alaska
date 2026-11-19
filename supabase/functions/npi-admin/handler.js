@@ -191,7 +191,8 @@ export async function handleAdmin(request, env, fetcher = fetch) {
     }
     if (
       body.operation === "sheet_export" ||
-      body.operation === "sheet_propose"
+      body.operation === "sheet_propose" ||
+      body.operation === "email_dispatch"
     ) {
       if (
         !(await sameSecret(
@@ -201,19 +202,99 @@ export async function handleAdmin(request, env, fetcher = fetch) {
         body.spreadsheetId !== env.NPI_SHEETS_ID
       )
         return json({ error: "Workbook authorization failed" }, 403, allowed);
+      if (body.operation === "email_dispatch") {
+        if (!env.NPI_EMAIL_API_KEY || !env.NPI_EMAIL_FROM)
+          return json(
+            {
+              error:
+                "Email sender is not configured. Set NPI_EMAIL_API_KEY and NPI_EMAIL_FROM on the server.",
+            },
+            503,
+            allowed,
+          );
+        const jobs = await service("/rest/v1/rpc/npi_email_claim", {
+          method: "POST",
+          body: {},
+        });
+        let sent = 0;
+        for (const job of jobs) {
+          let provider = null,
+            error = null;
+          try {
+            const response = await fetcher("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + env.NPI_EMAIL_API_KEY,
+                "Content-Type": "application/json",
+                "Idempotency-Key": job.id,
+              },
+              body: JSON.stringify({
+                from: env.NPI_EMAIL_FROM,
+                to: [job.recipient],
+                subject: job.subject,
+                text:
+                  job.message +
+                  "\n\nSign in to review: " +
+                  allowed +
+                  "/live/" +
+                  (job.work_id ? "#work=" + job.work_id : "#notifications") +
+                  "\nPrivate evidence requires an authorised account.",
+              }),
+              signal: AbortSignal.timeout(20000),
+            });
+            const result = await response.json();
+            if (!response.ok || !result.id)
+              throw Error(
+                "Email provider rejected the request (" +
+                  response.status +
+                  ").",
+              );
+            provider = result.id;
+            sent++;
+          } catch (e) {
+            error = e.message || "Email send failed";
+          }
+          await service("/rest/v1/rpc/npi_email_result", {
+            method: "POST",
+            body: {
+              p_id: job.id,
+              p_sent: !!provider,
+              p_provider: provider,
+              p_error: error,
+            },
+          });
+        }
+        return json({ processed: jobs.length, sent }, 200, allowed);
+      }
       const fields = {
+        npi_evidence:
+          "id,work_id,uploaded_by,path,kind,stage,preview_path,source,captured_at,filename,original_mime,bytes,issue_id,created_at",
+        npi_work_members: "work_id,worker_id",
+        npi_invitations:
+          "id,company_id,role,created_by,created_at,expires_at,revoked,max_uses",
+        npi_issues:
+          "id,work_id,reporter_id,category,urgency,description,status,owner_id,resolution,created_at,updated_at,version,escalated_at",
+        npi_issue_comments: "id,issue_id,actor_id,body,created_at",
+        npi_work_history: "id,work_id,actor_id,event_time,action,detail",
+        npi_notifications:
+          "id,recipient_id,work_id,issue_id,title,message,event_key,created_at,read_at",
+        npi_email_outbox:
+          "id,work_id,issue_id,scope,recipient,subject,message,status,attempts,created_at,next_attempt,provider_id,error",
+        npi_notification_settings:
+          "scope,emails,escalation_minutes,updated_by,updated_at",
         npi_contracts: "id,name,client,reference,active",
         npi_contract_scopes: "id,contract_id,company_id,site_id,active",
         npi_audit: "id,actor_id,action,record_id,event_time",
         npi_profiles:
-          "id,company_id,username,display_name,role,active,account_status",
-        npi_sites: "id,name,address,timezone,photo_path,version",
-        npi_tasks: "id,name,description,active,version",
+          "id,company_id,username,display_name,role,active,account_status,access_version",
+        npi_sites:
+          "id,name,address,timezone,photo_path,instructions,latitude,longitude,radius_metres,version",
+        npi_tasks: "id,name,description,active,evidence_policy,version",
         npi_companies: "id,name,active,version",
         npi_work_orders:
-          "id,contract_id,company_id,site_id,task_id,planned_date,equipment,title,status,version",
+          "id,contract_id,company_id,site_id,task_id,planned_date,equipment,title,kind,status,review_note,version,created_by,created_at,area,instructions,evidence_policy,outcome,outcome_reason,evidence_exception_reason,checklist,completed_tasks,loads,repeat_group",
         npi_attendance_events:
-          "id,work_id,worker_id,event_kind,device_time,received_at,latitude,longitude,accuracy_metres,break_minutes",
+          "id,work_id,worker_id,captured_by,event_kind,device_time,received_at,latitude,longitude,accuracy_metres,break_minutes,idempotency_key",
         npi_hour_reviews:
           "id,work_id,worker_id,claimed_minutes,accepted_minutes,company_reviewer,npi_reviewer,reason,version",
         npi_sync_changes:
@@ -237,7 +318,13 @@ export async function handleAdmin(request, env, fetcher = fetch) {
                   table +
                   "?select=" +
                   fields[table] +
-                  "&order=id&limit=1000&offset=" +
+                  "&order=" +
+                  (table === "npi_work_members"
+                    ? "work_id,worker_id"
+                    : table === "npi_notification_settings"
+                      ? "scope"
+                      : "id") +
+                  "&limit=1000&offset=" +
                   offset,
               );
         return json({ rows, more: rows.length === 1000 }, 200, allowed);

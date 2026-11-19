@@ -1,0 +1,67 @@
+[
+  {
+    "start": 0,
+    "title": "Sign in to your company account",
+    "duration": 14.142958333333333
+  },
+  {
+    "start": 14.142958333333333,
+    "title": "1. Monitor all subcontractors",
+    "duration": 13.954166666666666
+  },
+  {
+    "start": 28.097125,
+    "title": "2. Set up company and contract responsibility",
+    "duration": 15.268458333333333
+  },
+  {
+    "start": 43.36558333333333,
+    "title": "3. Invite the subcontractor administrator",
+    "duration": 17.360166666666665
+  },
+  {
+    "start": 60.72575,
+    "title": "4. Configure locations and evidence rules",
+    "duration": 16.833541666666665
+  },
+  {
+    "start": 77.55929166666667,
+    "title": "5. See who assigned each worker",
+    "duration": 15.823541666666666
+  },
+  {
+    "start": 93.38283333333334,
+    "title": "6. Inspect the original attendance",
+    "duration": 17.479583333333334
+  },
+  {
+    "start": 110.86241666666668,
+    "title": "7. Compare before and after evidence",
+    "duration": 15.318041666666666
+  },
+  {
+    "start": 126.18045833333335,
+    "title": "8. Accept or return the work",
+    "duration": 16.316583333333334
+  },
+  {
+    "start": 142.4970416666667,
+    "title": "9. Configure NPI email recipients",
+    "duration": 17.548333333333332
+  },
+  {
+    "start": 160.04537500000004,
+    "title": "10. Review notifications and issues",
+    "duration": 16.54554166666667
+  },
+  {
+    "start": 176.59091666666671,
+    "title": "11. Review spreadsheet planning changes",
+    "duration": 18.012708333333332
+  },
+  {
+    "start": 194.60362500000005,
+    "title": "12. Use reports and complete the rollout",
+    "duration": 17.900541666666665
+  }
+]

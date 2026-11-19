@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-19",
+  "scope": "local release candidate; no privileged production cloud session",
+  "unit_api_database": {
+    "passed": 70,
+    "failed": 0,
+    "command": "npm test"
+  },
+  "browser": {
+    "passed": 138,
+    "failed": 0,
+    "projects": [
+      "desktop 1440x1000",
+      "mobile 390x844"
+    ],
+    "command": "npx playwright test --workers=2",
+    "note": "Stable-server final run. Earlier interrupted run lost its reused preview server; not counted as passing."
+  },
+  "axe": {
+    "states": 14,
+    "automated_violations": 0,
+    "manual_review_required": true
+  },
+  "lighthouse": {
+    "flow_accessibility": 100,
+    "flow_best_practices": 100,
+    "login_performance": 75,
+    "login_accessibility": 100,
+    "login_best_practices": 100,
+    "login_seo": 91
+  },
+  "production_dependency_vulnerabilities": 0,
+  "active_first_party_static_findings": 0,
+  "legacy_unshipped_prototype_findings": 17,
+  "media": [
+    {
+      "role": "npi",
+      "duration_seconds": 212.621338,
+      "video": "h264",
+      "audio": "aac",
+      "width": 1280,
+      "height": 1000,
+      "av_difference": 0.0046579999999778465
+    },
+    {
+      "role": "sub",
+      "duration_seconds": 178.730631,
+      "video": "h264",
+      "audio": "aac",
+      "width": 1280,
+      "height": 1000,
+      "av_difference": 0.003365000000002283
+    },
+    {
+      "role": "worker",
+      "duration_seconds": 213.119667,
+      "video": "h264",
+      "audio": "aac",
+      "width": 540,
+      "height": 1280,
+      "av_difference": 0.03730999999999085
+    }
+  ],
+  "remote_acceptance": "Pending owner deployment and live device, storage, sender, trigger and workbook checks. No live emails sent."
+}

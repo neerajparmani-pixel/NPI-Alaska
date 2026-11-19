@@ -1,0 +1,72 @@
+[
+  {
+    "start": 0,
+    "title": "Sign in to your company account",
+    "duration": 14.142958333333333
+  },
+  {
+    "start": 14.142958333333333,
+    "title": "1. Register and wait for approval",
+    "duration": 14.154208333333333
+  },
+  {
+    "start": 28.297166666666666,
+    "title": "2. Open the correct assignment",
+    "duration": 15.135958333333333
+  },
+  {
+    "start": 43.433125,
+    "title": "3. Check in with fresh GPS",
+    "duration": 15.296958333333333
+  },
+  {
+    "start": 58.730083333333326,
+    "title": "4. Take the first before photo",
+    "duration": 14.263083333333332
+  },
+  {
+    "start": 72.99316666666665,
+    "title": "5. Keep it and take another",
+    "duration": 13.827458333333333
+  },
+  {
+    "start": 86.82062499999998,
+    "title": "6. Upload and confirm every picture",
+    "duration": 16.02691666666667
+  },
+  {
+    "start": 102.84754166666664,
+    "title": "7. Complete tasks and report problems",
+    "duration": 16.798750000000002
+  },
+  {
+    "start": 119.64629166666664,
+    "title": "8. Report an issue and notify admins",
+    "duration": 17.762291666666666
+  },
+  {
+    "start": 137.4085833333333,
+    "title": "9. Attach pictures to the issue",
+    "duration": 13.262083333333333
+  },
+  {
+    "start": 150.67066666666662,
+    "title": "10. Add after-work photos",
+    "duration": 14.069666666666667
+  },
+  {
+    "start": 164.7403333333333,
+    "title": "11. Check out and record breaks",
+    "duration": 14.837666666666665
+  },
+  {
+    "start": 179.57799999999997,
+    "title": "12. Submit hours for company review",
+    "duration": 15.207708333333333
+  },
+  {
+    "start": 194.7857083333333,
+    "title": "13. Track hours, issues and next steps",
+    "duration": 18.265916666666666
+  }
+]

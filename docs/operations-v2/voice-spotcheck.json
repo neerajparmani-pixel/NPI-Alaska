@@ -1,0 +1,20 @@
+[
+  {
+    "file": "npi-00",
+    "expected": "This guide uses the running app with fictional training records. Camera, location and cloud responses are simulated. Sign in with your company username and password. The written guide includes every task and setup step.",
+    "transcription": "This guide uses the running up with fictional training records, camera, location uncloud responses are simulated. Sign in with your company username and password. The written guide includes every task on setup step.",
+    "word_error_rate": 0.118
+  },
+  {
+    "file": "npi-08",
+    "expected": "After company approval, choose Verify and accept hours. Keep exact claimed hours or explain any adjustment. Review incomplete outcomes and evidence exceptions explicitly. If information is missing, return the work with a useful correction reason.",
+    "transcription": "After company approval, choose verify and accept hours. Keep exact claimed hours or explain any adjustment. Review incomplete outcomes and evidence exceptions explicitly. If information is missing, return the work with a useful correction reason.",
+    "word_error_rate": 0.0
+  },
+  {
+    "file": "sub-02",
+    "expected": "Open My team and choose Invite workers. Create the company link and share it privately. Workers register themselves and wait for your approval. The link expires after seven days and allows up to one hundred registrations.",
+    "transcription": "Open my team on Choose Invite Workers. Create the company link and share it privately. Workers register themselves Unweight for your approval. The link expires after 7 days and allows up to 100 registrations.",
+    "word_error_rate": 0.167
+  }
+]

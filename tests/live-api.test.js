@@ -279,3 +279,149 @@ test("sheet bridge accepts permitted planning proposals and rejects finance in t
   assert.equal(rejected.status, 400);
   assert.equal(writes, 1);
 });
+test("email dispatcher requires workbook authorization and server sender configuration", async () => {
+  const env = {
+    SUPABASE_URL: "https://test.supabase.co",
+    SUPABASE_SERVICE_ROLE_KEY: "server-only",
+    NPI_SHEETS_TOKEN: "s".repeat(48),
+    NPI_SHEETS_ID: "book",
+  };
+  const request = (token = "bad") =>
+    new Request("https://edge.test", {
+      method: "POST",
+      headers: { "x-npi-sheet-token": token },
+      body: JSON.stringify({
+        operation: "email_dispatch",
+        spreadsheetId: "book",
+      }),
+    });
+  let calls = 0;
+  const fetcher = async () => {
+    calls++;
+    return json({});
+  };
+  assert.equal((await handleAdmin(request(), env, fetcher)).status, 403);
+  assert.equal(calls, 0);
+  assert.equal(
+    (await handleAdmin(request(env.NPI_SHEETS_TOKEN), env, fetcher)).status,
+    503,
+  );
+  assert.equal(calls, 0);
+});
+test("email sends use durable provider idempotency and record accepted delivery separately", async () => {
+  const env = {
+    SUPABASE_URL: "https://test.supabase.co",
+    SUPABASE_SERVICE_ROLE_KEY: "server-only",
+    NPI_SHEETS_TOKEN: "s".repeat(48),
+    NPI_SHEETS_ID: "book",
+    NPI_EMAIL_API_KEY: "test-provider-only",
+    NPI_EMAIL_FROM: "NPI <alerts@example.test>",
+  };
+  const job = {
+    id: crypto.randomUUID(),
+    recipient: "manager@example.test",
+    subject: "Issue reported",
+    message: "Inspect the work",
+    work_id: user,
+  };
+  const calls = [];
+  const fetcher = async (url, options) => {
+    calls.push({ url, options });
+    if (url.endsWith("/npi_email_claim")) return json([job]);
+    if (url === "https://api.resend.com/emails")
+      return json({ id: "provider-accepted" });
+    return json(null);
+  };
+  const response = await handleAdmin(
+    new Request("https://edge.test", {
+      method: "POST",
+      headers: { "x-npi-sheet-token": env.NPI_SHEETS_TOKEN },
+      body: JSON.stringify({
+        operation: "email_dispatch",
+        spreadsheetId: "book",
+      }),
+    }),
+    env,
+    fetcher,
+  );
+  assert.equal(response.status, 200);
+  const provider = calls.find((c) =>
+    c.url.startsWith("https://api.resend.com"),
+  );
+  assert.equal(provider.options.headers["Idempotency-Key"], job.id);
+  const result = JSON.parse(
+    calls.find((c) => c.url.endsWith("/npi_email_result")).options.body,
+  );
+  assert.equal(result.p_sent, true);
+  assert.equal(result.p_provider, "provider-accepted");
+  assert.equal(
+    JSON.parse(provider.options.body).text.includes(
+      "Private evidence requires",
+    ),
+    true,
+  );
+});
+test("a late refresh response never overwrites a newer signed-in account", async () => {
+  let release;
+  const pending = new Promise((r) => (release = r));
+  const api = new LiveAPI(async () => pending);
+  api.remember({
+    access_token: "old",
+    refresh_token: "old-refresh",
+    expires_in: 3600,
+  });
+  const refresh = api.refresh().catch((e) => e);
+  api.remember({
+    access_token: "new",
+    refresh_token: "new-refresh",
+    expires_in: 3600,
+  });
+  release(
+    json({
+      access_token: "old-renewed",
+      refresh_token: "old-renewed-refresh",
+      expires_in: 3600,
+    }),
+  );
+  await refresh;
+  assert.equal(api.session.access_token, "new");
+});
+test("a stale authenticated failure cannot clear a newer account session", async () => {
+  let release;
+  const pending = new Promise((r) => (release = r));
+  const api = new LiveAPI(async () => pending);
+  api.remember({
+    access_token: "old",
+    refresh_token: "old-refresh",
+    expires_in: 3600,
+  });
+  const request = api.snapshot().catch((e) => e);
+  api.remember({
+    access_token: "new",
+    refresh_token: "new-refresh",
+    expires_in: 3600,
+  });
+  release(json({ error: "Expired old request" }, 401));
+  await request;
+  assert.equal(api.session.access_token, "new");
+});
+test("sign-out clears local access before network completion and cannot clear a subsequent login", async () => {
+  let release;
+  const pending = new Promise((r) => (release = r));
+  const api = new LiveAPI(async () => pending);
+  api.remember({
+    access_token: "old",
+    refresh_token: "old-refresh",
+    expires_in: 3600,
+  });
+  const logout = api.logout();
+  assert.equal(api.session, null);
+  api.remember({
+    access_token: "new",
+    refresh_token: "new-refresh",
+    expires_in: 3600,
+  });
+  release(json({}));
+  await logout;
+  assert.equal(api.session.access_token, "new");
+});

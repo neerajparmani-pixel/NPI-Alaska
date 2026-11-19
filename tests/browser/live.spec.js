@@ -54,13 +54,25 @@ test("live worker sends fresh GPS and evidence, then company and NPI approve sha
   await save(page);
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await act(page, "upload");
-  await page.locator("#file").setInputFiles({
+  await page.locator("#multi-files").setInputFiles({
     name: "evidence.png",
     mimeType: "image/png",
-    buffer: Buffer.from(png, "base64"),
+    buffer: Buffer.from(
+      await page.evaluate(() => {
+        const c = document.createElement("canvas");
+        c.width = 20;
+        c.height = 20;
+        c.getContext("2d").fillRect(0, 0, 20, 20);
+        return c.toDataURL("image/png").split(",")[1];
+      }),
+      "base64",
+    ),
   });
-  await save(page);
-  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page.locator("#upload-batch").click();
+  await expect(page.locator("#photo-status")).toContainText(
+    "saved successfully",
+  );
+  await act(page, "close");
   await context.setGeolocation({
     latitude: 61.21,
     longitude: -149.91,
@@ -72,7 +84,13 @@ test("live worker sends fresh GPS and evidence, then company and NPI approve sha
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await act(page, "claim");
   await save(page);
-  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Work submitted for company review.",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await act(page, "close");
   expect(state.work[0].status).toBe("contractor-review");
   const clocks = writes.filter((w) => w.p_action === "clock");
   expect(clocks.map((c) => c.p_body.latitude)).toEqual([61.2, 61.21]);
@@ -82,7 +100,10 @@ test("live worker sends fresh GPS and evidence, then company and NPI approve sha
   await act(page, "open-work");
   await act(page, "company-approve");
   await save(page);
-  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Work forwarded to NPI.", exact: true }),
+  ).toBeVisible();
+  await act(page, "close");
   expect(state.work[0].status).toBe("npi-review");
   await act(page, "logout");
   await login(page, "owner@npi.test");
@@ -90,7 +111,7 @@ test("live worker sends fresh GPS and evidence, then company and NPI approve sha
   const maps = page.locator('a.live-map[href*="google.com/maps"]');
   await expect(maps).toHaveCount(2);
   expect(await maps.first().getAttribute("href")).toContain("61.2,-149.9");
-  await act(page, "view-file");
+  await act(page, "field-file");
   await expect(page.locator("img.live-modal-photo")).toBeVisible();
   await expect
     .poll(() =>
@@ -100,7 +121,13 @@ test("live worker sends fresh GPS and evidence, then company and NPI approve sha
   await act(page, "close");
   await act(page, "npi-approve");
   await save(page);
-  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Work verified and hours accepted.",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await act(page, "close");
   expect(state.work[0].status).toBe("approved");
   expect(state.reviews[0].accepted_minutes).toBe(105);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
