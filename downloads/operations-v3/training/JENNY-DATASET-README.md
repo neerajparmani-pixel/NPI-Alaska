@@ -21,7 +21,7 @@ Total is.. 22419 prompts, files look like this:
 1.txt
 1.wav
 2.txt
-2.wav 
+2.wav
 etc.
 
 Audio files are 48khz, 16-bit PCM files, 2 Channels (a single microphone was used.. hmm).
