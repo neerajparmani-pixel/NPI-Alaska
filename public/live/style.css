@@ -592,3 +592,19 @@
   background: #fff;
   font: inherit;
 }
+
+.visit-start {
+  margin: 0 0 24px;
+}
+.visit-start > .btn {
+  min-height: 54px;
+  min-width: 180px;
+}
+
+.visit-service-card {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line, #d9e2ec);
+}
+.visit-service-card p {
+  margin: 6px 0 10px;
+}

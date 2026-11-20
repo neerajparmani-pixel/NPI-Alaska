@@ -5,7 +5,12 @@ const NPI_LIVE = {
   publishableKey: "sb_publishable_FmSUiw7lQNNPq3Wc--7EUA_yDG5vFXw",
 };
 const NPI_GROUPS = {
-  Work: ["npi_work_orders", "npi_work_members", "npi_hour_reviews"],
+  Work: [
+    "npi_work_orders",
+    "npi_work_members",
+    "npi_hour_reviews",
+    "npi_visit_lines",
+  ],
   Attendance: ["npi_attendance_events"],
   People: ["npi_profiles"],
   Setup: [
@@ -15,6 +20,7 @@ const NPI_GROUPS = {
     "npi_invitations",
     "npi_sites",
     "npi_tasks",
+    "npi_service_items",
     "npi_notification_settings",
   ],
   Issues: ["npi_issues", "npi_issue_comments"],
@@ -28,7 +34,9 @@ const NPI_GROUPS = {
   ],
 };
 const NPI_RECORD_LABELS = {
-  npi_work_orders: "Assignment",
+  npi_work_orders: "Work visit",
+  npi_visit_lines: "Work line / sub-line",
+  npi_service_items: "Contract line / sub-line",
   npi_work_members: "Assigned worker",
   npi_hour_reviews: "Hours review",
   npi_attendance_events: "Attendance",
@@ -292,6 +300,7 @@ function npiPullLive() {
           const workId =
             r.work_id || (table === "npi_work_orders" ? r.id : null);
           const detail =
+            r.sub_label ||
             r.description ||
             r.resolution ||
             r.message ||
@@ -311,7 +320,12 @@ function npiPullLive() {
                 (r.work_id && r.worker_id
                   ? r.work_id + ":" + r.worker_id
                   : r.scope),
-              r.name || r.display_name || r.title || w.title || "",
+              r.line_label ||
+                r.name ||
+                r.display_name ||
+                r.title ||
+                w.title ||
+                "",
               find("npi_companies", r.company_id || w.company_id).name || "",
               find("npi_sites", r.site_id || w.site_id).name || "",
               actor.display_name || "",

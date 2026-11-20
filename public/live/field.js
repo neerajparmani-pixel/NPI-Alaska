@@ -61,9 +61,13 @@ export class FieldFeatures {
     const owner = person(w.created_by);
     return (
       panel(
-        "Assignment & team",
-        `<p><b>Assigned by:</b> ${esc(owner?.display_name || (w.created_by ? "Assigned administrator (" + w.created_by.slice(0, 8) + ")" : "Legacy assignment — creator not recorded"))} · ${esc(timestamp(w.created_at))}</p><p><b>Subcontractor:</b> ${esc(this.c.company(w.company_id)?.name)}<br><b>Work area:</b> ${esc(w.area || "Follow the assignment instructions")}<br><b>Instructions:</b> ${esc(w.instructions || site(w.site_id)?.instructions || "No additional instructions")}</p>${table(
-          ["Assigned worker", "Account", "Attendance"],
+        w.worker_led ? "Visit & crew" : "Assignment & team",
+        `<p><b>${w.worker_led ? "Started by" : "Assigned by"}:</b> ${esc(owner?.display_name || (w.created_by ? "Assigned administrator (" + w.created_by.slice(0, 8) + ")" : "Legacy assignment — creator not recorded"))} · ${esc(timestamp(w.created_at))}</p><p><b>Subcontractor:</b> ${esc(this.c.company(w.company_id)?.name)}<br><b>Work area:</b> ${esc(w.area || (w.worker_led ? "Site service area" : "Follow the assignment instructions"))}<br><b>Instructions:</b> ${esc(w.instructions || site(w.site_id)?.instructions || "No additional instructions")}</p>${table(
+          [
+            w.worker_led ? "Worker" : "Assigned worker",
+            "Account",
+            "Attendance",
+          ],
           members.map((m) => {
             const p = person(m.worker_id),
               e = data.events
@@ -87,7 +91,7 @@ export class FieldFeatures {
               ),
             ];
           }),
-        )}<div class="actions">${button("Report a problem", "field-report", w.id)}${data.profile.role === "worker" && ["draft", "in-progress", "returned"].includes(w.status) ? button("Work outcome / problem completing", "field-outcome", w.id) : ""}${data.profile.role !== "worker" ? button("Assignment details / team", "field-plan", w.id) + button("Repeat assignment", "field-repeat", w.id) + (w.status === "draft" ? button("Cancel unstarted work", "field-cancel", w.id) : "") : ""}</div>${w.outcome && w.outcome !== "complete" ? `<p class="notice">${esc(w.outcome === "partial" ? "Partially completed" : "Unable to work")}: ${esc(w.outcome_reason)}. Explicit management review required.</p>` : ""}${w.evidence_exception_reason ? `<p class="notice">Evidence exception: ${esc(w.evidence_exception_reason)}. Explicit review required.</p>` : ""}`,
+        )}<div class="actions">${button("Report a problem", "field-report", w.id)}${data.profile.role === "worker" && ["draft", "in-progress", "returned"].includes(w.status) ? button("Work outcome / problem completing", "field-outcome", w.id) : ""}${data.profile.role !== "worker" && !w.worker_led ? button("Assignment details / team", "field-plan", w.id) + button("Repeat assignment", "field-repeat", w.id) + (w.status === "draft" ? button("Cancel unstarted work", "field-cancel", w.id) : "") : ""}</div>${w.outcome && w.outcome !== "complete" ? `<p class="notice">${esc(w.outcome === "partial" ? "Partially completed" : "Unable to work")}: ${esc(w.outcome_reason)}. Explicit management review required.</p>` : ""}${w.evidence_exception_reason ? `<p class="notice">Evidence exception: ${esc(w.evidence_exception_reason)}. Explicit review required.</p>` : ""}`,
       ) +
       this.gallery(w) +
       panel(
@@ -272,13 +276,13 @@ export class FieldFeatures {
       head(
         data.profile.role === "worker" ? "My work" : "Work orders",
         data.profile.role === "worker"
-          ? "Your assignments and next steps."
-          : "Assignments, locations and each company’s assigned team.",
+          ? "Your work and next steps."
+          : "Visits, locations and each company’s crew.",
         data.profile.role === "worker"
           ? ""
           : button("New work order", "new-work", "", "primary"),
       ) +
-      `${data.profile.role === "worker" ? '<details class="work-filter-disclosure"><summary>Search / filter assignments</summary>' : ""}<form novalidate id="work-filters" class="work-filters"><div class="field"><label for="filter-q">Search work</label><input id="filter-q" name="q" value="${esc(q.get("q"))}"></div><div class="field"><label for="filter-company">Company</label><select id="filter-company" name="company">${options(data.companies, q.get("company"), "All permitted companies")}</select></div><div class="field"><label for="filter-site">Site</label><select id="filter-site" name="site">${options(data.sites, q.get("site"), "All permitted sites")}</select></div><div class="field"><label for="filter-contract">Contract</label><select id="filter-contract" name="contract">${options(this.c.contracts || [], q.get("contract"), "All permitted contracts")}</select></div><div class="field"><label for="filter-worker">Worker</label><select id="filter-worker" name="worker">${options(
+      `${data.profile.role === "worker" ? '<details class="work-filter-disclosure"><summary>Search / filter work</summary>' : ""}<form novalidate id="work-filters" class="work-filters"><div class="field"><label for="filter-q">Search work</label><input id="filter-q" name="q" value="${esc(q.get("q"))}"></div><div class="field"><label for="filter-company">Company</label><select id="filter-company" name="company">${options(data.companies, q.get("company"), "All permitted companies")}</select></div><div class="field"><label for="filter-site">Site</label><select id="filter-site" name="site">${options(data.sites, q.get("site"), "All permitted sites")}</select></div><div class="field"><label for="filter-contract">Contract</label><select id="filter-contract" name="contract">${options(this.c.contracts || [], q.get("contract"), "All permitted contracts")}</select></div><div class="field"><label for="filter-worker">Worker</label><select id="filter-worker" name="worker">${options(
         data.people.filter((p) => p.role === "worker"),
         q.get("worker"),
         "All assigned workers",
@@ -291,7 +295,7 @@ export class FieldFeatures {
         )
         .join(
           "",
-        )}</select></div><div class="field"><label for="filter-from">From</label><input id="filter-from" type="date" name="from" value="${esc(q.get("from"))}"></div><div class="field"><label for="filter-to">Through</label><input id="filter-to" type="date" name="to" value="${esc(q.get("to"))}"></div><button class="btn" type="submit">Apply filters</button>${button("Reset", "field-reset-filters")}</form>${data.profile.role === "worker" ? "</details>" : ""}<p>${total} matching assignments · page ${page}</p><div class="assignment-grid">` +
+        )}</select></div><div class="field"><label for="filter-from">From</label><input id="filter-from" type="date" name="from" value="${esc(q.get("from"))}"></div><div class="field"><label for="filter-to">Through</label><input id="filter-to" type="date" name="to" value="${esc(q.get("to"))}"></div><button class="btn" type="submit">Apply filters</button>${button("Reset", "field-reset-filters")}</form>${data.profile.role === "worker" ? "</details>" : ""}<p>${total} matching records · page ${page}</p><div class="assignment-grid">` +
       items
         .map((w) => {
           const s = site(w.site_id),
@@ -301,10 +305,10 @@ export class FieldFeatures {
             data.members
               .filter((m) => m.work_id === w.id)
               .map((m) => m.worker_id);
-          return `<article class="panel work-card">${src ? `<img class="live-site-photo" src="../three-view/${src.replace("./", "")}" alt="${esc(s?.name)} site reference">` : ""}<span class="badge">${esc(this.c.names[w.status] || w.status)}</span><h2>${esc(s?.name || w.site_name || "Work site")}</h2><p>${esc(w.title)}</p>${w.outcome && w.outcome !== "complete" ? `<p class="notice">${w.outcome === "partial" ? "Partially completed" : "Unable to work"}</p>` : ""}<p>${esc(company(w.company_id)?.name)} · ${esc(w.planned_date)} · ${esc(w.equipment)}</p><p><b>Assigned by:</b> ${esc(w.assigned_by || person(w.created_by)?.display_name || (w.created_by ? "Assigned administrator" : "Legacy record"))}<br><b>Team:</b> ${members.map((id) => esc(person(id)?.display_name || id)).join(", ")}</p>${button(data.profile.role === "worker" ? "View assignment" : "Open work", "open-work", w.id, "primary")}</article>`;
+          return `<article class="panel work-card">${src ? `<img class="live-site-photo" src="../three-view/${src.replace("./", "")}" alt="${esc(s?.name)} site reference">` : ""}<span class="badge">${esc(w.worker_led && w.status === "draft" ? "Prepared" : this.c.names[w.status] || w.status)}</span><h2>${esc(s?.name || w.site_name || "Work site")}</h2><p>${esc(w.title)}</p>${w.outcome && w.outcome !== "complete" ? `<p class="notice">${w.outcome === "partial" ? "Partially completed" : "Unable to work"}</p>` : ""}<p>${esc(company(w.company_id)?.name)} · ${esc(w.planned_date)} · ${esc(w.equipment)}</p><p><b>${w.worker_led ? "Started by" : "Assigned by"}:</b> ${esc(w.assigned_by || person(w.created_by)?.display_name || (w.created_by ? "Assigned administrator" : "Legacy record"))}<br><b>Team:</b> ${members.map((id) => esc(person(id)?.display_name || id)).join(", ")}</p>${button(data.profile.role === "worker" ? (w.worker_led ? "Open visit" : "View assignment") : "Open work", "open-work", w.id, "primary")}</article>`;
         })
         .join("") +
-      `</div>${items.length ? "" : "<p>No assignments match. Clear the filters or ask your administrator.</p>"}<div class="actions">${page > 1 ? button("Previous page", "field-page", String(page - 1)) : ""}${total > page * 50 ? button("Next page", "field-page", String(page + 1)) : ""}</div>`
+      `</div>${items.length ? "" : "<p>No work matches. Clear the filters or start a new visit.</p>"}<div class="actions">${page > 1 ? button("Previous page", "field-page", String(page - 1)) : ""}${total > page * 50 ? button("Next page", "field-page", String(page + 1)) : ""}</div>`
     );
   }
   reportWork() {
@@ -528,7 +532,8 @@ export class FieldFeatures {
               "Urgent acknowledgement deadline (minutes)",
               "number",
               s.escalation_minutes || 60,
-            ),
+            ) +
+            `<label class="taskline"><input name="daily_summary" type="checkbox" ${s.daily_summary !== false ? "checked" : ""}> Daily operations summary (after 7 AM Alaska time)</label>`,
         );
       },
       "field-test-email": () =>
@@ -797,6 +802,7 @@ export class FieldFeatures {
         throw Error(`${label} must be a whole number from ${min} to ${max}.`);
     };
     if (action === "notification_settings") {
+      body.daily_summary = values.get("daily_summary") === "on";
       integer(
         body.escalation_minutes,
         15,

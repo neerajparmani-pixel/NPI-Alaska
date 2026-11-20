@@ -1,10 +1,11 @@
-const CACHE = "npi-live-v4";
+const CACHE = "npi-live-v5";
 const SHELL = [
   "./",
   "./index.html",
   "./app.js",
   "./api.js",
   "./field.js",
+  "./visits.js",
   "./field-domain.js",
   "./photos.js",
   "./vendor/image-decoders.js",

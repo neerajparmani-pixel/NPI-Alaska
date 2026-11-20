@@ -225,7 +225,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-
 ## Source and rebuilding
 
 The separately loaded decoder module uses heic-to 1.6.7 (LGPL-3.0-or-later), UTIF 3.1.0 and pako. Source: https://github.com/hoppergee/heic-to/tree/v1.6.7 and https://www.npmjs.com/package/heic-to/v/1.6.7 (published source archive), https://github.com/kovacsv/libheif-js and https://github.com/strukturag/libheif. UTIF: https://github.com/photopea/UTIF.js; pako: https://github.com/nodeca/pako. The module is loaded separately and may be replaced with a compatible rebuilt version. Use training/source/build-image-decoders.mjs from the package or scripts/build-image-decoders.mjs in the repository after installing the pinned package-lock.json dependencies.

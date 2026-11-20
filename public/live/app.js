@@ -1,4 +1,5 @@
 import { distanceMetres } from "./field-domain.js";
+import { VisitFeatures } from "./visits.js";
 import { FieldFeatures } from "./field.js";
 import { api } from "./api.js";
 import { showEnrollment } from "./enrollment.js";
@@ -44,6 +45,7 @@ let data = null,
   returnFocus = null,
   dirty = false,
   latest = 0,
+  lastLoadedView = "",
   captured = null,
   pending = new Map(),
   dialogRoute = "",
@@ -89,8 +91,17 @@ const features = new FieldFeatures(() => ({
   },
   refreshDataOnly: async () => {
     const next = await api.snapshot("all", selected);
-    next.field = await api.fieldSnapshot();
+    next.field = await api.fieldSnapshot(selected);
     data = next;
+  },
+}));
+const visits = new VisitFeatures(() => ({
+  ...features.c,
+  success: (...args) => features.success(...args),
+  openVisit: async (id) => {
+    selected = id;
+    history.replaceState(null, "", location.pathname + "#detail");
+    await load();
   },
 }));
 const person = (x) => data.people.find((p) => p.id === x),
@@ -292,7 +303,7 @@ async function load() {
     route === "detail" ? selected : null,
   );
   data = snapshot;
-  data.field = await api.fieldSnapshot();
+  data.field = await api.fieldSnapshot(route === "detail" ? selected : null);
   if (route === "work")
     data.workSearch = await api.workSearch(
       Object.fromEntries(
@@ -305,6 +316,9 @@ async function load() {
   if (data.profile.role !== "worker") opsData = await api.opsContext();
   latest = Date.now();
   render();
+  const viewKey = route + (route === "detail" ? selected : "");
+  if (viewKey !== lastLoadedView) window.scrollTo(0, 0);
+  lastLoadedView = viewKey;
 }
 function overviewView() {
   const s = summary(),
@@ -361,7 +375,7 @@ function overviewView() {
         ? "Monitor activity. Verify tasks, photos and hours."
         : "Coordinate crews. Review hours. Keep NPI updated.",
     ) +
-    `<section class="oversight-hero"><div><p>CUSTOMER → NPI → SUBCONTRACTOR</p><h2>Every site. Every shift. Verified.</h2><span>Crews belong to the subcontractor. NPI monitors and verifies service.</span></div><div class="hero-stat"><strong>${s.approved}/${s.work_count ?? data.work.length}</strong><span>NPI verified</span></div></section><section class="metrics" aria-label="Operational summary">${metric("Active work", s.active, "Recorded work in progress", "work")}${metric(npi ? "NPI review" : "Company review", awaiting, "Hours awaiting verification", "check")}${metric("Verified records", s.approved, "Accepted after NPI review", "pin")}${metric(npi ? "Company review" : "NPI review", npi ? s.company_review : s.npi_review, "Next approval handoff", "users")}</section><div class="two oversight-grid"><div class="stack">${panel("Worker activity", activityRows || '<div class="live-empty"><span class="activity-symbol">' + icon("work") + "</span><h3>No work activity yet</h3><p>Assign work to see crew activity, locations and approval progress here.</p></div>", button("All work", "goto", "work", "compact"))}${panel("Hours by location", '<p class="small muted">Worker-hours for assignments loaded in this view.</p><div class="site-summary">' + (siteHours || '<p class="live-empty-copy">Recorded and accepted hours will appear after workers start their assignments.</p>') + "</div>")}${panel("Work register", workRegister(activity), npi ? button("View subcontractors", "goto", "companies") : button("New assignment", "new-work", "", "primary"))}</div><aside class="stack" aria-label="Review and setup">${panel("Attention queue", queue)}${panel("Approval handoff", '<ol class="flow"><li><span class="step">1</span><div><b>Subcontractor Worker</b><p>Check in, complete tasks, upload evidence and check out.</p></div></li><li><span class="step">2</span><div><b>Subcontractor Admin</b><p>Review workers’ hours and forward them to NPI.</p></div></li><li><span class="step">3</span><div><b>NPI Admin</b><p>Cross-check original records and accept hours.</p></div></li></ol>')}${!data.work.length && npi ? panel("Set up your workspace", '<p>Set up the contract and sites, then invite your subcontractor. They will manage their own workers and assignments.</p><div class="live-setup-links">' + button("Add subcontractor", "new-company") + button("Add location", "new-site") + button("Add service", "new-task") + button("Contracts & sites", "goto", "contracts") + "</div>") : ""}</aside></div>`
+    `<section class="oversight-hero"><div><p>CUSTOMER → NPI → SUBCONTRACTOR</p><h2>Every site. Every shift. Verified.</h2><span>Crews belong to the subcontractor. NPI monitors and verifies service.</span></div><div class="hero-stat"><strong>${s.approved}/${s.work_count ?? data.work.length}</strong><span>NPI verified</span></div></section><section class="metrics" aria-label="Operational summary">${metric("Active work", s.active, "Recorded work in progress", "work")}${metric(npi ? "NPI review" : "Company review", awaiting, "Hours awaiting verification", "check")}${metric("Verified records", s.approved, "Accepted after NPI review", "pin")}${metric(npi ? "Company review" : "NPI review", npi ? s.company_review : s.npi_review, "Next approval handoff", "users")}</section><div class="two oversight-grid"><div class="stack">${panel("Worker activity", activityRows || '<div class="live-empty"><span class="activity-symbol">' + icon("work") + "</span><h3>No work activity yet</h3><p>Worker-started visits appear here automatically.</p></div>", button("All work", "goto", "work", "compact"))}${panel("Hours by location", '<p class="small muted">Worker-hours for assignments loaded in this view.</p><div class="site-summary">' + (siteHours || '<p class="live-empty-copy">Recorded and accepted hours will appear after workers start their assignments.</p>') + "</div>")}${panel("Work register", workRegister(activity), npi ? button("View subcontractors", "goto", "companies") : button("New assignment", "new-work", "", "primary"))}</div><aside class="stack" aria-label="Review and setup">${panel("Attention queue", queue)}${panel("Approval handoff", '<ol class="flow"><li><span class="step">1</span><div><b>Subcontractor Worker</b><p>Start a visit, record services and photos, then finish and submit.</p></div></li><li><span class="step">2</span><div><b>Subcontractor Admin</b><p>Review workers’ hours and forward them to NPI.</p></div></li><li><span class="step">3</span><div><b>NPI Admin</b><p>Cross-check original records and accept hours.</p></div></li></ol>')}${!data.work.length && npi ? panel("Set up your workspace", '<p>Set up the contract and sites, then invite your subcontractor. Their approved workers can start visits at authorised sites.</p><div class="live-setup-links">' + button("Add subcontractor", "new-company") + button("Add location", "new-site") + button("Add service", "new-task") + button("Contracts & sites", "goto", "contracts") + "</div>") : ""}</aside></div>`
   );
 }
 function workRegister(list) {
@@ -379,7 +393,7 @@ function workRegister(list) {
   );
 }
 function workView() {
-  return features.workView();
+  return visits.workerHeader() + features.workView();
 }
 function recorded(work, worker) {
   const review = data.reviews.find(
@@ -493,7 +507,25 @@ function detailView() {
           ? button("Verify & accept hours", "npi-approve", w.id, "primary") +
             button("Return to company", "return", w.id)
           : "";
-  return `<h1 class="live-detail-name">${esc(site(w.site_id)?.name)}</h1><p>${esc(w.title)} · ${esc(names[w.status])}</p><p>${esc(w.equipment)} · ${esc(site(w.site_id)?.address || "Address not set")}</p>${w.review_note ? `<p class="live-banner live-note">${esc(w.review_note)}</p>` : ""}<div class="live-card-actions">${["npi", "sub"].includes(data.profile.role) && w.status === "draft" ? button("Edit plan", "plan", w.id) : ""}${actions}</div>${panel("Hours comparison", comparison(w))}${panel("Tasks", `<ul>${w.checklist.map((t, i) => `<li>${w.completed_tasks.includes(i) ? "✓" : "○"} ${esc(t)}</li>`).join("")}</ul><p>Recorded loads: ${w.loads}</p>`)}${panel(
+  const currentEvent = events
+    .filter((e) => e.worker_id === data.profile.id)
+    .at(-1);
+  const visitActions =
+    w.worker_led &&
+    data.profile.role === "worker" &&
+    ["draft", "in-progress", "returned"].includes(w.status)
+      ? w.status === "draft"
+        ? button("Add before photos", "upload", w.id, "primary") +
+          button("Start work", "clock-in", w.id)
+        : button("Add photos", "upload", w.id) +
+          (currentEvent?.event_kind === "check-in"
+            ? button("Finish work", "clock-out", w.id, "primary")
+            : button("Submit hours", "claim", w.id, "primary") +
+              (w.status === "returned"
+                ? button("Resume work", "clock-in", w.id)
+                : ""))
+      : actions;
+  return `<h1 class="live-detail-name">${esc(site(w.site_id)?.name)}</h1><p>${esc(w.title)} · ${esc(w.worker_led && w.status === "draft" ? "Prepared" : names[w.status])}</p><p>${esc(w.equipment)} · ${esc(site(w.site_id)?.address || "Address not set")}</p>${w.review_note ? `<p class="live-banner live-note">${esc(w.review_note)}</p>` : ""}<div class="live-card-actions">${["npi", "sub"].includes(data.profile.role) && w.status === "draft" ? button("Edit plan", "plan", w.id) : ""}${visitActions}</div>${visits.detail(w)}${panel("Hours comparison", comparison(w))}${w.worker_led ? "" : panel("Tasks", `<ul>${w.checklist.map((t, i) => `<li>${w.completed_tasks.includes(i) ? "✓" : "○"} ${esc(t)}</li>`).join("")}</ul><p>Recorded loads: ${w.loads}</p>`)}${panel(
     "Attendance evidence",
     table(
       ["Worker / event", "Device time", "Server received", "Location"],
@@ -728,6 +760,7 @@ function sheetView() {
 function settingsView() {
   return (
     "<h1>Workspace settings</h1>" +
+    visits.catalogue() +
     features.settings() +
     panel(
       "Company identity",
@@ -741,7 +774,7 @@ function settingsView() {
         )
       : panel(
           "Company team",
-          "<p>Invite workers and approve their accounts before assigning work.</p>" +
+          "<p>Invite workers and approve their accounts before they start work.</p>" +
             button("Manage my team", "goto", "people"),
         )) +
     panel(
@@ -776,6 +809,11 @@ function form(title, kind, body, record = "") {
     title,
     `<form id="action-form" class="live-form" data-kind="${kind}" data-id="${esc(record)}" data-version="${(data.work.find((w) => w.id === record) || {}).version || 0}" novalidate>${body}<div class="actions">${button("Cancel", "close")}<button type="submit" class="btn primary">${
       {
+        "visit:create_visit": "Prepare visit",
+        "visit:save_line": "Save service",
+        "visit:save_item": "Save item",
+        "visit:add_service": "Add service",
+        "visit:cancel_prepared": "Cancel visit",
         "field:report_issue": "Report issue & notify admins",
         "field:notification_settings": "Save recipients",
         "field:issue_update": "Save issue update",
@@ -1047,6 +1085,7 @@ function inviteForm() {
 const actions = {
   upload: () => features.openUploads(job()),
   ...features.actions(),
+  ...visits.actions(),
   "new-invitation": inviteForm,
   "new-contract": () =>
     form(
@@ -1446,6 +1485,8 @@ document.addEventListener("click", (e) => {
     dialog.open &&
     dirty &&
     ![
+      "visit-read",
+      "visit-nearest",
       "close",
       "discard",
       "gps",
@@ -1525,6 +1566,11 @@ document.addEventListener("submit", (e) => {
     );
     const action = f.dataset.kind;
     if (!validateForm(f, action)) return;
+    if (action.startsWith("visit:")) {
+      if (f.dataset.id && !body.id) body.id = f.dataset.id;
+      await visits.submit(action, body, values);
+      return;
+    }
     if (action.startsWith("field:")) {
       if (f.dataset.id) body.id = f.dataset.id;
       await features.submit(action, body, values);

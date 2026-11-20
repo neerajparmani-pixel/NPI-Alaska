@@ -1,0 +1,42 @@
+[
+  {
+    "start": 0,
+    "title": "Company account",
+    "duration": 10.116462585034013
+  },
+  {
+    "start": 10.116462585034013,
+    "title": "One-time contract setup",
+    "duration": 12.183038548752833
+  },
+  {
+    "start": 22.299501133786848,
+    "title": "Line items and sub-line items",
+    "duration": 15.42222222222222
+  },
+  {
+    "start": 37.721723356009065,
+    "title": "Periodic review queue",
+    "duration": 13.634285714285713
+  },
+  {
+    "start": 51.356009070294775,
+    "title": "Verify the complete visit",
+    "duration": 14.249614512471654
+  },
+  {
+    "start": 65.60562358276643,
+    "title": "Accept or request correction",
+    "duration": 12.05532879818594
+  },
+  {
+    "start": 77.66095238095237,
+    "title": "Seven-tab management workbook",
+    "duration": 17.16371882086168
+  },
+  {
+    "start": 94.82467120181404,
+    "title": "Notifications and deployment",
+    "duration": 14.679183673469387
+  }
+]

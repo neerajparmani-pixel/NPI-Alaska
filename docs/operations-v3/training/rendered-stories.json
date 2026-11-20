@@ -1,0 +1,293 @@
+[
+  {
+    "role": "npi",
+    "mobile": false,
+    "scenes": [
+      {
+        "title": "Company account",
+        "text": "Sign in with your company account. This recording uses fictional records, simulated location and a test camera. No live work is created.",
+        "start": 0.362,
+        "end": 1.837
+      },
+      {
+        "title": "One-time contract setup",
+        "text": "Set up the main contract, authorised sites and subcontractor access once. Invite the subcontractor administrator. Their approved workers can then start work without waiting for an assignment.",
+        "start": 1.837,
+        "end": 3.557
+      },
+      {
+        "title": "Line items and sub-line items",
+        "text": "Settings holds each contract\u2019s line items and sub-line items. Codes stay in management records; workers see simple service names. Snow bands have an inclusive minimum and exclusive maximum. No prices are included.",
+        "start": 3.557,
+        "end": 5.869
+      },
+      {
+        "title": "Periodic review queue",
+        "text": "Use the overview and NPI verification queue to review submitted work. The company reviews first. Current activity, open issues and exceptions are visible without creating daily assignments.",
+        "start": 6.705,
+        "end": 8.459
+      },
+      {
+        "title": "Verify the complete visit",
+        "text": "Inspect the same crew, services, quantities and snow evidence that the company reviewed. Recorded, claimed and accepted hours remain separate. Multiple service lines do not multiply worker attendance.",
+        "start": 8.459,
+        "end": 10.703
+      },
+      {
+        "title": "Accept or request correction",
+        "text": "Accept the exact claimed hours or enter a correction with a reason. Return incomplete records to the company. Original photos, attendance and the review history are retained.",
+        "start": 10.703,
+        "end": 13.032
+      },
+      {
+        "title": "Seven-tab management workbook",
+        "text": "The management workbook mirrors visits, line items, sub-line items, measurements, attendance and review history in seven tabs. Permitted planning edits return as NPI-reviewed proposals. Passwords and private image files stay out of cells.",
+        "start": 13.032,
+        "end": 14.749
+      },
+      {
+        "title": "Notifications and deployment",
+        "text": "Configure NPI recipient emails and the daily summary in Settings. Apply the included migration and update the app, function and workbook script before live use. Test the full workflow with separate company accounts.",
+        "start": 14.749,
+        "end": 16.858
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Company account",
+        "duration": 10.116462585034013
+      },
+      {
+        "start": 10.116462585034013,
+        "title": "One-time contract setup",
+        "duration": 12.183038548752833
+      },
+      {
+        "start": 22.299501133786848,
+        "title": "Line items and sub-line items",
+        "duration": 15.42222222222222
+      },
+      {
+        "start": 37.721723356009065,
+        "title": "Periodic review queue",
+        "duration": 13.634285714285713
+      },
+      {
+        "start": 51.356009070294775,
+        "title": "Verify the complete visit",
+        "duration": 14.249614512471654
+      },
+      {
+        "start": 65.60562358276643,
+        "title": "Accept or request correction",
+        "duration": 12.05532879818594
+      },
+      {
+        "start": 77.66095238095237,
+        "title": "Seven-tab management workbook",
+        "duration": 17.16371882086168
+      },
+      {
+        "start": 94.82467120181404,
+        "title": "Notifications and deployment",
+        "duration": 14.679183673469387
+      }
+    ],
+    "duration": 109.50385487528342
+  },
+  {
+    "role": "sub",
+    "mobile": false,
+    "scenes": [
+      {
+        "title": "Company account",
+        "text": "Sign in with your company account. This recording uses fictional records, simulated location and a test camera. No live work is created.",
+        "start": 0.394,
+        "end": 1.892
+      },
+      {
+        "title": "Review when needed",
+        "text": "The overview shows worker-started activity and the company review queue. You do not need to assign each job. Visit the app periodically, or use the configured daily summary to identify pending reviews.",
+        "start": 1.893,
+        "end": 3.603
+      },
+      {
+        "title": "Invite and approve workers",
+        "text": "Manage your own workers in My team. Share a worker invitation, check registrations and approve access. Approved workers can start visits within your company\u2019s contract sites.",
+        "start": 3.603,
+        "end": 5.325
+      },
+      {
+        "title": "Inspect services and hours",
+        "text": "Open a submitted work record. Review the crew, each line and sub-line item, measured snow depth and service quantities. Compare original attendance with the worker\u2019s claimed hours.",
+        "start": 5.325,
+        "end": 7.535
+      },
+      {
+        "title": "Inspect photos and issues",
+        "text": "Open before and after photos in the private gallery. Check ruler evidence against the confirmed inches. Review location links and resolve reported issues with a clear explanation.",
+        "start": 7.535,
+        "end": 11.259
+      },
+      {
+        "title": "Forward or return",
+        "text": "Approve only after checking the services, hours and evidence. Forward the record to NPI, or request a correction with a reason. Company approval does not replace NPI verification.",
+        "start": 11.26,
+        "end": 14.819
+      },
+      {
+        "title": "Recipients and daily summary",
+        "text": "Set your company\u2019s recipient emails in Settings. Daily summaries can be enabled or disabled. Immediate issue alerts and queued email status remain available here. A verified sender and scheduled dispatcher are required.",
+        "start": 14.819,
+        "end": 16.918
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Company account",
+        "duration": 9.977142857142857
+      },
+      {
+        "start": 9.977142857142857,
+        "title": "Review when needed",
+        "duration": 14.238004535147391
+      },
+      {
+        "start": 24.21514739229025,
+        "title": "Invite and approve workers",
+        "duration": 12.554557823129251
+      },
+      {
+        "start": 36.7697052154195,
+        "title": "Inspect services and hours",
+        "duration": 12.635827664399093
+      },
+      {
+        "start": 49.405532879818594,
+        "title": "Inspect photos and issues",
+        "duration": 12.600997732426302
+      },
+      {
+        "start": 62.006530612244894,
+        "title": "Forward or return",
+        "duration": 12.264308390022675
+      },
+      {
+        "start": 74.27083900226756,
+        "title": "Recipients and daily summary",
+        "duration": 15.155192743764172
+      }
+    ],
+    "duration": 89.42603174603174
+  },
+  {
+    "role": "worker",
+    "mobile": true,
+    "scenes": [
+      {
+        "title": "Company account",
+        "text": "Sign in with your company account. This recording uses fictional records, simulated location and a test camera. No live work is created.",
+        "start": 0.404,
+        "end": 2.102
+      },
+      {
+        "title": "Start a visit",
+        "text": "Select Start work. Choose your authorised site and service. No daily assignment is required. Expand Crew and equipment only when recording a crew or equipment details.",
+        "start": 2.102,
+        "end": 4.175
+      },
+      {
+        "title": "Before photos",
+        "text": "Add before photos before starting. Use Take photo, then Capture and Keep. Repeat for more pictures, or choose several files. Wait until every upload is saved.",
+        "start": 4.175,
+        "end": 8.277
+      },
+      {
+        "title": "Confirm snow depth",
+        "text": "Record snow depth. Select the ruler photo and enter inches. Automatic reading is optional and must be confirmed. Manual entry remains available when automatic reading is unavailable. The contract sub-line is selected from the confirmed depth.",
+        "start": 8.277,
+        "end": 10.4
+      },
+      {
+        "title": "Check in with GPS",
+        "text": "Select Start work and capture a fresh position. Record attendance only after the correct site and required before evidence are saved. A typed location does not replace GPS attendance.",
+        "start": 10.4,
+        "end": 12.778
+      },
+      {
+        "title": "Add another service",
+        "text": "One visit can contain several services. Add sanding to the same visit. Record its quantity and completion separately. Attendance hours are counted once for each worker, not once per service.",
+        "start": 12.778,
+        "end": 16.233
+      },
+      {
+        "title": "Report an issue",
+        "text": "Use Report a problem for access, safety, equipment or other issues. Choose urgency and describe the problem. Both administrators receive in-app alerts; email requires the configured sender and dispatcher.",
+        "start": 16.233,
+        "end": 18.663
+      },
+      {
+        "title": "After photos and checkout",
+        "text": "Add after-work photos, then select Finish work. Capture a new checkout location and record any unpaid break. Original attendance remains unchanged if a later claim needs correction.",
+        "start": 18.663,
+        "end": 23.201
+      },
+      {
+        "title": "Submit for review",
+        "text": "Check your recorded hours and submit. Explain any correction instead of changing original check-ins. The company reviews first, then NPI verifies. The displayed one hour forty-five minutes is a training value, not the recording duration.",
+        "start": 23.201,
+        "end": 25.565
+      }
+    ],
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Company account",
+        "duration": 10.011972789115646
+      },
+      {
+        "start": 10.011972789115646,
+        "title": "Start a visit",
+        "duration": 11.474829931972788
+      },
+      {
+        "start": 21.486802721088434,
+        "title": "Before photos",
+        "duration": 11.28907029478458
+      },
+      {
+        "start": 32.77587301587302,
+        "title": "Confirm snow depth",
+        "duration": 16.153650793650794
+      },
+      {
+        "start": 48.929523809523815,
+        "title": "Check in with GPS",
+        "duration": 12.960907029478458
+      },
+      {
+        "start": 61.89043083900227,
+        "title": "Add another service",
+        "duration": 12.659047619047618
+      },
+      {
+        "start": 74.54947845804989,
+        "title": "Report an issue",
+        "duration": 14.516643990929705
+      },
+      {
+        "start": 89.0661224489796,
+        "title": "After photos and checkout",
+        "duration": 13.12344671201814
+      },
+      {
+        "start": 102.18956916099773,
+        "title": "Submit for review",
+        "duration": 15.95628117913832
+      }
+    ],
+    "duration": 118.14585034013605
+  }
+]

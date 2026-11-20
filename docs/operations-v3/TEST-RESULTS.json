@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-19 America/Chicago",
+  "scope": "Local release candidate with SQL engine tests and intercepted browser cloud responses; no remote deployment acceptance",
+  "unit_api_database": {
+    "passed": 77,
+    "failed": 0,
+    "command": "npm test"
+  },
+  "browser": {
+    "passed": 144,
+    "failed": 0,
+    "command": "npx playwright test --workers=2",
+    "follow_up": "26 changed live/visit cases passed after presentation changes; 6 visit cases passed after final form validation changes."
+  },
+  "axe": {
+    "states": 13,
+    "automated_violations": 0
+  },
+  "lighthouse_login": {
+    "performance": 73,
+    "accessibility": 100,
+    "best-practices": 100,
+    "seo": 91
+  },
+  "active_first_party_static_findings": 0,
+  "production_dependency_vulnerabilities": 0,
+  "build": "passed",
+  "format": "passed",
+  "design_lint": {
+    "errors": 0,
+    "warnings": 8
+  },
+  "media": [
+    {
+      "role": "npi",
+      "duration_seconds": 109.536,
+      "width": 1280,
+      "height": 1000,
+      "video": "h264",
+      "audio": "aac",
+      "av_difference_seconds": 0.03364000000000544,
+      "audio_peak_dbfs": -1.36,
+      "audio_rms_dbfs": -16.04,
+      "clipped_sample_fraction": 0.0
+    },
+    {
+      "role": "sub",
+      "duration_seconds": 89.469645,
+      "width": 1280,
+      "height": 1000,
+      "video": "h264",
+      "audio": "aac",
+      "av_difference_seconds": 0.00968399999999292,
+      "audio_peak_dbfs": -1.44,
+      "audio_rms_dbfs": -16.57,
+      "clipped_sample_fraction": 0.0
+    },
+    {
+      "role": "worker",
+      "duration_seconds": 118.193359,
+      "width": 540,
+      "height": 1280,
+      "video": "h264",
+      "audio": "aac",
+      "av_difference_seconds": 0.018969999999995935,
+      "audio_peak_dbfs": -1.39,
+      "audio_rms_dbfs": -16.38,
+      "clipped_sample_fraction": 0.0
+    }
+  ],
+  "limits": [
+    "No real GPS accuracy or physical snow-ruler model accuracy validation",
+    "No live Google Apps Script trigger execution",
+    "No live provider email delivery",
+    "No independent human security certification or complete WCAG certification",
+    "Optional automatic ruler reading requires separately configured API key; manual works without it"
+  ]
+}

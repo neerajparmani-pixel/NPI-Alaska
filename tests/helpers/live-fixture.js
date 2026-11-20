@@ -151,6 +151,120 @@ async function backend(
         writes.push(body);
         return reply({ id: crypto.randomUUID() });
       }
+      if (path.endsWith("/npi_visit_context"))
+        return reply(
+          state.visits || {
+            items: [],
+            scopes: [],
+            crew: [],
+            lines: [],
+            duplicates: [],
+          },
+        );
+      if (path.endsWith("/npi_visit_action")) {
+        writes.push(body);
+        state.visits ||= {
+          items: [],
+          scopes: [],
+          crew: [],
+          lines: [],
+          duplicates: [],
+        };
+        const b = body.p_body,
+          v = state.visits;
+        let id = b.id || b.work_id || crypto.randomUUID();
+        if (body.p_action === "create_visit") {
+          const s = v.scopes.find((s) => s.id === b.scope_id),
+            i = v.items.find((i) => i.id === b.line_id);
+          id = crypto.randomUUID();
+          state.work.unshift({
+            id,
+            company_id: company,
+            contract_id: s.contract_id,
+            site_id: s.site_id,
+            task_id: i.task_id,
+            planned_date: new Date().toISOString().slice(0, 10),
+            title: i.name,
+            equipment: b.equipment || "",
+            kind: "site",
+            status: "draft",
+            version: 1,
+            checklist: [],
+            completed_tasks: [],
+            loads: 0,
+            worker_led: true,
+            created_by: u.worker,
+            created_at: new Date().toISOString(),
+            callout_location: b.callout_location || "",
+          });
+          state.members.push(
+            ...b.members.map((worker_id) => ({ work_id: id, worker_id })),
+          );
+          state.reviews.push(
+            ...b.members.map((worker_id) => ({
+              work_id: id,
+              worker_id,
+              recorded_minutes: 0,
+              claimed_minutes: null,
+              accepted_minutes: null,
+            })),
+          );
+          v.lines.push({
+            id: crypto.randomUUID(),
+            work_id: id,
+            line_id: i.id,
+            line_label: i.code + " · " + i.name,
+            unit: i.unit,
+            snow_required: i.snow_required,
+            quantity: 1,
+            version: 1,
+            completed: false,
+          });
+        } else if (body.p_action === "add_service") {
+          const i = v.items.find((i) => i.id === b.line_id);
+          v.lines.push({
+            id: crypto.randomUUID(),
+            work_id: b.work_id,
+            line_id: i.id,
+            line_label: i.code + " · " + i.name,
+            unit: i.unit,
+            snow_required: i.snow_required,
+            quantity: 1,
+            version: 1,
+            completed: false,
+          });
+        } else if (body.p_action === "save_line") {
+          const l = v.lines.find((l) => l.id === b.id);
+          Object.assign(l, b);
+          const sub = v.items.find(
+            (i) =>
+              i.parent_id === l.line_id &&
+              Number(b.snow_inches) >= i.min_inches &&
+              (i.max_inches == null || Number(b.snow_inches) < i.max_inches),
+          );
+          if (sub) {
+            l.sub_id = sub.id;
+            l.sub_label = sub.code + " · " + sub.name;
+          }
+          l.version++;
+        } else if (body.p_action === "save_item") {
+          if (b.id)
+            Object.assign(
+              v.items.find((i) => i.id === b.id),
+              b,
+            );
+          else
+            v.items.push({
+              ...b,
+              id,
+              active: true,
+              version: 1,
+              parent_id: b.parent_id || null,
+            });
+        } else if (body.p_action === "cancel_prepared")
+          state.work.find((w) => w.id === b.work_id).status = "cancelled";
+        return reply({ id });
+      }
       if (path.endsWith("/npi_field_snapshot")) {
         const f = state.field || {
           issues: [],
@@ -320,7 +434,7 @@ async function backend(
         writes.push(body);
         const action = body.p_action,
           b = body.p_body,
-          w = state.work[0];
+          w = state.work.find((w) => w.id === b.id) || state.work[0];
         if (b.version && b.version !== w.version)
           return reply(
             { message: "Assignment changed: refresh before saving" },
@@ -329,7 +443,7 @@ async function backend(
         if (action === "clock") {
           state.events.push({
             id: crypto.randomUUID(),
-            work_id: work,
+            work_id: w.id,
             worker_id: u.worker,
             captured_by: u.worker,
             event_kind: b.event_kind,
@@ -348,7 +462,7 @@ async function backend(
         if (action === "evidence")
           state.evidence.push({
             id: crypto.randomUUID(),
-            work_id: work,
+            work_id: w.id,
             path: b.path,
             kind: b.kind,
           });

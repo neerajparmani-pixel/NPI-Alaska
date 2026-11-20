@@ -425,3 +425,67 @@ test("sign-out clears local access before network completion and cannot clear a 
   await logout;
   assert.equal(api.session.access_token, "new");
 });
+test("automatic snow reading fails safely without configuration and never invents inches", async () => {
+  const req = new Request("https://example.test", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ operation: "snow_read", evidence_id: user }),
+  });
+  const r = await handleAdmin(
+    req,
+    {
+      SUPABASE_URL: "https://test.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "server-only",
+    },
+    () => {
+      throw Error("Must not call provider");
+    },
+  );
+  assert.equal(r.status, 503);
+  assert.match((await r.json()).error, /manually/);
+});
+test("automatic snow reading requires scoped reservation and explicit confirmation", async () => {
+  let providerCalls = 0;
+  const req = new Request("https://example.test", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer worker",
+    },
+    body: JSON.stringify({ operation: "snow_read", evidence_id: user }),
+  });
+  const r = await handleAdmin(
+    req,
+    {
+      SUPABASE_URL: "https://test.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "server-only",
+      NPI_VISION_API_KEY: "vision-secret",
+    },
+    async (url, opts) => {
+      if (url.endsWith("/npi_snow_read_reserve")) {
+        assert.equal(opts.headers.Authorization, "Bearer worker");
+        return json({ path: "work/worker/ruler-stamped.jpg" });
+      }
+      if (url.includes("/object/sign/"))
+        return json({
+          signedURL:
+            "/object/sign/work-evidence/work/worker/ruler-stamped.jpg?token=test",
+        });
+      if (url === "https://api.openai.com/v1/chat/completions") {
+        providerCalls++;
+        return json({
+          choices: [
+            { message: { content: '{"inches":3.4,"confidence":0.9}' } },
+          ],
+        });
+      }
+      throw Error(url);
+    },
+  );
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), {
+    inches: 3.4,
+    requires_confirmation: true,
+  });
+  assert.equal(providerCalls, 1);
+});

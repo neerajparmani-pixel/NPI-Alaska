@@ -37,6 +37,7 @@ before(async () => {
     "002-live-access",
     "004-operations-invitations",
     "005-field-operations",
+    "006-worker-led-visits",
   ])
     await db.exec(await readFile("setup/supabase/" + name + ".sql", "utf8"));
   await db.query("insert into auth.users(id)select unnest($1::uuid[])", [
@@ -387,5 +388,336 @@ test("partial work can be submitted without fabricated photos, but both approval
       ])
     ).rows[0].outcome,
     "partial",
+  );
+});
+let visitId, snowLine, snowParent, sandParent;
+const visit = (a, b, r) => rpc("npi_visit_action", a, b, r);
+test("worker-led visit starts only within authorised scope, with pre-start ruler evidence and manual inches", async () => {
+  await as(npi);
+  const contract = (await db.query("select id from npi_contracts limit 1"))
+    .rows[0].id;
+  snowParent = await visit("save_item", {
+    contract_id: contract,
+    task_id: task,
+    code: "A",
+    name: "Clear snow",
+    unit: "visit",
+    snow_required: true,
+  });
+  await visit("save_item", {
+    contract_id: contract,
+    task_id: task,
+    parent_id: snowParent.id,
+    code: "A1",
+    name: "2 to under 4 inches",
+    unit: "visit",
+    min_inches: 2,
+    max_inches: 4,
+  });
+  await visit("save_item", {
+    contract_id: contract,
+    task_id: task,
+    parent_id: snowParent.id,
+    code: "A2",
+    name: "4 to under 8 inches",
+    unit: "visit",
+    min_inches: 4,
+    max_inches: 8,
+  });
+  sandParent = await visit("save_item", {
+    contract_id: contract,
+    task_id: task,
+    code: "C",
+    name: "Sand",
+    unit: "yard",
+  });
+  const scope = (await db.query("select id from npi_contract_scopes limit 1"))
+    .rows[0].id;
+  await as(foreign);
+  await assert.rejects(
+    visit("create_visit", {
+      scope_id: scope,
+      line_id: snowParent.id,
+      members: [foreign],
+    }),
+    /scope/,
+  );
+  await as(worker);
+  await assert.rejects(visit("save_item", {}), /NPI/);
+  const request = crypto.randomUUID(),
+    body = { scope_id: scope, line_id: snowParent.id, members: [worker] };
+  const v = await visit("create_visit", body, request);
+  assert.deepEqual(await visit("create_visit", body, request), v);
+  visitId = v.id;
+  await assert.rejects(visit("create_visit", body), /existing prepared/);
+  let w = (
+    await db.query("select * from npi_work_orders where id=$1", [visitId])
+  ).rows[0];
+  await assert.rejects(
+    live("clock", {
+      id: w.id,
+      version: w.version,
+      event_kind: "check-in",
+      members: [worker],
+      device_time: new Date().toISOString(),
+      latitude: 61,
+      longitude: -149,
+      accuracy_metres: 10,
+    }),
+    /before photos/,
+  );
+  const path = `${visitId}/${worker}/ruler.jpg`;
+  await db.exec("reset role");
+  await db.query(
+    "insert into storage.objects(bucket_id,name,owner_id,metadata)values('work-evidence',$1,$2,'{\"mimetype\":\"image/jpeg\"}')",
+    [path, worker],
+  );
+  await as(worker);
+  const evidence = await field("evidence", {
+    id: visitId,
+    path,
+    preview_path: path,
+    stage: "before",
+    source: "file",
+    filename: "ruler.jpg",
+    original_mime: "image/jpeg",
+    bytes: 100,
+  });
+  snowLine = (
+    await db.query("select * from npi_visit_lines where work_id=$1", [visitId])
+  ).rows[0];
+  w = (await db.query("select * from npi_work_orders where id=$1", [visitId]))
+    .rows[0];
+  await visit("save_line", {
+    work_id: visitId,
+    version: w.version,
+    id: snowLine.id,
+    line_version: snowLine.version,
+    quantity: 1,
+    snow_inches: 4,
+    ruler_evidence: evidence.id,
+    measurement_confirmed: true,
+    completed: false,
+  });
+  snowLine = (
+    await db.query("select * from npi_visit_lines where work_id=$1", [visitId])
+  ).rows[0];
+  assert.match(snowLine.sub_label, /A2/);
+  assert.equal(snowLine.measurement_source, "manual");
+  w = (await db.query("select * from npi_work_orders where id=$1", [visitId]))
+    .rows[0];
+  await live("clock", {
+    id: w.id,
+    version: w.version,
+    event_kind: "check-in",
+    members: [worker],
+    device_time: new Date().toISOString(),
+    latitude: 61,
+    longitude: -149,
+    accuracy_metres: 10,
+  });
+});
+test("multiple service lines share one visit attendance; scope and stale edits stay enforced", async () => {
+  await as(worker);
+  let w = (
+    await db.query("select * from npi_work_orders where id=$1", [visitId])
+  ).rows[0];
+  await visit("add_service", {
+    work_id: visitId,
+    version: w.version,
+    line_id: sandParent.id,
+  });
+  await assert.rejects(
+    visit("add_service", {
+      work_id: visitId,
+      version: w.version,
+      line_id: sandParent.id,
+    }),
+    /changed/,
+  );
+  assert.equal(
+    (
+      await db.query(
+        "select count(*)::int n from npi_attendance_events where work_id=$1",
+        [visitId],
+      )
+    ).rows[0].n,
+    1,
+  );
+  await as(foreign);
+  assert.equal(
+    (
+      await db.query("select * from npi_visit_lines where work_id=$1", [
+        visitId,
+      ])
+    ).rows.length,
+    0,
+  );
+  await assert.rejects(visit("save_line", { work_id: visitId }), /editable/);
+});
+test("daily digest is idempotent per scope, day and recipient and remains service-only", async () => {
+  await db.exec("reset role");
+  await db.exec("set role service_role");
+  await db.query("select * from npi_email_claim()");
+  await db.query("select * from npi_email_claim()");
+  const duplicate = (
+    await db.query(
+      "select dedupe,count(*)from npi_email_outbox where dedupe like 'daily:%'group by dedupe having count(*)>1",
+    )
+  ).rows;
+  assert.equal(duplicate.length, 0);
+  await as(worker);
+  await assert.rejects(
+    db.query("select * from npi_email_claim()"),
+    /permission/,
+  );
+});
+test("worker-led services complete through original attendance and both approval stages without duplicated hours", async () => {
+  await as(worker);
+  let w = (
+    await db.query("select * from npi_work_orders where id=$1", [visitId])
+  ).rows[0];
+  const clock = {
+    id: visitId,
+    version: w.version,
+    event_kind: "check-out",
+    members: [worker],
+    device_time: new Date().toISOString(),
+    latitude: 61.001,
+    longitude: -149.001,
+    accuracy_metres: 12,
+  };
+  await live("clock", clock);
+  w = (await db.query("select * from npi_work_orders where id=$1", [visitId]))
+    .rows[0];
+  await assert.rejects(
+    live("submit_hours", {
+      id: visitId,
+      version: w.version,
+      use_recorded: true,
+    }),
+    /Complete every service/,
+  );
+  for (const line of (
+    await db.query("select * from npi_visit_lines where work_id=$1", [visitId])
+  ).rows) {
+    w = (await db.query("select * from npi_work_orders where id=$1", [visitId]))
+      .rows[0];
+    await visit("save_line", {
+      work_id: visitId,
+      version: w.version,
+      id: line.id,
+      line_version: line.version,
+      quantity: line.snow_required ? 1 : 1.5,
+      snow_inches: line.snow_inches,
+      ruler_evidence: line.ruler_evidence,
+      measurement_confirmed: true,
+      completed: true,
+    });
+  }
+  const path = `${visitId}/${worker}/after.jpg`;
+  await db.exec("reset role");
+  await db.query(
+    "insert into storage.objects(bucket_id,name,owner_id,metadata)values('work-evidence',$1,$2,'{\"mimetype\":\"image/jpeg\"}')",
+    [path, worker],
+  );
+  await as(worker);
+  await field("evidence", {
+    id: visitId,
+    path,
+    preview_path: path,
+    stage: "after",
+    source: "file",
+    filename: "after.jpg",
+    original_mime: "image/jpeg",
+    bytes: 100,
+  });
+  w = (await db.query("select * from npi_work_orders where id=$1", [visitId]))
+    .rows[0];
+  await live("submit_hours", {
+    id: visitId,
+    version: w.version,
+    use_recorded: true,
+  });
+  await as(sub);
+  w = (await db.query("select * from npi_work_orders where id=$1", [visitId]))
+    .rows[0];
+  await live("company_approve", { id: visitId, version: w.version });
+  await as(npi);
+  w = (await db.query("select * from npi_work_orders where id=$1", [visitId]))
+    .rows[0];
+  await live("npi_approve", {
+    id: visitId,
+    version: w.version,
+    accept_claimed: true,
+  });
+  assert.equal(
+    (
+      await db.query("select status from npi_work_orders where id=$1", [
+        visitId,
+      ])
+    ).rows[0].status,
+    "approved",
+  );
+  assert.equal(
+    (
+      await db.query(
+        "select count(*)::int n from npi_attendance_events where work_id=$1",
+        [visitId],
+      )
+    ).rows[0].n,
+    2,
+  );
+  const review = (
+    await db.query("select * from npi_hour_reviews where work_id=$1", [visitId])
+  ).rows[0];
+  assert.equal(review.accepted_minutes, review.claimed_minutes);
+  assert.equal(
+    (
+      await db.query(
+        "select count(*)::int n from npi_hour_reviews where work_id=$1",
+        [visitId],
+      )
+    ).rows[0].n,
+    1,
+  );
+});
+test("snow sub-line bounds cannot overlap and automatic-reader reservations are scoped and rate limited", async () => {
+  await as(npi);
+  const contract = (
+    await db.query("select contract_id from npi_work_orders where id=$1", [
+      visitId,
+    ])
+  ).rows[0].contract_id;
+  await assert.rejects(
+    visit("save_item", {
+      contract_id: contract,
+      task_id: task,
+      parent_id: snowParent.id,
+      code: "AX",
+      name: "Overlapping band",
+      unit: "visit",
+      min_inches: 3,
+      max_inches: 5,
+    }),
+    /overlap/,
+  );
+  const e = (
+    await db.query(
+      "select id from npi_evidence where work_id=$1 and stage='before'",
+      [visitId],
+    )
+  ).rows[0].id;
+  await as(foreign);
+  await assert.rejects(
+    db.query("select npi_snow_read_reserve($1)", [e]),
+    /access denied/,
+  );
+  await as(worker);
+  for (let i = 0; i < 10; i++)
+    await db.query("select npi_snow_read_reserve($1)", [e]);
+  await assert.rejects(
+    db.query("select npi_snow_read_reserve($1)", [e]),
+    /limit/,
   );
 });

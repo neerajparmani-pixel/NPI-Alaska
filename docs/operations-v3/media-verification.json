@@ -1,0 +1,38 @@
+[
+  {
+    "role": "npi",
+    "duration_seconds": 109.536,
+    "width": 1280,
+    "height": 1000,
+    "video": "h264",
+    "audio": "aac",
+    "av_difference_seconds": 0.03364000000000544,
+    "audio_peak_dbfs": -1.36,
+    "audio_rms_dbfs": -16.04,
+    "clipped_sample_fraction": 0.0
+  },
+  {
+    "role": "sub",
+    "duration_seconds": 89.469645,
+    "width": 1280,
+    "height": 1000,
+    "video": "h264",
+    "audio": "aac",
+    "av_difference_seconds": 0.00968399999999292,
+    "audio_peak_dbfs": -1.44,
+    "audio_rms_dbfs": -16.57,
+    "clipped_sample_fraction": 0.0
+  },
+  {
+    "role": "worker",
+    "duration_seconds": 118.193359,
+    "width": 540,
+    "height": 1280,
+    "video": "h264",
+    "audio": "aac",
+    "av_difference_seconds": 0.018969999999995935,
+    "audio_peak_dbfs": -1.39,
+    "audio_rms_dbfs": -16.38,
+    "clipped_sample_fraction": 0.0
+  }
+]

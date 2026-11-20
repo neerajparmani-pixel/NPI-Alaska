@@ -261,22 +261,33 @@ export class LiveAPI {
       body: { p_filter: filter, p_page: page },
     });
   }
-  async fieldSnapshot() {
+  async fieldSnapshot(workId = null) {
     try {
-      return await this.request("/rest/v1/rpc/npi_field_snapshot", {
+      const field = await this.request("/rest/v1/rpc/npi_field_snapshot", {
         method: "POST",
         body: {},
       });
+      field.visits = await this.request("/rest/v1/rpc/npi_visit_context", {
+        method: "POST",
+        body: { p_work: workId },
+      });
+      return field;
     } catch (e) {
       if (e.status === 404)
         throw Error(
-          "Operations 2 backend upgrade is required. Ask the NPI owner to apply migration 005 before using this package.",
+          "Operations 3 backend upgrade is required. Ask the NPI owner to apply migration 006 after 005.",
         );
       throw e;
     }
   }
   fieldAction(action, body, requestId = crypto.randomUUID()) {
     return this.request("/rest/v1/rpc/npi_field_action", {
+      method: "POST",
+      body: { p_action: action, p_body: body, p_request: requestId },
+    });
+  }
+  visitAction(action, body, requestId = crypto.randomUUID()) {
+    return this.request("/rest/v1/rpc/npi_visit_action", {
       method: "POST",
       body: { p_action: action, p_body: body, p_request: requestId },
     });
