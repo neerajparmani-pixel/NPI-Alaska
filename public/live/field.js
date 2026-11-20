@@ -533,7 +533,7 @@ export class FieldFeatures {
               "number",
               s.escalation_minutes || 60,
             ) +
-            `<label class="taskline"><input name="daily_summary" type="checkbox" ${s.daily_summary !== false ? "checked" : ""}> Daily operations summary (after 7 AM Alaska time)</label>`,
+            `<label class="taskline"><input name="daily_summary" type="checkbox" ${s.daily_summary === true ? "checked" : ""}> Daily operations summary (after 7 AM Alaska time)</label>`,
         );
       },
       "field-test-email": () =>
@@ -753,7 +753,11 @@ export class FieldFeatures {
       work: w,
       profile: this.c.data.profile,
       site: this.c.site(w.site_id),
-      markDirty: this.c.markDirty,
+      markDirty: () => {
+        if (this.queue?.items.every((i) => i.persisted || i.status === "Saved"))
+          this.c.markClean();
+        else this.c.markDirty();
+      },
       onSaved: async ({ saved, failures }) => {
         if (!this.c.api.session) {
           this.c.endSession();
@@ -773,6 +777,24 @@ export class FieldFeatures {
       },
     });
     this.queue.mount();
+    const lines =
+      this.c.data.field?.visits?.lines?.filter((l) => l.work_id === w.id) || [];
+    if (lines.length) {
+      const box = document.createElement("div");
+      box.innerHTML = this.c.field(
+        "photo-service",
+        "Service",
+        "select",
+        lines.length === 1 ? lines[0].id : "",
+        [["", "Whole visit"], ...lines.map((l) => [l.id, l.line_label])],
+      );
+      document.querySelector("#photo-uploader").prepend(box);
+      if (lines.length === 1) box.hidden = true;
+    }
+
+    if (w.status === "draft")
+      for (const o of [...document.querySelector("#photo-stage").options])
+        if (o.value !== "before") o.remove();
     const choices = document.querySelector("#photo-issue");
     for (const i of this.state.issues.filter((i) => i.work_id === w.id)) {
       const o = document.createElement("option");

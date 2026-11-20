@@ -29,6 +29,7 @@ test("invitation registration hashes the link, creates managed identity and neve
     }),
     env,
     async (url, opts) => {
+      if (url.endsWith("/npi_public_gate")) return response(true);
       const body = JSON.parse(opts.body);
       calls.push({ url, body });
       if (url.endsWith("/admin/users")) return response({ id: newId });
@@ -67,6 +68,7 @@ test("unavailable invitation blocks account creation and malformed registration 
     }),
     env,
     async (url) => {
+      if (url.endsWith("/npi_public_gate")) return response(true);
       if (url.includes("/admin/users")) creates++;
       return response({ message: "Invitation unavailable" }, 400);
     },
@@ -76,8 +78,9 @@ test("unavailable invitation blocks account creation and malformed registration 
   const invalid = await handleAdmin(
     request({ operation: "register_invitation", token: "bad" }),
     env,
-    async () => {
-      throw Error("Must not fetch");
+    async (url) => {
+      if (url.endsWith("/npi_public_gate")) return response(true);
+      throw Error("Must not create accounts");
     },
   );
   assert.equal(invalid.status, 400);
@@ -96,6 +99,7 @@ test("resume after uncertain Auth response reuses the reserved identity without 
     }),
     env,
     async (url, opts) => {
+      if (url.endsWith("/npi_public_gate")) return response(true);
       if (url.includes("/admin/users")) creates++;
       const b = JSON.parse(opts.body);
       return response(
@@ -107,4 +111,37 @@ test("resume after uncertain Auth response reuses the reserved identity without 
   );
   assert.equal(result.status, 200);
   assert.equal(creates, 0);
+});
+
+test("public invite throttling returns 429 and malformed canonical UUID never reaches provisioning", async () => {
+  let provision = 0;
+  const throttled = await handleAdmin(
+    request({ operation: "invite_preview", token: "a".repeat(64) }),
+    env,
+    async (url) => {
+      if (url.endsWith("npi_public_gate")) return response(false);
+      provision++;
+      return response({});
+    },
+  );
+  assert.equal(throttled.status, 429);
+  assert.equal(provision, 0);
+  const malformed = await handleAdmin(
+    request({
+      operation: "register_invitation",
+      token: "a".repeat(64),
+      request_id: "12345678-1234-1234-1234-12345678901-",
+      username: "alex.test",
+      display_name: "Alex",
+      password: "safe-password-123",
+    }),
+    env,
+    async (url) => {
+      if (url.endsWith("npi_public_gate")) return response(true);
+      provision++;
+      return response({});
+    },
+  );
+  assert.equal(malformed.status, 400);
+  assert.equal(provision, 0);
 });

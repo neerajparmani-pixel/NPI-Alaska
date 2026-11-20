@@ -1,0 +1,40 @@
+{
+  "release": "3.1.0",
+  "date": "2026-11-20 America/Chicago",
+  "scope": "Local isolated SQL and intercepted browser providers; no remote acceptance",
+  "unit_api_database": {
+    "passed": 90,
+    "failed": 0,
+    "command": "npm test"
+  },
+  "browser": {
+    "passed": 154,
+    "failed": 0,
+    "command": "npx playwright test --workers=2",
+    "note": "Counts include historical source-only prototype regressions; not all are live-app tests."
+  },
+  "axe": {
+    "states": 13,
+    "automated_violations": 0
+  },
+  "lighthouse_login": {
+    "performance": 87,
+    "accessibility": 100,
+    "best-practices": 100,
+    "seo": 100
+  },
+  "active_frontend_static_findings": 0,
+  "build": "passed",
+  "format": "passed",
+  "production_acceptance": "Required after owner installation",
+  "packaged_source_unit_tests": {
+    "passed": 90,
+    "failed": 0,
+    "command": "npm test from extracted source/",
+    "note": "Source dependencies were resolved using the same locked local node_modules; an entirely fresh remote npm install is not claimed."
+  },
+  "dependency_audit": {
+    "known_vulnerabilities": 0,
+    "scope": "npm audit, production and development dependencies"
+  }
+}

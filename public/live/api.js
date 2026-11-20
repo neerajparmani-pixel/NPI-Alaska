@@ -1,5 +1,6 @@
+import { SessionBridge } from "./recovery.js";
 import { config } from "./config.js";
-// Sessions stay in memory. Reloading requires sign-in; no browser-persisted credentials.
+// Persistent sessions are opt-in, account-bound and coordinated across tabs.
 export class LiveAPI {
   constructor(fetcher = (...args) => globalThis.fetch(...args)) {
     this.fetcher = fetcher;
@@ -7,6 +8,24 @@ export class LiveAPI {
     this.sessionEpoch = 0;
     this.refreshing = null;
     this.uploadTasks = new Map();
+    this.bridge = new SessionBridge((next) => {
+      if (!this.rememberOnDevice) return;
+      if (next?.access_token === this.session?.access_token) return;
+      const previous = this.session?.userId;
+      this.session = next?.userId === previous ? next : null;
+      this.sessionEpoch++;
+      if (typeof window !== "undefined")
+        window.dispatchEvent(
+          new CustomEvent("npi-session-change", {
+            detail: { signedOut: !this.session },
+          }),
+        );
+    }, config.supabaseUrl);
+    const restored = this.bridge.read();
+    if (restored) {
+      this.session = restored;
+      this.rememberOnDevice = true;
+    }
   }
   async request(
     path,
@@ -41,6 +60,8 @@ export class LiveAPI {
         body: body ? (raw ? body : JSON.stringify(body)) : undefined,
       });
       const data = await response.json().catch(() => ({}));
+      if (response.ok && authenticated && this.session !== requestSession)
+        throw Error("Session changed. Refresh before retrying.");
       if (!response.ok) {
         if (
           response.status === 401 &&
@@ -49,6 +70,7 @@ export class LiveAPI {
         ) {
           this.session = null;
           this.sessionEpoch++;
+          if (this.rememberOnDevice) this.bridge.clear();
         }
         const error = Error(
           data.message ||
@@ -74,13 +96,29 @@ export class LiveAPI {
     this.sessionEpoch++;
     if (!data.access_token || !data.refresh_token)
       throw Error("Invalid authentication response.");
+    const previous = this.session;
     this.session = {
+      userId: previous?.userId,
+      deviceUntil: previous?.deviceUntil || Date.now() + 7 * 86400000,
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       deadline: Date.now() + data.expires_in * 1000,
     };
+    this.persistSession();
   }
-  async login(username, password) {
+  persistSession() {
+    if (
+      this.rememberOnDevice &&
+      this.session?.userId &&
+      !this.bridge.write(this.session)
+    )
+      throw Error(
+        "Unable to save this device session. Uncheck Keep me signed in and try again.",
+      );
+  }
+  async login(username, password, rememberOnDevice = false) {
+    this.rememberOnDevice = rememberOnDevice;
+    if (!rememberOnDevice) this.bridge.clear();
     const email = username.includes("@")
       ? username
       : username.toLowerCase() + "@" + config.usernameDomain;
@@ -94,9 +132,14 @@ export class LiveAPI {
       );
       const status = await this.accountStatus();
       if (status.status !== "approved") return { accountStatus: status };
-      return await this.snapshot();
+      const snapshot = await this.snapshot();
+      this.session.userId = snapshot.profile.id;
+      this.persistSession();
+      return snapshot;
     } catch (e) {
       this.session = null;
+      this.sessionEpoch++;
+      if (this.rememberOnDevice) this.bridge.clear();
       throw Error(
         e.message.includes("profile")
           ? "Your login is valid, but an active NPI profile has not been assigned."
@@ -109,8 +152,18 @@ export class LiveAPI {
     if (!this.session) throw Error("Sign in again.");
     const token = this.session.refresh_token;
     const epoch = this.sessionEpoch;
-    this.refreshing = (async () => {
+    this.refreshing = this.bridge.lock(async () => {
       try {
+        const cached = this.rememberOnDevice ? this.bridge.read() : null;
+        if (
+          cached &&
+          cached.userId === this.session?.userId &&
+          cached.refresh_token !== token
+        ) {
+          this.session = cached;
+          this.sessionEpoch++;
+          return;
+        }
         const refreshed = await this.request(
           "/auth/v1/token?grant_type=refresh_token",
           {
@@ -125,19 +178,25 @@ export class LiveAPI {
         if (this.sessionEpoch === epoch) {
           this.session = null;
           this.sessionEpoch++;
+          if (this.rememberOnDevice) this.bridge.clear();
         }
         throw Error("Session expired or changed. Sign in again.");
-      } finally {
-        this.refreshing = null;
       }
-    })();
-    return this.refreshing;
+    });
+    const pending = this.refreshing;
+    try {
+      return await pending;
+    } finally {
+      if (this.refreshing === pending) this.refreshing = null;
+    }
   }
   async logout() {
     const session = this.session;
     this.session = null;
     this.sessionEpoch++;
     this.uploadTasks.clear();
+    this.bridge.clear();
+    this.rememberOnDevice = false;
     if (session)
       await this.request("/auth/v1/logout", {
         method: "POST",
@@ -271,11 +330,15 @@ export class LiveAPI {
         method: "POST",
         body: { p_work: workId },
       });
+      if (field.visits.release !== "3.1.0")
+        throw Error(
+          "Backend upgrade required: apply migration 007 before using v3.1.0.",
+        );
       return field;
     } catch (e) {
       if (e.status === 404)
         throw Error(
-          "Operations 3 backend upgrade is required. Ask the NPI owner to apply migration 006 after 005.",
+          "v3.1.0 backend upgrade is required. Ask the NPI owner to apply migration 007 after 006.",
         );
       throw e;
     }
@@ -321,6 +384,23 @@ export class LiveAPI {
         });
       } catch (e) {
         if (e.status !== 409) throw e;
+        const url = await this.fileUrl(path);
+        const found = await this.fetcher(url, { method: "GET" });
+        if (!found.ok)
+          throw Error(
+            "Existing upload could not be verified. Keep the local photo and retry.",
+          );
+        const hash = async (b) =>
+          Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", b)))
+            .map((n) => n.toString(16).padStart(2, "0"))
+            .join("");
+        if (
+          (await hash(await found.arrayBuffer())) !==
+          (await hash(await file.arrayBuffer()))
+        )
+          throw Error(
+            "Existing upload differs from this photo. Contact your administrator; the local original is retained.",
+          );
       }
     };
     if (!item.originalUploaded) {
@@ -346,6 +426,7 @@ export class LiveAPI {
         original_mime: item.mime,
         bytes: item.file.size,
         issue_id: item.issue_id,
+        service_line_id: item.service_line_id || null,
       },
       item.id,
     );

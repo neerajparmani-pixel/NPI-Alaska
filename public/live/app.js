@@ -1,3 +1,4 @@
+import { photoStore } from "./recovery.js";
 import { distanceMetres } from "./field-domain.js";
 import { VisitFeatures } from "./visits.js";
 import { FieldFeatures } from "./field.js";
@@ -138,7 +139,7 @@ const routeIcons = {
   settings: "settings",
 };
 const emblem = (kind) =>
-  `<img class="brand-image ${kind}" src="../three-view/${suppliedArtwork.logo.replace("./", "").replace(".png", ".webp")}" alt="NPI company emblem">`;
+  `<img class="brand-image ${kind}" src="./brand-logo.webp" alt="NPI company emblem">`;
 const head = (title, description, action = "") =>
   `<header class="pagehead"><div><p class="eyebrow">${data.profile.role === "worker" ? "YOUR WORKDAY" : "ALASKA OPERATIONS"}</p><h1>${esc(title)}</h1><p>${esc(description)}</p></div>${action}</header>`;
 const initials = () =>
@@ -215,7 +216,7 @@ function login(error = "") {
   opsData = { contracts: [], scopes: [], invitations: [] };
   document.body.dataset.role = "";
   document.title = "Sign in · Alaska NPI";
-  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="../three-view/${suppliedArtwork.logo.replace("./", "").replace(".png", ".webp")}" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Sessions end when you reload this page; saved work stays in Supabase.</p></div></main></div>`;
+  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="./brand-logo.webp" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<label class="taskline"><input name="remember_device" type="checkbox"> Keep me signed in on this personal device</label><button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Use this option only on your own device. Original work records stay in Supabase.</p></div></main></div>`;
 }
 function pendingAccount(status) {
   accountState = status;
@@ -274,7 +275,7 @@ function render() {
       hours: hoursView,
       detail: detailView,
       issues: () => features.issuesView(),
-      reports: () => features.reports(),
+      reports: () => visits.exceptionReport() + features.reports(),
       notifications: () => features.notificationsView(),
     }[page] || workView
   )();
@@ -759,12 +760,12 @@ function sheetView() {
 }
 function settingsView() {
   return (
-    "<h1>Workspace settings</h1>" +
+    "<h1>Workspace settings</h1><p class=small>Operations v3.1.0 · Backend migration 007</p>" +
     visits.catalogue() +
     features.settings() +
     panel(
       "Company identity",
-      `<img class="brand-image settings" src="../three-view/${suppliedArtwork.logo.replace("./", "").replace(".png", ".webp")}" alt="NPI company emblem"><p>Work timezone: America/Anchorage</p>`,
+      `<img class="brand-image settings" src="./brand-logo.webp" alt="NPI company emblem"><p>Work timezone: America/Anchorage</p>`,
     ) +
     (data.profile.role === "npi"
       ? panel(
@@ -1020,12 +1021,20 @@ function claimForm() {
   );
   $("#claimed_hours").disabled = true;
 }
+function belowThresholdCheck() {
+  return data.field?.visits?.lines?.some(
+    (l) => l.work_id === job()?.id && l.review_required,
+  )
+    ? '<label class="taskline"><input name="acknowledge_below_threshold" type="checkbox"> I reviewed below-two-inch work and its evidence.</label>'
+    : "";
+}
 function approveForm() {
   const w = job();
   form(
     "NPI verification",
     "npi_approve",
     comparison(w) +
+      belowThresholdCheck() +
       ((w.outcome && w.outcome !== "complete") || w.evidence_exception_reason
         ? `<p class="notice">Reported ${esc(w.outcome)}: ${esc(w.outcome_reason)} ${esc(w.evidence_exception_reason)}</p><label class="taskline"><input type="checkbox" name="acknowledge_outcome"> I reviewed the incomplete-work outcome and evidence exception.</label>`
         : "") +
@@ -1170,12 +1179,28 @@ const actions = {
     location.hash = el.dataset.id;
   },
   "open-work": (el) => {
+    if (dialog.open) close(true);
     selected = el.dataset.id;
     location.hash = "detail";
     render();
   },
   refresh: () => load(),
   logout: async () => {
+    const owner = data?.profile.id;
+    const drafts = owner ? await photoStore.list(owner).catch(() => []) : [];
+    if (drafts.length) {
+      modal(
+        "Sign out and remove device photos",
+        `<p>${drafts.length} unsent photo(s) are saved on this device. Upload them first, or remove them and sign out. Cloud records are retained.</p>${button("Keep working", "close")}${button("Remove device photos & sign out", "logout-confirm", "", "danger")}`,
+      );
+      return;
+    }
+    await actions["logout-confirm"]();
+  },
+  "logout-confirm": async () => {
+    const owner = data?.profile.id;
+    if (owner && globalThis.indexedDB) await photoStore.clear(owner);
+    close(true);
     const signingOut = api.logout();
     data = null;
     accountState = null;
@@ -1223,6 +1248,7 @@ const actions = {
       "Company approval",
       "company_approve",
       "<p>Confirm your workers’ claimed hours against the recorded attendance and evidence. This forwards the record to NPI.</p>" +
+        belowThresholdCheck() +
         ((job().outcome && job().outcome !== "complete") ||
         job().evidence_exception_reason
           ? `<p class="notice">${esc(job().outcome_reason)} ${esc(job().evidence_exception_reason)}</p><label class="taskline"><input type="checkbox" name="acknowledge_outcome"> I reviewed the incomplete-work outcome.</label>`
@@ -1522,7 +1548,11 @@ document.addEventListener("submit", (e) => {
       if (!values.get("username") || !password)
         throw Error("Enter your username and password.");
       try {
-        data = await api.login(String(values.get("username")).trim(), password);
+        data = await api.login(
+          String(values.get("username")).trim(),
+          password,
+          values.get("remember_device") === "on",
+        );
       } catch (e) {
         $("#password").value = "";
         throw e;
@@ -1554,6 +1584,14 @@ document.addEventListener("submit", (e) => {
         await load();
       } else render();
       restoreDraft();
+      if (
+        !dialog.open &&
+        selected &&
+        job() &&
+        (await photoStore.list(data.profile.id, selected).catch(() => []))
+          .length
+      )
+        features.openUploads(job());
       return;
     }
     if (f.id !== "action-form") return;
@@ -1785,15 +1823,94 @@ window.addEventListener("beforeunload", (e) => {
 });
 window.addEventListener("online", () => {
   if (data) guarded(() => load());
+  else if (api.session) guarded(resumeSession);
 });
 window.addEventListener("offline", () => {
   if (data) render();
 });
+let waitingWorker = null,
+  applyUpdateRequested = false;
 if ("serviceWorker" in navigator && location.protocol === "https:")
-  navigator.serviceWorker.register("./sw.js").catch(() => {});
+  navigator.serviceWorker
+    .register("./sw.js")
+    .then((reg) => {
+      const offer = () => {
+        waitingWorker = reg.waiting;
+        if (waitingWorker) {
+          const banner = document.querySelector(".live-connection");
+          if (banner && !document.querySelector("#apply-app-update"))
+            banner.insertAdjacentHTML(
+              "beforeend",
+              '<button id="apply-app-update" type="button" class="btn compact" data-action="apply-update">Update available</button>',
+            );
+        }
+      };
+      offer();
+      reg.addEventListener("updatefound", () => {
+        reg.installing?.addEventListener("statechange", offer);
+      });
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (applyUpdateRequested) location.reload();
+      });
+    })
+    .catch(() => {});
+actions["apply-update"] = async () => {
+  const rows = data
+    ? await photoStore.list(data.profile.id).catch(() => [])
+    : [];
+  if (dirty || features.queue?.uploading || rows.length) {
+    message("Finish uploads and save your work before updating.", true);
+    return;
+  }
+  applyUpdateRequested = true;
+  waitingWorker?.postMessage({ type: "APPLY_UPDATE" });
+};
+async function resumeSession() {
+  try {
+    const status = await api.accountStatus();
+    if (status.status !== "approved") {
+      pendingAccount(status);
+      return;
+    }
+    data = await api.snapshot();
+    if (requestedWork) {
+      selected = requestedWork;
+      requestedWork = null;
+      history.replaceState(null, "", location.pathname + "#detail");
+    } else if (!location.hash || location.hash === "#detail")
+      history.replaceState(
+        null,
+        "",
+        location.pathname +
+          (data.profile.role === "worker" ? "#work" : "#overview"),
+      );
+    await load();
+  } catch (error) {
+    data = null;
+    if (!api.session) {
+      api.bridge.clear();
+      login("Session expired. Sign in again.");
+    } else if (error.message.includes("migration 007")) login(error.message);
+    else
+      login(
+        "Connection unavailable. Reconnect to restore your session. Device photos are retained.",
+      );
+  }
+}
 if (location.hash.startsWith("#join="))
   guarded(() => enterInvitation(location.hash.slice(6)));
+else if (api.session) guarded(resumeSession);
 else login();
+window.addEventListener("npi-session-change", (e) => {
+  if (e.detail.signedOut) {
+    features.queue?.dispose();
+    close(true);
+    data = null;
+    selected = null;
+    suspendedDraft = null;
+    login("Signed out or account changed in another tab.");
+  }
+});
 
 // Foreground notices update without replacing forms, uploads or a different account's view.
 let noticePoll = false;

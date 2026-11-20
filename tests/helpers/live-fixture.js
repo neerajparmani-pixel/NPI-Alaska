@@ -75,6 +75,10 @@ async function backend(
     async (route) => {
       const req = route.request(),
         path = new URL(req.url()).pathname;
+      const authRole = /^Bearer test-(npi|sub|worker)/.exec(
+        req.headers()["authorization"] || "",
+      );
+      if (authRole) role = authRole[1];
       const body = path.startsWith("/storage/") ? null : req.postDataJSON();
       const reply = (json, status = 200) =>
         route.fulfill({
@@ -84,14 +88,18 @@ async function backend(
           body: JSON.stringify(json),
         });
       if (path.includes("/token")) {
-        role = body.email.startsWith("owner")
-          ? "npi"
-          : body.email.startsWith("supervisor")
-            ? "sub"
-            : "worker";
+        if (body.refresh_token) {
+          role = body.refresh_token.split("-").at(-1);
+          if (!["npi", "sub", "worker"].includes(role)) role = "worker";
+        } else
+          role = body.email.startsWith("owner")
+            ? "npi"
+            : body.email.startsWith("supervisor")
+              ? "sub"
+              : "worker";
         return reply({
           access_token: "test-" + role,
-          refresh_token: "test-refresh",
+          refresh_token: "test-refresh-" + role,
           expires_in: 3600,
         });
       }
@@ -152,15 +160,16 @@ async function backend(
         return reply({ id: crypto.randomUUID() });
       }
       if (path.endsWith("/npi_visit_context"))
-        return reply(
-          state.visits || {
+        return reply({
+          release: state.backendRelease || "3.1.0",
+          ...(state.visits || {
             items: [],
             scopes: [],
             crew: [],
             lines: [],
             duplicates: [],
-          },
-        );
+          }),
+        });
       if (path.endsWith("/npi_visit_action")) {
         writes.push(body);
         state.visits ||= {
@@ -242,6 +251,10 @@ async function backend(
               Number(b.snow_inches) >= i.min_inches &&
               (i.max_inches == null || Number(b.snow_inches) < i.max_inches),
           );
+          l.review_required = Number(b.snow_inches) < 2;
+          l.review_reason = l.review_required
+            ? "Below 2 inches — review required"
+            : "";
           if (sub) {
             l.sub_id = sub.id;
             l.sub_label = sub.code + " · " + sub.name;

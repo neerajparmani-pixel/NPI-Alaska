@@ -30,6 +30,7 @@ export function prepareVisits(state) {
         name: "Clear snow",
         unit: "visit",
         snow_required: true,
+        review_below_inches: 2,
         active: true,
         version: 1,
       },
@@ -82,5 +83,31 @@ export function prepareVisits(state) {
     lines: [],
     duplicates: [],
   };
+  state.visits.items.push(
+    {
+      id: "80000000-0000-0000-0000-000000000010",
+      contract_id: contract,
+      parent_id: snow,
+      task_id: task,
+      code: "A0",
+      name: "Below 2 inches",
+      unit: "visit",
+      min_inches: 0,
+      max_inches: 2,
+      active: true,
+    },
+    {
+      id: "80000000-0000-0000-0000-000000000013",
+      contract_id: contract,
+      parent_id: snow,
+      task_id: task,
+      code: "A3",
+      name: "8 inches and above",
+      unit: "visit",
+      min_inches: 8,
+      max_inches: null,
+      active: true,
+    },
+  );
   return { snow, sand, scope };
 }

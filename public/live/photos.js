@@ -1,3 +1,4 @@
+import { photoStore } from "./recovery.js";
 // Shared multi-photo camera/file queue. Originals never receive a permanent stamp.
 const MAX = 20 * 1024 * 1024;
 const TYPES = [
@@ -144,15 +145,65 @@ export class PhotoQueue {
         const item = this.items.find((i) => i.id === el.dataset.photoRemove);
         if (item && item.status !== "Saved") {
           URL.revokeObjectURL(item.url);
+          photoStore
+            .remove(this.profile.id, item.id)
+            .catch(() =>
+              this.status(
+                "Unable to remove the device copy. Retry before signing out.",
+              ),
+            );
           this.items = this.items.filter((i) => i !== item);
           this.draw();
         }
       }
     });
     this.draw();
+    this.ready = this.restore();
+  }
+  async restore() {
+    try {
+      const rows = await photoStore.list(this.profile.id, this.work.id);
+      if (this.disposed) return;
+      for (const row of rows) {
+        if (row.status === "Saved") {
+          await photoStore.remove(this.profile.id, row.id);
+          continue;
+        }
+        if (this.items.some((i) => i.id === row.id)) continue;
+        this.items.push({
+          ...row,
+          file: new File([row.file], row.filename, { type: row.mime }),
+          url: row.preview ? URL.createObjectURL(row.preview) : "",
+          persisted: true,
+          status: "Recovered on device — upload pending",
+        });
+      }
+      this.draw();
+      if (rows.length)
+        this.status(
+          "Photos recovered on this device. Upload to save them to the work record.",
+        );
+    } catch (e) {
+      this.recoveryError = e.message;
+    }
+  }
+  async persistItem(item) {
+    try {
+      await photoStore.put(this.profile.id, this.work.id, item);
+      item.persisted = true;
+    } catch (e) {
+      item.persisted = false;
+      this.recoveryError = e.message;
+    }
   }
   status(text) {
-    this.$("#photo-status").textContent = text;
+    this.$("#photo-status").textContent =
+      text +
+      (this.recoveryError
+        ? " Device recovery unavailable: " +
+          this.recoveryError +
+          " Keep this page open."
+        : "");
   }
   async camera() {
     if (this.disposed || this.uploading || this.cameraPending) return;
@@ -218,6 +269,7 @@ export class PhotoQueue {
     this.stop();
   }
   async add(file, meta) {
+    await this.ready;
     if (this.disposed || this.uploading)
       throw Error("Wait for the current upload to finish.");
     if (this.items.length >= 12)
@@ -258,9 +310,11 @@ export class PhotoQueue {
       mime,
       stage: this.$("#photo-stage").value,
       issue_id: this.$("#photo-issue").value || null,
+      service_line_id: this.root.querySelector("#photo-service")?.value || null,
       status: "Waiting",
       url: preview ? URL.createObjectURL(preview) : "",
     });
+    await this.persistItem(this.items.at(-1));
     this.markDirty();
     this.draw();
     this.status(this.items.length + " files ready. Add more or upload.");
@@ -279,7 +333,14 @@ export class PhotoQueue {
       }
       const text = document.createElement("p");
       text.textContent =
-        item.file.name + " · " + item.stage + " · " + item.status;
+        item.file.name +
+        " · " +
+        item.stage +
+        " · " +
+        item.status +
+        (item.persisted && item.status !== "Saved"
+          ? " · Saved on this device"
+          : "");
       article.append(text);
       if (item.status !== "Saved") {
         const b = document.createElement("button");
@@ -297,6 +358,7 @@ export class PhotoQueue {
   }
   async upload() {
     if (this.uploading) return;
+    await this.ready;
     this.stop();
     this.uploading = true;
     this.draw();
@@ -310,9 +372,11 @@ export class PhotoQueue {
           this.draw();
         });
         item.status = "Saved";
+        await photoStore.remove(this.profile.id, item.id).catch(() => {});
         saved++;
       } catch (e) {
         item.status = "Failed: " + e.message;
+        await this.persistItem(item);
       }
       this.draw();
     }

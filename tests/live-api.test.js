@@ -226,7 +226,7 @@ test("account provisioning rolls back a new Auth identity if profile creation fa
     env,
     fetcher,
   );
-  assert.equal(res.status, 400);
+  assert.equal(res.status, 503);
   assert.equal(
     calls.at(-1).url,
     env.SUPABASE_URL + "/auth/v1/admin/users/" + employee,

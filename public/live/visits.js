@@ -1,3 +1,4 @@
+import { photoStore } from "./recovery.js";
 import { distanceMetres } from "./field-domain.js";
 // Worker-led visits reuse the canonical forms, feedback and attendance owners.
 export class VisitFeatures {
@@ -28,8 +29,31 @@ export class VisitFeatures {
   }
   workerHeader() {
     return this.c.data.profile.role === "worker"
-      ? `<div class="visit-start">${this.c.button("Start work", "visit-new", "", "primary")}<p class="small">Select a site and service. No assignment required.</p></div>`
+      ? `<div class="visit-start">${this.c.button("Start work", "visit-new", "", "primary")}${this.c.button("Device photos", "visit-device")}<p class="small">Select a site and service. No assignment required.</p></div>`
       : "";
+  }
+  exceptionReport() {
+    const c = this.c;
+    return c.data.profile.role === "worker"
+      ? ""
+      : c.panel(
+          "Evidence exception use",
+          c.table(
+            [
+              "Worker",
+              "Submitted visits",
+              "Exception visits",
+              "Exception rate",
+            ],
+            (this.state.exceptions || []).map((x) => [
+              c.esc(x.display_name),
+              x.submitted_visits,
+              x.exception_visits,
+              x.exception_percent + "%",
+            ]),
+          ) +
+            "<p class=small>Counts support review; they are not automatic misconduct findings.</p>",
+        );
   }
   catalogue() {
     const { data, panel, table, button, esc } = this.c;
@@ -43,7 +67,7 @@ export class VisitFeatures {
             esc(this.c.contracts.find((c) => c.id === i.contract_id)?.name),
             esc((i.parent_id ? "Sub-line " : "") + i.code + " · " + i.name),
             esc(i.unit),
-            i.active ? "Active" : "Retired",
+            i.active ? "Active" : "Inactive / draft",
             button(i.active ? "Retire" : "Activate", "visit-toggle", i.id),
           ]),
         ) +
@@ -65,7 +89,7 @@ export class VisitFeatures {
               .filter((l) => l.work_id === w.id)
               .map(
                 (l) =>
-                  `<article class="visit-service-card"><b>${esc(l.line_label.split(" · ").slice(1).join(" · ") || l.line_label)}</b><p>${esc(l.sub_label || "")}${l.snow_inches == null ? "" : " · " + esc(l.snow_inches) + " inches"}</p><p>${esc(l.quantity)} ${esc(l.unit)} · ${l.completed ? "Complete" : "In progress"}</p>${editable ? button(l.snow_required && l.snow_inches == null ? "Record snow depth" : "Update service", "visit-line", l.id) : ""}</article>`,
+                  `<article class="visit-service-card"><b>${esc(l.line_label.split(" · ").slice(1).join(" · ") || l.line_label)}</b><p>${esc(l.sub_label || "")}${l.snow_inches == null ? "" : " · " + esc(l.snow_inches) + " inches"}</p><p>${esc(l.quantity)} ${esc(l.unit)} · ${l.review_required ? "Below threshold — review required" : l.completed ? "Complete" : "In progress"}</p>${editable ? button(l.snow_required && l.snow_inches == null ? "Record snow depth" : "Update service", "visit-line", l.id) : ""}</article>`,
               )
               .join("")
           : table(
@@ -83,7 +107,11 @@ export class VisitFeatures {
                   esc(l.sub_label || "—"),
                   esc(l.quantity) + " " + esc(l.unit),
                   l.snow_inches == null ? "—" : esc(l.snow_inches) + " inches",
-                  l.completed ? "Complete" : "In progress",
+                  l.review_required
+                    ? "Below threshold — review required"
+                    : l.completed
+                      ? "Complete"
+                      : "In progress",
                 ]),
             )) +
         (editable
@@ -175,7 +203,12 @@ export class VisitFeatures {
       (i) => i.parent_id === l.line_id && i.active,
     );
     const photos = c.data.evidence.filter(
-      (e) => e.work_id === w.id && e.stage === "before" && e.kind === "photo",
+      (e) =>
+        e.work_id === w.id &&
+        e.stage === "before" &&
+        e.kind === "photo" &&
+        e.source === "app-camera" &&
+        e.captured_at,
     );
     c.form(
       l.snow_required ? "Record snow depth" : "Update service",
@@ -192,7 +225,7 @@ export class VisitFeatures {
   }
   itemForm(sub = false) {
     const c = this.c;
-    const parents = this.state.items.filter((i) => !i.parent_id && i.active);
+    const parents = this.state.items.filter((i) => !i.parent_id);
     c.form(
       sub ? "Add sub-line item" : "Add line item",
       "visit:save_item",
@@ -280,6 +313,41 @@ export class VisitFeatures {
             "Automatic site detection unavailable. Select your site manually.";
         }
       },
+      "visit-device": async () => {
+        const c = this.c,
+          owner = c.data.profile.id,
+          rows = await photoStore.list(owner);
+        if (this.c.data?.profile.id !== owner) return;
+        c.modal(
+          "Device photos",
+          rows.length
+            ? rows
+                .map(
+                  (r) =>
+                    `<article class="visit-service-card"><b>${c.esc(r.filename)}</b><p>Upload pending · visit ${c.esc(r.workId.slice(0, 8))}</p>${c.button("Open visit", "open-work", r.workId)}${c.button("Download original", "visit-download", r.id)}${c.button("Remove device copy", "visit-remove-device", r.id)}</article>`,
+                )
+                .join("")
+            : "<p>No unsent device photos.</p>",
+        );
+      },
+      "visit-download": async (el) => {
+        const rows = await photoStore.list(this.c.data.profile.id),
+          r = rows.find((r) => r.id === el.dataset.id);
+        if (!r) return;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(r.file);
+        a.download = r.filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      },
+      "visit-remove-device": (el) => {
+        const c = this.c;
+        c.form(
+          "Remove device photo",
+          "visit:remove_device",
+          `<input name="photo_id" type="hidden" value="${c.esc(el.dataset.id)}"><p>Remove this unsent device copy? Download it first if needed. Cloud records are not changed.</p>`,
+        );
+      },
       "visit-new": () => this.newForm(),
       "visit-item": () => this.itemForm(),
       "visit-subitem": () => this.itemForm(true),
@@ -354,6 +422,12 @@ export class VisitFeatures {
   async submit(action, body, values) {
     const c = this.c;
     const kind = action.slice(6);
+    if (kind === "remove_device") {
+      await photoStore.remove(c.data.profile.id, body.photo_id);
+      c.close(true);
+      c.success("Device photo removed.");
+      return;
+    }
     if (kind === "create_visit") {
       body.members = [
         ...new Set([c.data.profile.id, ...values.getAll("visit_crew")]),

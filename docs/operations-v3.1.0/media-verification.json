@@ -1,0 +1,47 @@
+[
+  {
+    "role": "npi",
+    "duration_seconds": 134.749,
+    "width": 1280,
+    "height": 1000,
+    "video": "h264",
+    "audio": "aac",
+    "av_difference_seconds": 0.0217049999999972,
+    "mean_volume_dbfs": -16.2,
+    "max_volume_dbfs": -1.5,
+    "captions": true,
+    "headlines": true,
+    "voice": "Jenny Dioco en-GB synthetic female",
+    "accuracy_limit": "Technical audio/video checks; no independent human narration certification"
+  },
+  {
+    "role": "sub",
+    "duration_seconds": 94.641357,
+    "width": 1280,
+    "height": 1000,
+    "video": "h264",
+    "audio": "aac",
+    "av_difference_seconds": 0.00230600000000436,
+    "mean_volume_dbfs": -16.2,
+    "max_volume_dbfs": -1.4,
+    "captions": true,
+    "headlines": true,
+    "voice": "Jenny Dioco en-GB synthetic female",
+    "accuracy_limit": "Technical audio/video checks; no independent human narration certification"
+  },
+  {
+    "role": "worker",
+    "duration_seconds": 148.713667,
+    "width": 540,
+    "height": 1280,
+    "video": "h264",
+    "audio": "aac",
+    "av_difference_seconds": 0.03764199999997686,
+    "mean_volume_dbfs": -16.4,
+    "max_volume_dbfs": -0.4,
+    "captions": true,
+    "headlines": true,
+    "voice": "Jenny Dioco en-GB synthetic female",
+    "accuracy_limit": "Technical audio/video checks; no independent human narration certification"
+  }
+]

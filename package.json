@@ -1,6 +1,6 @@
 {
   "name": "npi-alaska",
-  "version": "0.1.0",
+  "version": "3.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,9 +17,9 @@
     "package:sample": "python3 scripts/package-sample.py",
     "package:operations": "python3 scripts/package-operations.py",
     "package:three-view": "python3 scripts/package-three-view.py",
-    "package:live": "python3 scripts/package-visits-release.py",
-    "package:release": "python3 scripts/package-visits-release.py",
-    "package:field": "python3 scripts/package-visits-release.py"
+    "package:live": "python3 scripts/package-v31-release.py",
+    "package:release": "python3 scripts/package-v31-release.py",
+    "package:field": "python3 scripts/package-v31-release.py"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

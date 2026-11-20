@@ -1,24 +1,26 @@
-const CACHE = "npi-live-v5";
-const SHELL = [
+const CACHE = "npi-live-v3.1.0";
+const ESSENTIALS = [
   "./",
   "./index.html",
   "./app.js",
   "./api.js",
+  "./recovery.js",
   "./field.js",
   "./visits.js",
   "./field-domain.js",
   "./photos.js",
-  "./vendor/image-decoders.js",
   "./enrollment.js",
   "./config.js",
   "./style.css",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./manifest.webmanifest",
   "../three-view/style.css",
   "../three-view/assets.js",
   "../three-view/icons.js",
-  "../three-view/assets/logo-transparent.webp",
+];
+const OPTIONAL = [
+  "./brand-logo.webp",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./manifest.webmanifest",
   "../three-view/assets/boney.jpg",
   "../three-view/assets/nesbit.jpg",
   "../three-view/assets/snowden.jpg",
@@ -27,26 +29,34 @@ const SHELL = [
   "../three-view/fonts/body-600.woff2",
   "../three-view/fonts/body-700.woff2",
 ];
+const LAZY = ["./vendor/image-decoders.js"];
 self.addEventListener("install", (e) =>
   e.waitUntil(
-    caches
-      .open(CACHE)
-      .then((c) => c.addAll(SHELL))
-      .then(() => self.skipWaiting()),
+    (async () => {
+      const c = await caches.open(CACHE);
+      try {
+        await c.addAll(ESSENTIALS);
+      } catch (error) {
+        await caches.delete(CACHE);
+        throw error;
+      }
+      await Promise.allSettled(OPTIONAL.map((p) => c.add(p)));
+    })(),
   ),
 );
+self.addEventListener("message", (e) => {
+  if (e.data?.type === "APPLY_UPDATE") self.skipWaiting();
+});
 self.addEventListener("activate", (e) =>
   e.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((k) => k.startsWith("npi-live-") && k !== CACHE)
-            .map((k) => caches.delete(k)),
-        ),
-      )
-      .then(() => self.clients.claim()),
+    (async () => {
+      await Promise.all(
+        (await caches.keys())
+          .filter((k) => k.startsWith("npi-live-") && k !== CACHE)
+          .map((k) => caches.delete(k)),
+      );
+      await self.clients.claim();
+    })(),
   ),
 );
 self.addEventListener("fetch", (e) => {
@@ -54,14 +64,23 @@ self.addEventListener("fetch", (e) => {
   if (
     e.request.method !== "GET" ||
     u.origin !== location.origin ||
-    !SHELL.some(
+    ![...ESSENTIALS, ...OPTIONAL, ...LAZY].some(
       (p) => new URL(p, self.registration.scope).pathname === u.pathname,
     )
   )
     return;
   e.respondWith(
-    fetch(e.request).catch(() =>
-      caches.match(u.origin + u.pathname).then((r) => r || Response.error()),
-    ),
+    (async () => {
+      try {
+        const response = await fetch(e.request);
+        if (response.ok) {
+          const c = await caches.open(CACHE);
+          await c.put(u.origin + u.pathname, response.clone());
+        }
+        return response;
+      } catch {
+        return (await caches.match(u.origin + u.pathname)) || Response.error();
+      }
+    })(),
   );
 });

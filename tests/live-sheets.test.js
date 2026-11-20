@@ -122,3 +122,19 @@ test("workbook rejects other editors and neutralizes formula cells", () => {
     '\'=IMPORTXML("example")',
   );
 });
+
+test("bridge reports HTTP failures before parsing and fails closed for an ownerless workbook", () => {
+  const h = harness();
+  h.context.UrlFetchApp.fetch = () => ({
+    getResponseCode: () => 502,
+    getContentText: () => "<html>Gateway failed</html>",
+  });
+  assert.throws(() => h.context.npiSubmitLive(), /HTTP 502.*non-JSON/);
+  h.context.UrlFetchApp.fetch = () => ({
+    getResponseCode: () => 200,
+    getContentText: () => "not JSON",
+  });
+  assert.throws(() => h.context.npiSubmitLive(), /invalid server response/);
+  h.context.DriveApp.getFileById = () => ({ getOwner: () => null });
+  assert.throws(() => h.context.npiSubmitLive(), /no individual owner/);
+});

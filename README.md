@@ -1,12 +1,12 @@
-# Alaska NPI Operations — current release
+# Alaska NPI Operations — v3.1.0
 
-**[Download one complete Operations 1.0 package](https://raw.githubusercontent.com/neerajparmani-pixel/NPI-Alaska/main/downloads/NPI-Alaska-Operations-v1.0.zip)** and open **START-HERE.html** after extraction.
+**[Download the complete v3.1.0 ZIP](https://raw.githubusercontent.com/neerajparmani-pixel/NPI-Alaska/main/downloads/NPI-Alaska-Operations-v3.1.0.zip)** and open **START-HERE.html** after extraction. Includes three narrated walkthroughs, captions, full sources and audit results.
 
-NPI invites subcontractor administrators → companies invite/approve their own workers → companies assign work at their contracted sites → workers record GPS, tasks, photos and hours → company review → NPI verification. Exactly three roles; approved layout retained. **Billing is excluded from this release.**
+NPI invites subcontractors → companies invite/approve workers → workers start visits at authorised sites without daily assignments → GPS, services, camera/file photos and hours → company approval → NPI verification. Exactly three roles; approved layout, transparent logo and all four site photos retained. Billing is excluded.
 
-Existing installation: apply **004 only**, redeploy **npi-admin**, update **LiveSync.gs** using your existing secrets, and deploy the contents of **frontend/** to the existing Cloudflare Pages project. Preserve the current accounts, workbook and domain. The package contains full frontend/SQL/Edge/workbook source and local verification notes; cloud installation and real acceptance testing remain necessary. See [setup guide](setup/OPERATIONS-START-HERE.md).
+Existing v3 installation: apply **007 only**, update **npi-admin** and **LiveSync.gs**, then deploy **frontend/** contents to the existing Cloudflare Pages project. Older installations follow the [version-specific upgrade guide](setup/OPERATIONS-3.1-START-HERE.md). Preserve accounts, workbook and domain. Pending photos recover on the same device/account; optional remembered sessions are for personal devices. Below-two-inch work is flagged at both reviews.
 
-Run locally with `npm ci` and `npm run dev`; the current app is at `/live/` and requires the configured backend. Build the single archive with `npm run package:release`. Earlier browser-local prototypes below are historical references, not the current operational release.
+Run locally with `npm ci` and `npm run dev`; the current app is at `/live/` and requires the configured backend. `npm test` and `npm run test:e2e` use isolated/mocked services. Build the release with `npm run package:release` after generating its media/audit outputs. Local checks do not establish production cloud acceptance.
 
 ---
 

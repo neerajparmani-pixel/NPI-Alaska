@@ -2,6 +2,16 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { backend } from "../helpers/live-fixture.js";
 import { prepareVisits } from "../helpers/visits-fixture.js";
+test.use({
+  launchOptions: {
+    executablePath: "/usr/bin/chromium",
+    args: [
+      "--no-sandbox",
+      "--use-fake-device-for-media-stream",
+      "--use-fake-ui-for-media-stream",
+    ],
+  },
+});
 const act = (p, a) => p.locator(`[data-action="${a}"]:visible`).first().click();
 const login = async (p, user = "alex") => {
   await p.goto("/live/");
@@ -25,18 +35,12 @@ test("worker prepares an unassigned visit, records manual snow measurement and a
   expect(state.work).toHaveLength(1);
   expect(state.work[0].worker_led).toBe(true);
   await act(page, "upload");
-  const buffer = await page.evaluate(() => {
-    const c = document.createElement("canvas");
-    c.width = 200;
-    c.height = 120;
-    c.getContext("2d").fillRect(0, 0, 200, 120);
-    return c.toDataURL("image/png").split(",")[1];
-  });
-  await page.locator("#multi-files").setInputFiles({
-    name: "ruler.png",
-    mimeType: "image/png",
-    buffer: Buffer.from(buffer, "base64"),
-  });
+  await page.context().grantPermissions(["camera"]);
+  await page.locator("#start-camera").click();
+  await page.waitForTimeout(500);
+  await page.locator("#capture-photo").click();
+  await page.locator("#keep-photo").click();
+  await page.locator("#stop-camera").click();
   await page.locator("#upload-batch").click();
   await expect(page.locator("#photo-status")).toContainText("saved");
   await act(page, "close");
@@ -92,6 +96,8 @@ test("automatic reading errors keep manual entry usable and never confirm measur
     stage: "before",
     kind: "photo",
     filename: "ruler.jpg",
+    source: "app-camera",
+    captured_at: new Date().toISOString(),
   });
   await act(page, "refresh");
   await act(page, "visit-line");

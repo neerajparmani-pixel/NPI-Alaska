@@ -1,4 +1,4 @@
-/** NPI Operations 2.0: seven visible management tabs; secrets remain in Script Properties. */
+/** NPI Operations v3.1.0: seven visible management tabs; secrets remain in Script Properties. */
 const NPI_LIVE = {
   spreadsheetId: "1FJkmwHbZaNLwT4awsSshJpysi95dwBtOOKadig_Ibz8",
   endpoint: "https://fyfjsqhnxcktjdihcaks.supabase.co/functions/v1/npi-admin",
@@ -26,6 +26,8 @@ const NPI_GROUPS = {
   Issues: ["npi_issues", "npi_issue_comments"],
   "Evidence & history": [
     "npi_evidence",
+    "npi_exception_events",
+    "npi_ruler_claims",
     "npi_work_history",
     "npi_audit",
     "npi_notifications",
@@ -51,6 +53,8 @@ const NPI_RECORD_LABELS = {
   npi_issues: "Issue",
   npi_issue_comments: "Issue comment",
   npi_evidence: "Evidence file",
+  npi_exception_events: "Evidence exception",
+  npi_ruler_claims: "Ruler photo claim",
   npi_work_history: "Work history",
   npi_audit: "Audit event",
   npi_notifications: "In-app notice",
@@ -103,6 +107,10 @@ function npiLiveAccess_() {
   if (book.getId() !== NPI_LIVE.spreadsheetId)
     throw new Error("This script is bound to another workbook.");
   const owner = DriveApp.getFileById(book.getId()).getOwner();
+  if (!owner)
+    throw new Error(
+      "This workbook has no individual owner. Shared Drive workbooks require an explicitly supported authorization setup.",
+    );
   const actor = Session.getEffectiveUser().getEmail().toLowerCase();
   const props = PropertiesService.getScriptProperties();
   const managers = (props.getProperty("NPI_MANAGER_EMAILS") || "")
@@ -136,7 +144,30 @@ function npiLiveCall_(ctx, body) {
     ),
     muteHttpExceptions: true,
   });
-  const result = JSON.parse(response.getContentText());
+  const status = response.getResponseCode();
+  const raw = response.getContentText();
+  let result;
+  if (status >= 300) {
+    try {
+      result = JSON.parse(raw);
+    } catch {
+      throw new Error(
+        "HTTP " +
+          status +
+          ": server returned a non-JSON error. Check Edge Function logs.",
+      );
+    }
+  } else {
+    try {
+      result = JSON.parse(raw);
+    } catch {
+      throw new Error(
+        "HTTP " +
+          status +
+          ": invalid server response; no spreadsheet changes applied.",
+      );
+    }
+  }
   if (response.getResponseCode() >= 300)
     throw new Error(
       "HTTP " +
@@ -395,9 +426,9 @@ function npiPullLive() {
           .find((p) => p.getDescription() === "NPI Operations protected") ||
         sheet.protect().setDescription("NPI Operations protected");
       protection.setWarningOnly(false);
-      const owner = DriveApp.getFileById(ctx.book.getId())
-        .getOwner()
-        .getEmail();
+      const owner = ctx.owner;
+      if (!owner)
+        throw new Error("Workbook owner authorization is unavailable.");
       protection.addEditor(owner);
       const others = protection
         .getEditors()
