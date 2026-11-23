@@ -87,6 +87,56 @@ async function backend(
           headers: { "Access-Control-Allow-Origin": "*" },
           body: JSON.stringify(json),
         });
+      if (
+        ["npi-admin", "swift-processor"].some((name) =>
+          path.endsWith("/functions/v1/" + name),
+        ) &&
+        body.operation === "login"
+      ) {
+        role = body.username.startsWith("owner")
+          ? "npi"
+          : body.username.startsWith("supervisor")
+            ? "sub"
+            : "worker";
+        return reply({
+          access_token: "test-" + role,
+          refresh_token: "test-refresh-" + role,
+          expires_in: 3600,
+        });
+      }
+      if (path.endsWith("/npi_people_context"))
+        return reply({
+          release: state.backendRelease || "3.2.0",
+          people: state.people
+            .filter((p) => role === "npi" || p.company_id === company)
+            .map((p) => ({
+              ...p,
+              account_status: p.account_status || "approved",
+              email: p.email || p.username + "@example.test",
+              email_verified: p.email_verified !== false,
+            })),
+          invitations: (state.invitations || []).filter(
+            (i) => role === "npi" || i.company_id === company,
+          ),
+          sync: state.sync || null,
+        });
+      if (
+        ["npi-admin", "swift-processor"].some((name) =>
+          path.endsWith("/functions/v1/" + name),
+        ) &&
+        ["verify_email", "resend_verification", "recover_password"].includes(
+          body.operation,
+        )
+      )
+        return reply(
+          body.operation === "verify_email"
+            ? { status: "pending" }
+            : {
+                accepted: true,
+                message:
+                  "If an eligible account exists, instructions will be sent.",
+              },
+        );
       if (path.includes("/token")) {
         if (body.refresh_token) {
           role = body.refresh_token.split("-").at(-1);
@@ -104,6 +154,39 @@ async function backend(
         });
       }
       if (path.endsWith("/logout")) return reply({});
+      if (path.endsWith("/auth/v1/user") && req.method() === "PUT") {
+        writes.push({ operation: "own_password_update" });
+        return reply({ id: u.worker });
+      }
+      if (path.endsWith("/npi_report_start")) {
+        const run = {
+          id: crypto.randomUUID(),
+          filter: body.p_filter,
+          created_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 3600000).toISOString(),
+        };
+        state.reportRuns ||= {};
+        const rows = (state.reportRows || []).filter(
+          (r) => role === "npi" || !r.company_id || r.company_id === company,
+        );
+        run.total = rows.length;
+        state.reportRuns[run.id] = { ...run, rows };
+        return reply(run);
+      }
+      if (path.endsWith("/npi_report_page")) {
+        const run = state.reportRuns?.[body.p_run];
+        if (!run) return reply({ message: "Report unavailable" }, 400);
+        return reply({
+          total: run.total,
+          rows: run.rows.slice((body.p_page - 1) * 500, body.p_page * 500),
+        });
+      }
+      if (path.endsWith("/npi_report_evidence"))
+        return reply(
+          state.evidence
+            .filter((e) => body.p_ids.includes(e.id))
+            .map((e) => ({ ...e, filename: e.filename || "photo.jpg" })),
+        );
       if (path.endsWith("/npi_account_status"))
         return reply({
           status: state.accountStatus || "approved",
@@ -117,7 +200,9 @@ async function backend(
           invitations: state.invitations || [],
         });
       if (
-        path.endsWith("/functions/v1/npi-admin") &&
+        ["npi-admin", "swift-processor"].some((name) =>
+          path.endsWith("/functions/v1/" + name),
+        ) &&
         ["invite_preview", "register_invitation"].includes(body.operation)
       ) {
         if (state.invitationInvalid)
@@ -129,6 +214,7 @@ async function backend(
           return reply({
             company: "Test contractor",
             role: state.invitationRole || "worker",
+            email: "worker@example.test",
             expires_at: new Date(Date.now() + 86400000).toISOString(),
           });
         if (state.registrationFails)
@@ -148,7 +234,7 @@ async function backend(
         }
         if (body.p_action === "create_contract" && !body.p_body.name)
           return reply({ message: "Check contract details" }, 400);
-        if (body.p_action === "approve_worker") {
+        if (["approve_worker", "approve_account"].includes(body.p_action)) {
           state.accountStatus = "approved";
           const p = state.people.find((p) => p.id === body.p_body.id);
           if (p) {
@@ -161,7 +247,7 @@ async function backend(
       }
       if (path.endsWith("/npi_visit_context"))
         return reply({
-          release: state.backendRelease || "3.1.0",
+          release: state.backendRelease || "3.2.0",
           ...(state.visits || {
             items: [],
             scopes: [],
@@ -412,7 +498,12 @@ async function backend(
                     : state.people,
               profile: state.people.find((p) => p.role === role),
             });
-      if (path.endsWith("/functions/v1/npi-admin") && state.expireAdminNext) {
+      if (
+        ["npi-admin", "swift-processor"].some((name) =>
+          path.endsWith("/functions/v1/" + name),
+        ) &&
+        state.expireAdminNext
+      ) {
         state.expireAdminNext = false;
         return reply({ error: "Session expired" }, 401);
       }

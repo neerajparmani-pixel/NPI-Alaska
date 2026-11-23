@@ -1,0 +1,31 @@
+{
+  "release": "3.2.0",
+  "unit_api_database": {
+    "passed": 117,
+    "failed": 0
+  },
+  "browser": {
+    "passed": 166,
+    "failed": 0,
+    "scope": "Desktop and mobile; includes historical regression prototypes and current live application"
+  },
+  "axe": {
+    "screens": 20,
+    "violations": 0
+  },
+  "lighthouse": {
+    "performance": 0.88,
+    "accessibility": 1,
+    "best-practices": 1,
+    "seo": 1,
+    "agentic-browsing": 1
+  },
+  "strict_static_findings": 0,
+  "dependency_vulnerabilities": 0,
+  "scope": "Local isolated database and intercepted cloud responses. No production deployment or real email delivery verified.",
+  "extracted_package_tests": {
+    "passed": 117,
+    "failed": 0
+  },
+  "format_check": "passed"
+}

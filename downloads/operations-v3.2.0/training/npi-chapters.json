@@ -1,0 +1,62 @@
+[
+  {
+    "start": 0,
+    "title": "Company account",
+    "duration": 13.135056689342402
+  },
+  {
+    "start": 13.135056689342402,
+    "title": "Invite NPI or subcontractor administrators",
+    "duration": 15.979501133786847
+  },
+  {
+    "start": 29.11455782312925,
+    "title": "Approve verified registrations",
+    "duration": 16.931519274376416
+  },
+  {
+    "start": 46.046077097505666,
+    "title": "One-time contract setup",
+    "duration": 12.728707482993197
+  },
+  {
+    "start": 58.77478458049886,
+    "title": "Line items and sub-line items",
+    "duration": 23.932335600907027
+  },
+  {
+    "start": 82.70712018140588,
+    "title": "Periodic review queue",
+    "duration": 13.970975056689342
+  },
+  {
+    "start": 96.67809523809522,
+    "title": "Verify the complete visit",
+    "duration": 14.075464852607709
+  },
+  {
+    "start": 110.75356009070293,
+    "title": "Accept or request correction",
+    "duration": 13.471746031746031
+  },
+  {
+    "start": 124.22530612244897,
+    "title": "Download complete reports",
+    "duration": 17.848707482993195
+  },
+  {
+    "start": 142.07401360544216,
+    "title": "Printable summary and private evidence",
+    "duration": 18.67301587301587
+  },
+  {
+    "start": 160.74702947845805,
+    "title": "Seven-tab management workbook",
+    "duration": 20.402902494331066
+  },
+  {
+    "start": 181.14993197278912,
+    "title": "Notifications and deployment",
+    "duration": 24.222585034013605
+  }
+]

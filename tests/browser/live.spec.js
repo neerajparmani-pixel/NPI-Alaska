@@ -276,6 +276,7 @@ test("company invitation signup, pending access and company approval preserve th
   await login(page, "supervisor");
   await page.goto("/live/#people");
   await act(page, "new-invitation");
+  await page.locator("#email").fill("worker@example.test");
   await save(page);
   await expect(page.locator("#invitation-url")).toBeVisible();
   const link = await page.locator("#invitation-url").inputValue();
@@ -305,7 +306,7 @@ test("company invitation signup, pending access and company approval preserve th
     .getByRole("button", { name: "Create account", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Your account is awaiting approval" }),
+    page.getByRole("heading", { name: "Verify your email" }),
   ).toBeVisible();
   expect(
     writes.find((w) => w.operation === "register_invitation").role,
@@ -323,8 +324,8 @@ test("company invitation signup, pending access and company approval preserve th
   state.people.find((p) => p.role === "worker").account_status = "pending";
   state.people.find((p) => p.role === "worker").active = false;
   await login(page, "supervisor");
-  await page.goto("/live/#people");
-  await act(page, "access-approve_worker");
+  await page.goto("/live/#people?tab=pending");
+  await act(page, "account-approve");
   await save(page);
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await act(page, "logout");
@@ -388,6 +389,9 @@ test("NPI invites the subcontractor admin, who sees assigned scope and can dispa
   await login(page, "owner@npi.test");
   await page.goto("/live/#people");
   await act(page, "new-invitation");
+  await page.locator("#email").fill("admin@example.test");
+  await page.locator("#role").selectOption("sub");
+  await page.locator("#company_id").selectOption(state.companies[0].id);
   await save(page);
   const link = await page.locator("#invitation-url").inputValue();
   await act(page, "close");
@@ -405,7 +409,7 @@ test("NPI invites the subcontractor admin, who sees assigned scope and can dispa
     .getByRole("button", { name: "Create account", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Your company account is ready" }),
+    page.getByRole("heading", { name: "Verify your email" }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Go to sign in" }).click();
   await login(page, "supervisor");
@@ -425,24 +429,32 @@ test("NPI invites the subcontractor admin, who sees assigned scope and can dispa
   ).toHaveCount(0);
 });
 
-test("company password reset recovery never restores a revealed password", async ({
+test("password recovery is private and administrators cannot choose another person's password", async ({
   page,
 }) => {
-  const { state } = await backend(page);
+  await backend(page);
   await page.goto("/live/");
-  await login(page, "supervisor");
-  await page.goto("/live/#people");
-  await act(page, "reset-password");
-  await page.locator("#password").fill("private-password-123");
-  await act(page, "show-staff-password");
-  state.expireAdminNext = true;
-  await save(page);
-  await expect(page.locator("#login-form")).toBeVisible();
-  await login(page, "supervisor");
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.locator("dialog #password")).toHaveValue("");
-  await expect(page.locator("dialog #password")).toHaveAttribute(
-    "type",
-    "password",
+  await page.getByRole("link", { name: "Forgot password?" }).click();
+  await page.locator("#identity-email").fill("worker@example.test");
+  await page.locator("#identity-form button[type=submit]").click();
+  await expect(
+    page.getByRole("heading", { name: "Request received" }),
+  ).toBeVisible();
+  await page.goto(
+    "/live/#type=recovery&access_token=test-recovery&refresh_token=private-refresh",
   );
+  await page.locator("#identity-password").fill("new-private-password-123");
+  await page.locator("#identity-confirm").fill("new-private-password-123");
+  await page.locator("#identity-form button[type=submit]").click();
+  await expect(
+    page.getByRole("heading", { name: "Password updated" }),
+  ).toBeVisible();
+  expect(page.url()).not.toContain("access_token");
+  expect(
+    await page.evaluate(
+      () =>
+        Object.values(localStorage).join("") +
+        Object.values(sessionStorage).join(""),
+    ),
+  ).not.toContain("new-private-password");
 });

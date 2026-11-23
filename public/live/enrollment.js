@@ -1,4 +1,4 @@
-// Invitation tokens and credentials stay in memory, never in storage or analytics.
+// Passwords and raw invitation tokens stay in memory. A tab-scoped non-secret request ticket permits retry after reload.
 export async function showEnrollment({
   token,
   api,
@@ -12,19 +12,39 @@ export async function showEnrollment({
   area.innerHTML =
     '<h1>Checking your invitation</h1><p role="status">Please wait…</p>';
   history.replaceState(null, "", location.pathname + "#register");
+  const ticketKey =
+    "npi-signup:" +
+    Array.from(
+      new Uint8Array(
+        await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)),
+      ),
+    )
+      .map((x) => x.toString(16).padStart(2, "0"))
+      .join("");
+  let ticket = null;
+  try {
+    ticket = JSON.parse(sessionStorage.getItem(ticketKey) || "null");
+  } catch {}
   let invitation;
   try {
-    invitation = await api.invitation("invite_preview", { token });
+    invitation = await api.invitation("invite_preview", {
+      token,
+      request_id: ticket?.requestId,
+    });
   } catch (e) {
     area.innerHTML = `<h1>Invitation unavailable</h1><p role="alert">${esc(e.message)}</p><a class="btn primary" href="#signin">Go to sign in</a>`;
     return;
   }
-  const admin = invitation.role === "sub";
-  area.innerHTML = `<p class="eyebrow">${esc(invitation.company)}</p><h1>${admin ? "Set up your company account" : "Join your work team"}</h1><p>${admin ? "You will manage your company’s workers and assignments." : "Your company administrator will approve your account before you can start work."}</p><form id="registration-form" class="live-form" novalidate><div class="field"><label for="join-name">Full name</label><input id="join-name" name="display_name" autocomplete="name" maxlength="150"><span id="join-name-error" class="err"></span></div><div class="field"><label for="join-username">Choose a username</label><input id="join-username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="50" aria-describedby="join-username-hint"><small id="join-username-hint">3–50 lowercase letters, numbers, dots, hyphens or underscores.</small><span id="join-username-error" class="err"></span></div><div class="field"><label for="join-password">Password</label><input id="join-password" name="password" type="password" autocomplete="new-password" maxlength="72" aria-describedby="join-password-hint"><small id="join-password-hint">Use at least 12 characters.</small><span id="join-password-error" class="err"></span></div><div class="field"><label for="join-confirm">Confirm password</label><input id="join-confirm" name="confirm" type="password" autocomplete="new-password" maxlength="72"><span id="join-confirm-error" class="err"></span></div><button type="button" class="btn" data-signup-toggle aria-pressed="false">Show passwords</button><button type="submit" class="btn primary">Create account</button><p id="join-error" class="error" role="alert"></p></form><p class="small muted">Already registered? <a href="#signin">Sign in</a></p>`;
+  const admin = invitation.role !== "worker";
+  area.innerHTML = `<p class="eyebrow">${esc(invitation.company)}</p><h1>${invitation.role === "npi" ? "Join NPI administration" : admin ? "Set up your company account" : "Join your work team"}</h1><p>Verify your email, then wait for administrator approval. Your role and company are fixed by this invitation.</p><form id="registration-form" class="live-form" novalidate><div class="field"><label for="join-email">Invited email</label><input id="join-email" name="email" type="email" autocomplete="email" readonly value="${esc(invitation.email || "")}"></div><p class="small">Access: ${esc({ npi: "NPI Admin", sub: "Subcontractor Admin", worker: "Worker" }[invitation.role])}</p><div class="field"><label for="join-name">Full name</label><input id="join-name" name="display_name" autocomplete="name" maxlength="150"><span id="join-name-error" class="err"></span></div><div class="field"><label for="join-username">Choose a username</label><input id="join-username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="50" aria-describedby="join-username-hint"><small id="join-username-hint">3–50 lowercase letters, numbers, dots, hyphens or underscores.</small><span id="join-username-error" class="err"></span></div><div class="field"><label for="join-password">Password</label><input id="join-password" name="password" type="password" autocomplete="new-password" maxlength="72" aria-describedby="join-password-hint"><small id="join-password-hint">Use at least 12 characters.</small><span id="join-password-error" class="err"></span></div><div class="field"><label for="join-confirm">Confirm password</label><input id="join-confirm" name="confirm" type="password" autocomplete="new-password" maxlength="72"><span id="join-confirm-error" class="err"></span></div><button type="button" class="btn" data-signup-toggle aria-pressed="false">Show passwords</button><button type="submit" class="btn primary">Create account</button><p id="join-error" class="error" role="alert"></p></form><p class="small muted">Already registered? <a href="#signin">Sign in</a></p>`;
   const form = area.querySelector("form");
   let busy = false,
-    signature = "",
-    requestId = "";
+    signature = ticket?.signature || "",
+    requestId = ticket?.requestId || "";
+  if (ticket) {
+    form.display_name.value = ticket.name || "";
+    form.username.value = ticket.username || "";
+  }
   form.querySelector("[data-signup-toggle]").addEventListener("click", (e) => {
     const hidden = form.password.type === "password";
     form.password.type = form.confirm.type = hidden ? "text" : "password";
@@ -68,6 +88,12 @@ export async function showEnrollment({
       requestId = crypto.randomUUID();
       signature = JSON.stringify([name, username]);
     }
+    try {
+      sessionStorage.setItem(
+        ticketKey,
+        JSON.stringify({ requestId, signature, name, username }),
+      );
+    } catch {}
     busy = true;
     form.setAttribute("aria-busy", "true");
     form.querySelectorAll("button").forEach((b) => (b.disabled = true));
@@ -79,8 +105,11 @@ export async function showEnrollment({
         username,
         password,
       });
+      try {
+        sessionStorage.removeItem(ticketKey);
+      } catch {}
       form.reset();
-      area.innerHTML = `<h1>${result.status === "pending" ? "Your account is awaiting approval" : "Your company account is ready"}</h1><p>${result.status === "pending" ? "Contact your company administrator. Once approved, sign in to see your assignments." : "Sign in to invite your workers and assign work at your company’s sites."}</p><p>Your username: <strong>${esc(username)}</strong></p><a class="btn primary" href="#signin">Go to sign in</a>`;
+      area.innerHTML = `<h1>Verify your email</h1><p>${result.email_sent === false ? "Your account was created, but the verification email could not be sent. Request another email below or contact your administrator." : "Check your email for a verification link. After verification, your administrator must approve access."}</p><p>Your username: <strong>${esc(username)}</strong></p><a class="btn primary" href="#resend-verification">Resend verification</a><a class="btn" href="#signin">Go to sign in</a>`;
       token = "";
     } catch (error) {
       form.querySelector("#join-error").textContent = error.message;

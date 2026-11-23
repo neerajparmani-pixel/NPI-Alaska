@@ -11,7 +11,8 @@ test("live API authenticates through Supabase and never grants a preview role", 
     calls.push({ url, opts });
     if (url.endsWith("/npi_account_status"))
       return json({ status: "approved" });
-    return url.includes("/token?")
+    return url.includes("/token?") ||
+      JSON.parse(opts.body || "{}").operation === "login"
       ? json({
           access_token: "access",
           refresh_token: "refresh",
@@ -22,7 +23,8 @@ test("live API authenticates through Supabase and never grants a preview role", 
   const data = await api.login("alex.morgan", "private-pass");
   assert.equal(data.profile.role, "worker");
   assert.deepEqual(JSON.parse(calls[0].opts.body), {
-    email: "alex.morgan@users.npi6030.com",
+    operation: "login",
+    username: "alex.morgan",
     password: "private-pass",
   });
   assert.equal(calls[2].opts.headers.Authorization, "Bearer access");
@@ -70,7 +72,7 @@ test("admin edge function rejects wrong origins and unauthenticated provisioning
     env,
     fetcher,
   );
-  assert.equal(r.status, 401);
+  assert.equal(r.status, 410);
   assert.equal(calls, 0);
 });
 test("sheet bridge rejects protected fields and wrong workbook before service mutation", async () => {
@@ -154,15 +156,15 @@ test("subcontractor admins cannot provision another company or another admin", a
     }),
   });
   const r = await handleAdmin(request, env, fetcher);
-  assert.equal(r.status, 403);
-  assert.equal(calls, 3);
+  assert.equal(r.status, 410);
+  assert.equal(calls, 0);
 });
 test("upload retry keeps one object and one evidence command identity after uncertain acknowledgement", async () => {
   const commands = [];
   let objects = 0;
   const api = new LiveAPI(async (url, opts) => {
     if (url.endsWith("/npi_live_snapshot"))
-      return json({ profile: { id: user } });
+      return json({ profile: { id: user, role: "worker" } });
     if (url.includes("/storage/v1/object/")) {
       objects++;
       return json({ Key: "stored" });
@@ -190,49 +192,29 @@ test("upload retry keeps one object and one evidence command identity after unce
   assert.equal(commands.length, 2);
   assert.equal(commands[0].p_request, commands[1].p_request);
 });
-test("account provisioning rolls back a new Auth identity if profile creation fails", async () => {
-  const employee = "10000000-0000-0000-0000-000000000009";
-  const company = "20000000-0000-0000-0000-000000000001";
-  const calls = [];
-  const env = {
-    SUPABASE_URL: "https://test.supabase.co",
-    SUPABASE_SERVICE_ROLE_KEY: "private-server-value",
-  };
-  const fetcher = async (url, opts) => {
-    calls.push({ url, opts });
-    if (url.endsWith("/auth/v1/user")) return json({ id: user });
-    if (url.includes("/npi_profiles?"))
-      return json([{ role: "npi", company_id: null }]);
-    if (url.includes("/npi_companies?")) return json([{ id: company }]);
-    if (url.endsWith("/auth/v1/admin/users")) return json({ id: employee });
-    if (url.endsWith("/rest/v1/npi_profiles"))
-      return json({ message: "DB unavailable" }, 500);
-    if (opts.method === "DELETE") return json({});
-    return json({});
-  };
-  const res = await handleAdmin(
+test("legacy provisioning cannot set passwords or mutate Auth even with an admin session", async () => {
+  let calls = 0;
+  const r = await handleAdmin(
     new Request("https://edge.test", {
       method: "POST",
       headers: { Authorization: "Bearer verified" },
       body: JSON.stringify({
         operation: "create_user",
-        username: "new.worker",
-        display_name: "Test worker",
-        password: "not-for-persistence",
-        role: "worker",
-        company_id: company,
+        password: "private-password",
       }),
     }),
-    env,
-    fetcher,
+    {
+      SUPABASE_URL: "https://test.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "server-test",
+    },
+    async () => {
+      calls++;
+      return json({});
+    },
   );
-  assert.equal(res.status, 503);
-  assert.equal(
-    calls.at(-1).url,
-    env.SUPABASE_URL + "/auth/v1/admin/users/" + employee,
-  );
-  assert.equal(calls.at(-1).opts.method, "DELETE");
-  assert.ok(!(await res.text()).includes("not-for-persistence"));
+  assert.equal(r.status, 410);
+  assert.equal(calls, 0);
+  assert.ok(!(await r.text()).includes("private-password"));
 });
 
 test("sheet bridge accepts permitted planning proposals and rejects finance in the operations release", async () => {

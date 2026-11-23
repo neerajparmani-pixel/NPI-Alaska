@@ -139,7 +139,7 @@ test("missing backend upgrade blocks the changed workflow", async ({
   await page.locator("#username").fill("alex");
   await page.locator("#password").fill("fictional-password");
   await page.locator("#login-form button[type=submit]").click();
-  await expect(page.locator("#feedback")).toContainText("migration 007");
+  await expect(page.locator("#feedback")).toContainText("migration 008");
   await expect(page.locator("[data-action=visit-new]")).toHaveCount(0);
 });
 test("storage failure is explicit and never claims the photo is saved on the device", async ({

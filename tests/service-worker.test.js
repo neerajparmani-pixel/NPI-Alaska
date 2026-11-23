@@ -64,7 +64,7 @@ test("essential cache failure rejects installation and removes the incomplete ca
   let install;
   w.handlers.install({ waitUntil: (p) => (install = p) });
   await assert.rejects(install, /Core missing/);
-  assert.deepEqual(w.deleted, ["npi-live-v3.1.0"]);
+  assert.deepEqual(w.deleted, ["npi-live-v3.2.0"]);
 });
 test("private evidence and API requests are never handled by the shell cache", () => {
   const w = worker();

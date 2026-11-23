@@ -124,11 +124,16 @@ export class LiveAPI {
       : username.toLowerCase() + "@" + config.usernameDomain;
     try {
       this.remember(
-        await this.request("/auth/v1/token?grant_type=password", {
-          method: "POST",
-          body: { email, password },
-          authenticated: false,
-        }),
+        username.includes("@")
+          ? await this.request("/auth/v1/token?grant_type=password", {
+              method: "POST",
+              body: { email, password },
+              authenticated: false,
+            })
+          : await this.invitation("login", {
+              username: username.toLowerCase(),
+              password,
+            }),
       );
       const status = await this.accountStatus();
       if (status.status !== "approved") return { accountStatus: status };
@@ -140,6 +145,7 @@ export class LiveAPI {
       this.session = null;
       this.sessionEpoch++;
       if (this.rememberOnDevice) this.bridge.clear();
+      if (e.message.includes("migration 008")) throw e;
       throw Error(
         e.message.includes("profile")
           ? "Your login is valid, but an active NPI profile has not been assigned."
@@ -229,17 +235,60 @@ export class LiveAPI {
       body: { operation, ...body },
     });
   }
-  snapshot(stage = "all", workId = null) {
-    return this.request("/rest/v1/rpc/npi_live_snapshot", {
+  async snapshot(stage = "all", workId = null) {
+    const snapshot = await this.request("/rest/v1/rpc/npi_live_snapshot", {
       method: "POST",
       body: { p_stage: stage, p_work_id: workId },
     });
+    if (snapshot.profile.role !== "worker") {
+      snapshot.accounts = await this.request(
+        "/rest/v1/rpc/npi_people_context",
+        { method: "POST", body: {} },
+      );
+      if (snapshot.accounts.release !== "3.2.0")
+        throw Error(
+          "Backend upgrade required: apply migration 008 before v3.2.0.",
+        );
+      snapshot.people = snapshot.accounts.people;
+    }
+    return snapshot;
   }
   action(action, body, requestId = crypto.randomUUID()) {
     return this.request("/rest/v1/rpc/npi_live_action", {
       method: "POST",
       body: { p_action: action, p_body: body, p_request: requestId },
     });
+  }
+  reportStart(filter, request) {
+    return this.request("/rest/v1/rpc/npi_report_start", {
+      method: "POST",
+      body: { p_filter: filter, p_request: request },
+    });
+  }
+  reportPage(id, page) {
+    return this.request("/rest/v1/rpc/npi_report_page", {
+      method: "POST",
+      body: { p_run: id, p_page: page },
+    });
+  }
+  reportEvidence(id, ids) {
+    return this.request("/rest/v1/rpc/npi_report_evidence", {
+      method: "POST",
+      body: { p_run: id, p_ids: ids },
+    });
+  }
+  async resetOwnPassword(token, password) {
+    await this.request("/auth/v1/user", {
+      method: "PUT",
+      body: { password },
+      authenticated: false,
+      headers: { Authorization: "Bearer " + token },
+    });
+    await this.request("/auth/v1/logout?scope=global", {
+      method: "POST",
+      authenticated: false,
+      headers: { Authorization: "Bearer " + token },
+    }).catch(() => {});
   }
   resetPassword(id, password) {
     return this.request("/functions/v1/" + config.adminFunction, {
@@ -330,15 +379,15 @@ export class LiveAPI {
         method: "POST",
         body: { p_work: workId },
       });
-      if (field.visits.release !== "3.1.0")
+      if (field.visits.release !== "3.2.0")
         throw Error(
-          "Backend upgrade required: apply migration 007 before using v3.1.0.",
+          "Backend upgrade required: apply migration 008 before using v3.2.0.",
         );
       return field;
     } catch (e) {
       if (e.status === 404)
         throw Error(
-          "v3.1.0 backend upgrade is required. Ask the NPI owner to apply migration 007 after 006.",
+          "v3.2.0 backend upgrade is required. Ask the NPI owner to apply migration 008 after 007.",
         );
       throw e;
     }

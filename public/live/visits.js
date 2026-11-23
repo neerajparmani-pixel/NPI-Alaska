@@ -1,3 +1,4 @@
+import { config } from "./config.js";
 import { photoStore } from "./recovery.js";
 import { distanceMetres } from "./field-domain.js";
 // Worker-led visits reuse the canonical forms, feedback and attendance owners.
@@ -401,10 +402,13 @@ export class VisitFeatures {
         const status = document.querySelector("#snow-reading");
         status.textContent = "Reading photo…";
         try {
-          const r = await this.c.api.request("/functions/v1/npi-admin", {
-            method: "POST",
-            body: { operation: "snow_read", evidence_id: id },
-          });
+          const r = await this.c.api.request(
+            "/functions/v1/" + config.adminFunction,
+            {
+              method: "POST",
+              body: { operation: "snow_read", evidence_id: id },
+            },
+          );
           f.elements.snow_inches.value = r.inches;
           f.elements.measurement_source.value = "automatic-confirmed";
           f.elements.measurement_confirmed.checked = false;

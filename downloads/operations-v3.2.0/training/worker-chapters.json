@@ -1,0 +1,62 @@
+[
+  {
+    "start": 0,
+    "title": "Create your own account",
+    "duration": 14.9578231292517
+  },
+  {
+    "start": 14.9578231292517,
+    "title": "Verify email and await approval",
+    "duration": 13.367256235827664
+  },
+  {
+    "start": 28.325079365079365,
+    "title": "Company account",
+    "duration": 13.100226757369613
+  },
+  {
+    "start": 41.42530612244898,
+    "title": "Start a visit",
+    "duration": 11.28907029478458
+  },
+  {
+    "start": 52.71437641723356,
+    "title": "Before photos",
+    "duration": 18.23183673469388
+  },
+  {
+    "start": 70.94621315192744,
+    "title": "Device recovery",
+    "duration": 20.623492063492062
+  },
+  {
+    "start": 91.5697052154195,
+    "title": "Confirm snow depth",
+    "duration": 20.41451247165533
+  },
+  {
+    "start": 111.98421768707483,
+    "title": "Check in with GPS",
+    "duration": 12.252698412698413
+  },
+  {
+    "start": 124.23691609977324,
+    "title": "Add another service",
+    "duration": 12.542947845804989
+  },
+  {
+    "start": 136.77986394557823,
+    "title": "Report an issue",
+    "duration": 14.505034013605442
+  },
+  {
+    "start": 151.28489795918367,
+    "title": "After photos and checkout",
+    "duration": 12.58938775510204
+  },
+  {
+    "start": 163.87428571428572,
+    "title": "Submit for review",
+    "duration": 15.840181405895692
+  }
+]

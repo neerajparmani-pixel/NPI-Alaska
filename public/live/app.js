@@ -1,3 +1,5 @@
+import { AccountFeatures, showAccountFlow } from "./accounts.js";
+import { ReportFeatures } from "./reports.js";
 import { photoStore } from "./recovery.js";
 import { distanceMetres } from "./field-domain.js";
 import { VisitFeatures } from "./visits.js";
@@ -105,6 +107,8 @@ const visits = new VisitFeatures(() => ({
     await load();
   },
 }));
+const accountFeatures = new AccountFeatures(() => features.c);
+const reports = new ReportFeatures(() => features.c);
 const person = (x) => data.people.find((p) => p.id === x),
   site = (x) => data.sites.find((s) => s.id === x),
   task = (x) => data.tasks.find((t) => t.id === x),
@@ -213,10 +217,11 @@ function nav() {
       ];
 }
 function login(error = "") {
+  reports.clear();
   opsData = { contracts: [], scopes: [], invitations: [] };
   document.body.dataset.role = "";
   document.title = "Sign in · Alaska NPI";
-  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="./brand-logo.webp" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Company username or admin email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<label class="taskline"><input name="remember_device" type="checkbox"> Keep me signed in on this personal device</label><button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access or a password reset? Contact your company administrator. Use this option only on your own device. Original work records stay in Supabase.</p></div></main></div>`;
+  app.innerHTML = `<div class="login-layout"><section class="login-brand-panel" aria-label="NPI identity"><p class="login-wordmark">NPI / ALASKA OPERATIONS</p><div class="login-emblem"><img class="brand-image login" src="./brand-logo.webp" alt="NPI company emblem"></div><div class="login-brand-copy"><p class="eyebrow">PERFORMANCE · POWER · PRECISION</p><h2><span>Every site.</span> <span>Every shift.</span> <span>Accounted for.</span></h2><p>Work records, hours and verification in one place.</p></div></section><main id="main" class="login-main"><div class="login-form-wrap"><h1>Welcome to Alaska NPI</h1><p>Sign in with your company account.</p><form id="login-form" class="live-form" novalidate><div class="field"><label for="username">Username or email</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password"></div>${button("Show password", "show-password")}<label class="taskline"><input name="remember_device" type="checkbox"> Keep me signed in on this personal device</label><button class="btn primary" type="submit">Sign in</button><p id="feedback" class="live-feedback error" role="alert">${esc(error)}</p></form><p class="small muted">Need access? Ask your administrator for an invitation. Use remembered sign-in only on your own device.</p><p><a href="#forgot-password">Forgot password?</a> · <a href="#resend-verification">Resend verification email</a></p></div></main></div>`;
 }
 function pendingAccount(status) {
   accountState = status;
@@ -226,6 +231,7 @@ function pendingAccount(status) {
   const title =
     {
       pending: "Your account is awaiting approval",
+      "verify-email": "Verify your email before signing in",
       rejected: "Your registration was not approved",
       suspended: "Your account is paused",
       unassigned: "Account setup is incomplete",
@@ -275,7 +281,7 @@ function render() {
       hours: hoursView,
       detail: detailView,
       issues: () => features.issuesView(),
-      reports: () => visits.exceptionReport() + features.reports(),
+      reports: () => reports.view() + visits.exceptionReport(),
       notifications: () => features.notificationsView(),
     }[page] || workView
   )();
@@ -588,86 +594,7 @@ function companiesView() {
   );
 }
 function peopleView() {
-  const npi = data.profile.role === "npi";
-  const pendingWorkers = data.people.filter(
-    (p) => p.role === "worker" && p.account_status === "pending",
-  );
-  const accountButtons = (p) =>
-    p.role === "npi" || (!npi && p.role !== "worker")
-      ? "—"
-      : p.account_status === "pending" && npi
-        ? "Company approval pending"
-        : p.account_status === "pending"
-          ? button("Approve", "access-approve_worker", p.id, "primary") +
-            button("Reject", "access-reject_worker", p.id)
-          : button("Reset password", "reset-password", p.id) +
-            (p.account_status === "suspended"
-              ? button("Restore access", "access-restore_account", p.id)
-              : p.active
-                ? button("Pause access", "access-suspend_account", p.id)
-                : "");
-  return (
-    head(
-      npi ? "People & access" : "My team",
-      npi
-        ? "Invite subcontractor administrators. Each company manages its own workers."
-        : "Invite workers, approve registrations and manage your team.",
-      button(
-        npi ? "Invite subcontractor admin" : "Invite workers",
-        "new-invitation",
-        "",
-        "primary",
-      ),
-    ) +
-    panel(
-      "Pending workers",
-      pendingWorkers.length
-        ? table(
-            ["Worker", "Company", "Username", "Action"],
-            pendingWorkers.map((p) => [
-              esc(p.display_name),
-              esc(company(p.company_id)?.name),
-              esc(p.username),
-              accountButtons(p),
-            ]),
-          )
-        : "<p>No worker registrations are waiting for approval.</p>",
-    ) +
-    panel(
-      npi ? "Account register" : "Team accounts",
-      table(
-        ["Person", "Company", "Username", "Role", "Status", "Action"],
-        data.people.map((p) => [
-          esc(p.display_name),
-          esc(company(p.company_id)?.name || "NPI"),
-          esc(p.username),
-          roles[p.role],
-          esc(p.account_status || (p.active ? "approved" : "paused")),
-          accountButtons(p),
-        ]),
-      ),
-    ) +
-    panel(
-      "Invitation links",
-      table(
-        ["Company", "Access", "Expires", "Status", "Action"],
-        opsData.invitations.map((i) => [
-          esc(company(i.company_id)?.name),
-          i.role === "sub" ? "Subcontractor admin" : "Worker signup",
-          esc(timestamp(i.expires_at)),
-          i.revoked
-            ? "Disabled"
-            : Date.parse(i.expires_at) < Date.now()
-              ? "Expired"
-              : Number(i.uses) >= i.max_uses
-                ? "Used / full"
-                : "Active",
-          !i.revoked ? button("Disable link", "revoke-invitation", i.id) : "—",
-        ]),
-      ),
-    ) +
-    '<p class="small muted">Links expire after 7 days. Admin invitations work once; worker signup links allow up to 100 registrations. A worker’s access needs company approval.</p>'
-  );
+  return accountFeatures.view();
 }
 function contractsView() {
   const npi = data.profile.role === "npi";
@@ -760,7 +687,13 @@ function sheetView() {
 }
 function settingsView() {
   return (
-    "<h1>Workspace settings</h1><p class=small>Operations v3.1.0 · Backend migration 007</p>" +
+    "<h1>Workspace settings</h1><p class=small>Operations v3.2.0 · Backend migration 008</p>" +
+    (data.profile.role === "npi"
+      ? panel(
+          "Management spreadsheet",
+          `<p>Last successful sync: ${esc(timestamp(data.accounts?.sync?.last_success_at))}</p><p>${esc(data.accounts?.sync?.message || "Run Refresh management workbook to establish sync status.")}</p><p>Seven management tabs. Legacy tabs can be hidden without deleting data.</p><a href="https://docs.google.com/spreadsheets/d/${config.spreadsheetId}/edit" class="btn" target="_blank" rel="noopener noreferrer">Open workbook</a>`,
+        )
+      : "") +
     visits.catalogue() +
     features.settings() +
     panel(
@@ -788,7 +721,7 @@ function settingsView() {
     ) +
     panel(
       "Your account",
-      `<p>${esc(data.profile.display_name)} · ${esc({ npi: "NPI Admin", sub: "Subcontractor Admin", worker: "Worker" }[data.profile.role])}</p><p>Sign in again after reloading. Your saved work remains in the shared database.</p>`,
+      `<p>${esc(data.profile.display_name)} · ${esc({ npi: "NPI Admin", sub: "Subcontractor Admin", worker: "Worker" }[data.profile.role])}</p><p>Your password stays private.</p><a href="#forgot-password">Reset your own password</a>`,
     ) +
     (data.profile.role === "npi"
       ? `<details class="sample-tools"><summary>Connection details</summary><p>Database refreshed ${esc(timestamp(latest))}.</p><p>${data.changes.length ? "Latest spreadsheet proposal received " + esc(timestamp(data.changes[0].received_at)) + "." : "No spreadsheet proposals received yet."}</p><a class="live-map" href="https://docs.google.com/spreadsheets/d/${config.spreadsheetId}/edit" target="_blank" rel="noopener noreferrer">Open management workbook</a></details>`
@@ -1071,30 +1004,14 @@ async function operation(action, body) {
   return result;
 }
 function inviteForm() {
-  if (data.profile.role === "npi" && !data.companies.some((c) => c.active)) {
-    message("Add the subcontractor company first.");
-    return;
-  }
-  form(
-    "Invite " +
-      (data.profile.role === "npi" ? "subcontractor administrator" : "workers"),
-    "invitation",
-    data.profile.role === "npi"
-      ? field(
-          "company_id",
-          "Subcontractor",
-          "select",
-          "",
-          options(data.companies.filter((c) => c.active)),
-        ) +
-          "<p>This single-use link lets the subcontractor administrator choose their own username and password. They then invite their workers.</p>"
-      : "<p>This link belongs to your company. Workers register themselves and await your approval. It expires after 7 days.</p>",
-  );
+  return accountFeatures.inviteForm();
 }
 const actions = {
   upload: () => features.openUploads(job()),
   ...features.actions(),
   ...visits.actions(),
+  ...accountFeatures.actions(),
+  ...reports.actions(),
   "new-invitation": inviteForm,
   "new-contract": () =>
     form(
@@ -1214,19 +1131,9 @@ const actions = {
   },
   close: () => close(),
   discard: () => close(true),
-  "reset-password": (el) =>
-    form(
-      "Reset company account password",
-      "reset_password",
-      "<p>This replaces the account password. Share the new password privately.</p>" +
-        field(
-          "password",
-          "New temporary password (12–72 characters)",
-          "password",
-        ) +
-        button("Show temporary password", "show-staff-password"),
-      el.dataset.id,
-    ),
+  "reset-password": () => {
+    location.hash = "forgot-password";
+  },
   "new-company": companyForm,
   "new-site": siteForm,
   "new-task": taskForm,
@@ -1357,7 +1264,7 @@ function validateForm(f, action) {
     {
       "ops:create_contract": ["name"],
       "ops:assign_scope": ["contract_id", "company_id", "site_id"],
-      invitation: ["company_id"],
+      invitation: ["email", "role"],
       save_company: ["name"],
       save_site: ["name"],
       save_task: ["name"],
@@ -1530,6 +1437,18 @@ document.addEventListener("click", (e) => {
 document.addEventListener("submit", (e) => {
   e.preventDefault();
   const f = e.target;
+  if (f.id === "complete-report-filters") {
+    guarded(async () => {
+      try {
+        await reports.generate(new FormData(f));
+      } catch (error) {
+        const e = document.querySelector("#report-error");
+        if (e) e.textContent = error.message;
+        else throw error;
+      }
+    });
+    return;
+  }
   if (f.id === "report-filters") {
     location.hash =
       "reports?" +
@@ -1615,6 +1534,10 @@ document.addEventListener("submit", (e) => {
       return;
     }
     if (action === "invitation") {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email || ""))
+        throw Error("Enter the person's email.");
+      if (body.role !== "npi" && !body.company_id)
+        throw Error("Select the subcontractor company.");
       let token = f.dataset.token;
       if (!token) {
         token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -1634,10 +1557,13 @@ document.addEventListener("submit", (e) => {
         .join("");
       await operation("create_invite", {
         company_id:
-          data.profile.role === "npi"
-            ? body.company_id
-            : data.profile.company_id,
-        role: data.profile.role === "npi" ? "sub" : "worker",
+          body.role === "npi"
+            ? null
+            : data.profile.role === "npi"
+              ? body.company_id
+              : data.profile.company_id,
+        role: body.role,
+        email: body.email,
         token_hash: hash,
       });
       const url = location.origin + location.pathname + "#join=" + token;
@@ -1774,6 +1700,14 @@ dialog.addEventListener("keydown", (e) => {
   }
 });
 document.addEventListener("change", (e) => {
+  if (e.target.id === "role" && document.querySelector("[data-invite-company]"))
+    document.querySelector("[data-invite-company]").hidden =
+      e.target.value === "npi";
+  if (e.target.dataset.evidenceSelect) {
+    if (e.target.checked) reports.chosen.add(e.target.dataset.evidenceSelect);
+    else reports.chosen.delete(e.target.dataset.evidenceSelect);
+  }
+
   if (e.target.name === "use_recorded")
     $("#claimed_hours").disabled = e.target.checked;
   if (e.target.name === "accept_claimed")
@@ -1783,6 +1717,15 @@ document.addEventListener("change", (e) => {
   if (e.target.id === "live-nav") location.hash = e.target.value;
 });
 window.addEventListener("hashchange", () => {
+  if (
+    ["#forgot-password", "#resend-verification"].includes(location.hash) ||
+    location.hash.startsWith("#verify=") ||
+    location.hash.includes("type=recovery")
+  ) {
+    guarded(enterAccountRoute);
+    return;
+  }
+
   const workLink = /^#work=([0-9a-f-]{36})$/i.exec(location.hash);
   if (workLink) {
     if (data) {
@@ -1865,6 +1808,32 @@ actions["apply-update"] = async () => {
   applyUpdateRequested = true;
   waitingWorker?.postMessage({ type: "APPLY_UPDATE" });
 };
+async function enterAccountRoute() {
+  const fragment = location.hash;
+  const recovery = new URLSearchParams(fragment.slice(1));
+  const mode = fragment.startsWith("#verify=")
+    ? "verify"
+    : fragment === "#forgot-password"
+      ? "recover"
+      : fragment === "#resend-verification"
+        ? "resend"
+        : "reset";
+  data = null;
+  accountState = null;
+  if (mode === "reset") {
+    api.session = null;
+    api.bridge.clear();
+  }
+  return showAccountFlow({
+    mode,
+    token: fragment.slice(8),
+    api,
+    root: app,
+    prepareLogin: login,
+    escape: esc,
+    recovery: Object.fromEntries(recovery),
+  });
+}
 async function resumeSession() {
   try {
     const status = await api.accountStatus();
@@ -1890,14 +1859,20 @@ async function resumeSession() {
     if (!api.session) {
       api.bridge.clear();
       login("Session expired. Sign in again.");
-    } else if (error.message.includes("migration 007")) login(error.message);
+    } else if (error.message.includes("migration 008")) login(error.message);
     else
       login(
         "Connection unavailable. Reconnect to restore your session. Device photos are retained.",
       );
   }
 }
-if (location.hash.startsWith("#join="))
+if (
+  ["#forgot-password", "#resend-verification"].includes(location.hash) ||
+  location.hash.startsWith("#verify=") ||
+  location.hash.includes("type=recovery")
+)
+  guarded(enterAccountRoute);
+else if (location.hash.startsWith("#join="))
   guarded(() => enterInvitation(location.hash.slice(6)));
 else if (api.session) guarded(resumeSession);
 else login();

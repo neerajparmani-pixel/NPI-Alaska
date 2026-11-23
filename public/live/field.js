@@ -208,7 +208,7 @@ export class FieldFeatures {
         .map((n) =>
           panel(
             n.title,
-            `<p>${esc(n.message)}</p><p>${esc(timestamp(n.created_at))} · ${n.read_at ? "Read" : "Unread"}</p>${n.work_id ? button("Open work", "open-work", n.work_id) : ""}`,
+            `<p>${esc(n.message)}</p><p>${esc(timestamp(n.created_at))} · ${n.read_at ? "Read" : "Unread"}</p>${n.work_id ? button("Open work", "open-work", n.work_id) : String(n.event_key || "").startsWith("account:") ? button("Review accounts", "goto", "people?tab=pending") : ""}`,
           ),
         )
         .join("") +

@@ -608,3 +608,17 @@
 .visit-service-card p {
   margin: 6px 0 10px;
 }
+
+/* Account tabs reuse the approved button and panel owners. */
+.account-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+#complete-report-filters {
+  align-items: end;
+}
+#report-progress {
+  min-height: 24px;
+}

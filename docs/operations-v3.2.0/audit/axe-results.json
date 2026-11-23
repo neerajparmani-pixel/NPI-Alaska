@@ -1,0 +1,177 @@
+[
+  {
+    "name": "01-worker-home",
+    "role": "worker",
+    "note": "Worker can start a visit without an assignment. Supplied site photo and current work remain available.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "02-site-service",
+    "role": "worker",
+    "note": "Site and service selection, optional crew disclosure and nearest-site suggestion.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "03-prepared-visit",
+    "role": "worker",
+    "note": "Short service cards and before-photo/start actions.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "04-direct-camera",
+    "role": "worker",
+    "note": "Direct camera capture with keep and retake; synthetic camera feed.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "05-snow-measurement",
+    "role": "worker",
+    "note": "Ruler photo, manual inches and explicit confirmation. Automatic reading is optional.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "06-reading-fallback",
+    "role": "worker",
+    "note": "Unavailable automatic reader leaves manual input usable and does not confirm a reading.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "07-issue-report",
+    "role": "worker",
+    "note": "Category, urgency and description use the established issue form.",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "19-private-signup",
+    "role": "worker",
+    "note": "Fixed invitation email/company/role, privately chosen credentials and explicit verification/approval instructions.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "20-email-verified-pending",
+    "role": "worker",
+    "note": "Verified email does not grant work access: administrator approval remains required.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "08-company-review",
+    "role": "sub",
+    "note": "Company reviews line/sub-line quantities and original versus claimed hours.",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "09-private-photo",
+    "role": "sub",
+    "note": "Same private viewing file available to the company; original retained separately.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "10-npi-catalogue",
+    "role": "npi",
+    "note": "Contract line and sub-line configuration remains in NPI administration.",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "11-sub-line-configuration",
+    "role": "npi",
+    "note": "Parent line sets contract, service category and unit. Snow minimum/maximum bounds are explicit.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "12-notification-settings",
+    "role": "npi",
+    "note": "Separate recipient list, escalation and daily-summary control.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "13-npi-verification",
+    "role": "npi",
+    "note": "Exact claimed hours or reasoned correction; approval still follows company review.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "14-account-approvals",
+    "role": "npi",
+    "note": "Verified registrations remain pending until their responsible administrator approves. Multiple NPI and company admins are supported.",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "15-confirm-admin-access",
+    "role": "npi",
+    "note": "The confirmation identifies the person and full NPI access before approval.",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "16-invite-person",
+    "role": "npi",
+    "note": "Email-bound, single-use invitation for an NPI or subcontractor administrator. Passwords are chosen privately by the recipient.",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "17-report-filters",
+    "role": "npi",
+    "note": "Complete database report filtered by Alaska date, company, site, worker, service and work status.",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  },
+  {
+    "name": "18-complete-report",
+    "role": "npi",
+    "note": "All matching snapshot rows are downloadable in CSV or Excel. PDF clearly identifies itself as a summary; evidence remains private.",
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious"
+      }
+    ]
+  }
+]

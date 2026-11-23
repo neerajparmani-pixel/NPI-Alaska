@@ -1,0 +1,42 @@
+[
+  {
+    "start": 0,
+    "title": "Company account",
+    "duration": 13.378866213151927
+  },
+  {
+    "start": 13.378866213151927,
+    "title": "Review when needed",
+    "duration": 14.098684807256236
+  },
+  {
+    "start": 27.477551020408164,
+    "title": "Invite and approve workers",
+    "duration": 16.385850340136056
+  },
+  {
+    "start": 43.863401360544216,
+    "title": "Inspect services and hours",
+    "duration": 13.12344671201814
+  },
+  {
+    "start": 56.98684807256235,
+    "title": "Inspect photos and issues",
+    "duration": 12.484897959183673
+  },
+  {
+    "start": 69.47174603174602,
+    "title": "Forward or return",
+    "duration": 16.0259410430839
+  },
+  {
+    "start": 85.49768707482993,
+    "title": "Company reports",
+    "duration": 14.9578231292517
+  },
+  {
+    "start": 100.45551020408163,
+    "title": "Recipients and daily summary",
+    "duration": 16.200090702947847
+  }
+]

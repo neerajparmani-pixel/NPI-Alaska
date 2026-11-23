@@ -1,0 +1,193 @@
+WEBVTT
+
+1
+00:00:00.300 --> 00:00:05.136
+After approval, sign in with your own username or email and password.
+
+5
+00:00:05.136 --> 00:00:10.953
+This recording uses fictional records, simulated email, location and a test camera.
+
+9
+00:00:10.953 --> 00:00:12.635
+No live work is created.
+
+13
+00:00:13.435 --> 00:00:20.159
+People and access supports multiple NPI administrators and multiple administrators per subcontractor.
+
+17
+00:00:20.159 --> 00:00:22.423
+Choose the role and invited email.
+
+21
+00:00:22.423 --> 00:00:25.818
+Select a company for a subcontractor administrator.
+
+25
+00:00:25.818 --> 00:00:28.615
+Each person creates their own credentials.
+
+29
+00:00:29.415 --> 00:00:34.122
+Pending approvals shows registrations separately from active people.
+
+33
+00:00:34.122 --> 00:00:37.653
+Inspect the email and role, then approve or reject.
+
+37
+00:00:37.653 --> 00:00:42.846
+A new NPI administrator must be approved by the inviting NPI administrator.
+
+41
+00:00:42.846 --> 00:00:45.546
+Access changes are recorded in history.
+
+45
+00:00:46.346 --> 00:00:50.953
+Set up the main contract, authorised sites and subcontractor access once.
+
+49
+00:00:50.953 --> 00:00:53.415
+Invite the subcontractor administrator.
+
+53
+00:00:53.415 --> 00:00:58.275
+Their approved workers can then start work without waiting for an assignment.
+
+57
+00:00:59.075 --> 00:01:03.390
+Settings holds each contract’s line items and sub-line items.
+
+61
+00:01:03.390 --> 00:01:08.130
+Codes stay in management records; workers see simple service names.
+
+65
+00:01:08.130 --> 00:01:13.506
+New snow services stay in draft until bands cover zero upwards without gaps.
+
+69
+00:01:13.506 --> 00:01:16.548
+The Below 2 inches band is created for you.
+
+73
+00:01:16.548 --> 00:01:20.580
+Activate the parent after completing the remaining bands.
+
+77
+00:01:20.580 --> 00:01:22.207
+No prices are included.
+
+81
+00:01:23.007 --> 00:01:27.867
+Use the overview and NPI verification queue to review submitted work.
+
+85
+00:01:27.867 --> 00:01:29.698
+The company reviews first.
+
+89
+00:01:29.698 --> 00:01:36.178
+Current activity, open issues and exceptions are visible without creating daily assignments.
+
+93
+00:01:36.978 --> 00:01:42.878
+Inspect the same crew, services, quantities and snow evidence that the company reviewed.
+
+97
+00:01:42.878 --> 00:01:46.432
+Recorded, claimed and accepted hours remain separate.
+
+101
+00:01:46.432 --> 00:01:50.254
+Multiple service lines do not multiply worker attendance.
+
+105
+00:01:51.054 --> 00:01:53.247
+Acknowledge the below-two-inch flag.
+
+109
+00:01:53.247 --> 00:01:57.329
+Accept the exact claimed hours or enter a correction with a reason.
+
+113
+00:01:57.329 --> 00:01:59.826
+Return incomplete records to the company.
+
+117
+00:01:59.826 --> 00:02:03.725
+Original photos, attendance and the review history are retained.
+
+121
+00:02:04.525 --> 00:02:10.614
+Generate a report for the selected period, company, site, worker, service and status.
+
+125
+00:02:10.614 --> 00:02:15.485
+CSV and Excel contain every matching row, beyond the on-screen page.
+
+129
+00:02:15.485 --> 00:02:21.574
+Recorded, claimed and approved hours remain separate and are counted once per worker.
+
+133
+00:02:22.374 --> 00:02:24.980
+Download a PDF summary for sharing.
+
+137
+00:02:24.980 --> 00:02:27.587
+Full detail stays in CSV and Excel.
+
+141
+00:02:27.587 --> 00:02:31.608
+Evidence reports reference authenticated work records.
+
+145
+00:02:31.608 --> 00:02:35.853
+Select up to twenty originals for a private evidence ZIP.
+
+149
+00:02:35.853 --> 00:02:40.247
+Exported report links never expose permanent public photos.
+
+153
+00:02:41.047 --> 00:02:43.700
+The management workbook keeps seven tabs.
+
+157
+00:02:43.700 --> 00:02:46.158
+Supabase remains the primary database.
+
+161
+00:02:46.158 --> 00:02:52.757
+Permitted site and unstarted planning edits return for NPI review; hours and approvals stay protected.
+
+165
+00:02:52.757 --> 00:02:55.474
+Settings shows the latest successful sync.
+
+169
+00:02:55.474 --> 00:03:00.650
+Hide recognised legacy tabs only after a successful refresh; no data is deleted.
+
+173
+00:03:01.450 --> 00:03:06.647
+Configure notification recipients and optional daily summaries in Settings.
+
+177
+00:03:06.647 --> 00:03:12.191
+A verified email sender is required for new registrations and password recovery.
+
+181
+00:03:12.191 --> 00:03:14.201
+Existing users remain active.
+
+185
+00:03:14.201 --> 00:03:20.368
+Apply migration eight, update the function and workbook script, then deploy the frontend.
+
+189
+00:03:20.368 --> 00:03:24.873
+Test real email and GPS before using the upgrade for live shifts.

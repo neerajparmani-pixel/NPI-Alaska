@@ -1,12 +1,14 @@
-# Alaska NPI Operations — v3.1.0
+# Alaska NPI Operations — v3.2.0
 
-**[Download the complete v3.1.0 ZIP](https://raw.githubusercontent.com/neerajparmani-pixel/NPI-Alaska/main/downloads/NPI-Alaska-Operations-v3.1.0.zip)** and open **START-HERE.html** after extraction. Includes three narrated walkthroughs, captions, full sources and audit results.
+**[Download the complete v3.2.0 ZIP](https://raw.githubusercontent.com/neerajparmani-pixel/NPI-Alaska/main/downloads/NPI-Alaska-Operations-v3.2.0.zip)** and open **START-HERE.html** after extraction. Includes three narrated walkthroughs, captions, full test sources and audit results.
 
-NPI invites subcontractors → companies invite/approve workers → workers start visits at authorised sites without daily assignments → GPS, services, camera/file photos and hours → company approval → NPI verification. Exactly three roles; approved layout, transparent logo and all four site photos retained. Billing is excluded.
+Multiple NPI admins and subcontractor admins use individual invitation accounts. Each person chooses a private password, verifies email and awaits approval. NPI invites NPI/company admins; companies invite their own workers. Workers start visits without daily assignments. Company review precedes NPI verification. The approved navy/gold layout, transparent emblem and four site photos remain. Billing is excluded.
 
-Existing v3 installation: apply **007 only**, update **npi-admin** and **LiveSync.gs**, then deploy **frontend/** contents to the existing Cloudflare Pages project. Older installations follow the [version-specific upgrade guide](setup/OPERATIONS-3.1-START-HERE.md). Preserve accounts, workbook and domain. Pending photos recover on the same device/account; optional remembered sessions are for personal devices. Below-two-inch work is flagged at both reviews.
+Reports export every matching authorised row as CSV or real Excel, plus a PDF summary and selected private evidence originals. Recorded, claimed and approved hours remain separate. Seven spreadsheet tabs mirror management records and controlled planning proposals; private files stay in Supabase Storage.
 
-Run locally with `npm ci` and `npm run dev`; the current app is at `/live/` and requires the configured backend. `npm test` and `npm run test:e2e` use isolated/mocked services. Build the release with `npm run package:release` after generating its media/audit outputs. Local checks do not establish production cloud acceptance.
+Existing installation: apply **008 only after 007**, replace the self-contained Edge Function, update LiveSync.gs and deploy frontend/ contents to the same Cloudflare Pages project. **A verified email sender is required for new signup and recovery.** This package is configured for your existing swift-processor URL. Preserve current logins, work records, workbook and domain. See the [upgrade guide](setup/OPERATIONS-3.2-START-HERE.md).
+
+Run `npm ci`, `npm test` and `npm run test:e2e`. Tests use isolated SQL and intercepted fictional services. `npm run package:release` assembles the release after media/audit outputs are generated. Local verification does not establish production cloud acceptance.
 
 ---
 

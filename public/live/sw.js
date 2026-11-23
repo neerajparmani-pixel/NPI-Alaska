@@ -1,4 +1,4 @@
-const CACHE = "npi-live-v3.1.0";
+const CACHE = "npi-live-v3.2.0";
 const ESSENTIALS = [
   "./",
   "./index.html",
@@ -10,6 +10,8 @@ const ESSENTIALS = [
   "./field-domain.js",
   "./photos.js",
   "./enrollment.js",
+  "./accounts.js",
+  "./reports.js",
   "./config.js",
   "./style.css",
   "../three-view/style.css",
@@ -29,7 +31,11 @@ const OPTIONAL = [
   "../three-view/fonts/body-600.woff2",
   "../three-view/fonts/body-700.woff2",
 ];
-const LAZY = ["./vendor/image-decoders.js"];
+const LAZY = [
+  "./vendor/image-decoders.js",
+  "./vendor/report-tools.js",
+  "./vendor/report-font.ttf",
+];
 self.addEventListener("install", (e) =>
   e.waitUntil(
     (async () => {

@@ -32,7 +32,7 @@ const field = (a, b, r) => rpc("npi_field_action", a, b, r);
 const live = (a, b, r) => rpc("npi_live_action", a, b, r);
 before(async () => {
   await db.exec(
-    "create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema storage;create table auth.users(id uuid primary key,email text,raw_app_meta_data jsonb default '{}');create function auth.uid()returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth,storage to anon,authenticated,service_role;grant select on auth.users to service_role;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text,owner_id text,metadata jsonb);alter table storage.objects enable row level security;grant select,insert on storage.objects to authenticated;",
+    "create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema storage;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,raw_app_meta_data jsonb default '{}');create function auth.uid()returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth,storage to anon,authenticated,service_role;grant select on auth.users to service_role;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text,owner_id text,metadata jsonb);alter table storage.objects enable row level security;grant select,insert on storage.objects to authenticated;",
   );
   for (const name of [
     "001-foundation",
@@ -41,6 +41,7 @@ before(async () => {
     "005-field-operations",
     "006-worker-led-visits",
     "007-v3-1-hardening",
+    "008-v3-2-accounts-reports",
   ])
     await db.exec(await readFile("setup/supabase/" + name + ".sql", "utf8"));
   await db.query("insert into auth.users(id)select unnest($1::uuid[])", [
@@ -321,7 +322,7 @@ test("explicit missing-evidence reason is reported per worker and both admins ac
   await live("submit_hours", { id: v, version: w.version, use_recorded: true });
   await as(sub);
   const context = (await db.query("select npi_visit_context()v")).rows[0].v;
-  assert.equal(context.release, "3.1.0");
+  assert.equal(context.release, "3.2.0");
   assert.equal(context.exceptions[0].exception_visits, 1);
   assert.equal(context.exceptions[0].exception_percent, 100);
   w = await row();
@@ -535,6 +536,14 @@ test("all workbook table exports select and sort against the actual migrated sch
         const u = new URL(url);
         if (u.pathname.endsWith("/rpc/npi_sheet_hour_reviews"))
           return Response.json([]);
+        if (u.pathname.endsWith("/rpc/npi_sheet_people")) {
+          seen.push("npi_profiles");
+          return Response.json(
+            (await db.query("select npi_sheet_people(0)r")).rows.map(
+              (x) => x.r,
+            ),
+          );
+        }
         assert.match(u.pathname, /^\/rest\/v1\/npi_[a-z_]+$/);
         const name = u.pathname.split("/").at(-1),
           select = u.searchParams.get("select"),

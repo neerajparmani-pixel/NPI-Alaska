@@ -102,7 +102,7 @@ test("automatic reading errors keep manual entry usable and never confirm measur
   await act(page, "refresh");
   await act(page, "visit-line");
   await page.locator("#ruler_evidence").selectOption(state.evidence[0].id);
-  await page.route("**/functions/v1/npi-admin", (r) =>
+  await page.route(/\/functions\/v1\/(npi-admin|swift-processor)$/, (r) =>
     r.fulfill({
       status: 503,
       contentType: "application/json",

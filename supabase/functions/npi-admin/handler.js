@@ -1,3 +1,4 @@
+import { handleAccounts } from "./accounts.js";
 const json = (body, status = 200, origin = "https://alaska.npi6030.com") =>
   new Response(JSON.stringify(body), {
     status,
@@ -75,7 +76,15 @@ export async function handleAdmin(request, env, fetcher = fetch) {
     if (!res.ok) {
       const error = Error("Server data operation failed");
       error.detail = data.message || "";
-      error.status = res.status;
+      error.status = [
+        "42703",
+        "42P01",
+        "42883",
+        "PGRST202",
+        "PGRST204",
+      ].includes(data.code)
+        ? 503
+        : res.status;
       throw error;
     }
     return data;
@@ -84,164 +93,31 @@ export async function handleAdmin(request, env, fetcher = fetch) {
     if (!body || typeof body !== "object" || Array.isArray(body))
       return json({ error: "Invalid request" }, 400, allowed);
 
-    if (["invite_preview", "register_invitation"].includes(body.operation)) {
-      const kind =
-        body.operation === "invite_preview" ? "preview" : "registration";
-      const globalAllowed = await service("/rest/v1/rpc/npi_public_gate", {
-        method: "POST",
-        body: { p_bucket: "installation", p_kind: "global" },
-      });
-      if (globalAllowed !== true) {
-        const response = json(
-          { error: "Too many requests. Try again in a minute." },
-          429,
-          allowed,
-        );
-        response.headers.set("Retry-After", "60");
-        return response;
-      }
-
-      if (typeof body.token !== "string" || !/^[0-9a-f]{64}$/.test(body.token))
-        return json(
-          {
-            error:
-              "This invitation is invalid or unavailable. Ask your company administrator for a new link.",
-          },
-          400,
-          allowed,
-        );
-      const hash = Array.from(
-        new Uint8Array(
-          await crypto.subtle.digest(
-            "SHA-256",
-            new TextEncoder().encode(body.token),
-          ),
-        ),
-      )
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-      if (
-        (await service("/rest/v1/rpc/npi_public_gate", {
-          method: "POST",
-          body: { p_bucket: hash, p_kind: kind },
-        })) !== true
-      ) {
-        const response = json(
-          { error: "Too many requests. Try again in a minute." },
-          429,
-          allowed,
-        );
-        response.headers.set("Retry-After", "60");
-        return response;
-      }
-      const rpc = (payload) =>
-        service("/rest/v1/rpc/npi_enroll", { method: "POST", body: payload });
-      if (body.operation === "invite_preview") {
-        try {
-          return json(
-            await rpc({ p_mode: "preview", p_hash: hash }),
-            200,
-            allowed,
-          );
-        } catch (error) {
-          if (!error.status || error.status >= 500) throw error;
-          return json(
-            {
-              error:
-                "This invitation is expired, disabled or full. Ask your company administrator for a new link.",
-            },
-            400,
-            allowed,
-          );
-        }
-      }
-      if (
-        !uuid(body.request_id) ||
-        typeof body.username !== "string" ||
-        !/^[a-z0-9][a-z0-9._-]{2,49}$/.test(body.username) ||
-        typeof body.display_name !== "string" ||
-        !body.display_name.trim() ||
-        body.display_name.length > 150 ||
-        typeof body.password !== "string" ||
-        body.password.length < 12 ||
-        new TextEncoder().encode(body.password).length > 72
-      )
-        return json(
-          {
-            error:
-              "Enter your full name, a username (3–50 lowercase letters/numbers) and a password of 12–72 characters.",
-          },
-          400,
-          allowed,
-        );
-      const attempt = crypto.randomUUID();
-      const common = {
-        p_hash: hash,
-        p_request: body.request_id,
-        p_attempt: attempt,
-      };
-      try {
-        const registration = await rpc({
-          ...common,
-          p_mode: "begin",
-          p_username: body.username,
-          p_name: body.display_name.trim(),
-        });
-        if (registration.complete)
-          return json({ status: registration.status }, 200, allowed);
-        let userId = registration.user_id;
-        if (!userId) {
-          const created = await service("/auth/v1/admin/users", {
-            method: "POST",
-            body: {
-              email: body.username + "@users.npi6030.com",
-              password: body.password,
-              email_confirm: true,
-              app_metadata: { npi_enrollment_id: body.request_id },
-            },
-          });
-          userId = created.id;
-          if (!uuid(userId)) throw Error("Identity could not be created");
-        }
-        return json(
-          await rpc({ ...common, p_mode: "finish", p_user: userId }),
-          200,
-          allowed,
-        );
-      } catch (error) {
-        if (!error.status || error.status >= 500)
-          logFault(body.operation, error.status || 500);
-        // Release only this attempt. An uncertain Auth result remains recoverable by its server-owned metadata.
-        await rpc({ ...common, p_mode: "release" }).catch(() => {});
-        const messages = {
-          "Username unavailable":
-            "Registration could not be completed with these details. Sign in if already registered, or contact your administrator.",
-          "Registration busy":
-            "Registration is still processing. Wait 90 seconds and retry this form, or try signing in.",
-          "Invitation unavailable":
-            "This invitation is expired, disabled or full. Ask your company administrator for a new link.",
-          "Registration changed":
-            "Registration details changed. Reopen the invitation link to start again.",
-        };
-        return json(
-          {
-            error:
-              messages[error.detail] ||
-              "Registration could not be completed with these details. Sign in if already registered, or contact your administrator.",
-          },
-          !error.status || error.status >= 500
-            ? 503
-            : error.detail === "Username unavailable" || error.status === 409
-              ? 409
-              : 400,
-          allowed,
-        );
-      }
-    }
+    const accountResponse = await handleAccounts({
+      body,
+      env,
+      fetcher,
+      service,
+      json,
+      allowed,
+      logFault,
+      requestId,
+    });
+    if (accountResponse) return accountResponse;
+    if (["create_user", "reset_password"].includes(body.operation))
+      return json(
+        {
+          error:
+            "Use invitation links and private password recovery. Administrators cannot set another person's password.",
+        },
+        410,
+        allowed,
+      );
     if (
       body.operation === "sheet_export" ||
       body.operation === "sheet_propose" ||
-      body.operation === "email_dispatch"
+      body.operation === "email_dispatch" ||
+      body.operation === "sheet_sync_status"
     ) {
       if (
         !(await sameSecret(
@@ -251,6 +127,20 @@ export async function handleAdmin(request, env, fetcher = fetch) {
         body.spreadsheetId !== env.NPI_SHEETS_ID
       )
         return json({ error: "Workbook authorization failed" }, 403, allowed);
+      if (body.operation === "sheet_sync_status") {
+        if (typeof body.ok !== "boolean")
+          return json({ error: "Invalid sync status" }, 400, allowed);
+        await service("/rest/v1/rpc/npi_sheet_status", {
+          method: "POST",
+          body: {
+            p_ok: body.ok,
+            p_message: body.ok
+              ? "Workbook refreshed successfully"
+              : "Workbook refresh failed; review Apps Script execution log",
+          },
+        });
+        return json({ ok: true }, 200, allowed);
+      }
       if (body.operation === "email_dispatch") {
         if (!env.NPI_EMAIL_API_KEY || !env.NPI_EMAIL_FROM)
           return json(
@@ -326,7 +216,7 @@ export async function handleAdmin(request, env, fetcher = fetch) {
           "id,work_id,uploaded_by,path,kind,stage,preview_path,source,captured_at,filename,original_mime,bytes,issue_id,service_line_id,created_at",
         npi_work_members: "work_id,worker_id",
         npi_invitations:
-          "id,company_id,role,created_by,created_at,expires_at,revoked,max_uses",
+          "id,company_id,role,created_by,created_at,expires_at,revoked,max_uses,invited_email",
         npi_issues:
           "id,work_id,reporter_id,category,urgency,description,status,owner_id,resolution,created_at,updated_at,version,escalated_at",
         npi_issue_comments: "id,issue_id,actor_id,body,created_at",
@@ -341,7 +231,8 @@ export async function handleAdmin(request, env, fetcher = fetch) {
         npi_contract_scopes: "id,contract_id,company_id,site_id,active",
         npi_audit: "id,actor_id,action,record_id,event_time",
         npi_profiles:
-          "id,company_id,username,display_name,role,active,account_status,access_version",
+          "id,company_id,username,display_name,role,active,account_status,access_version,invited_by,requires_email_verification",
+        npi_sync_status: "id,last_success_at,last_error_at,message",
         npi_sites:
           "id,name,address,timezone,photo_path,instructions,latitude,longitude,radius_metres,version",
         npi_tasks: "id,name,description,active,evidence_policy,version",
@@ -368,22 +259,27 @@ export async function handleAdmin(request, env, fetcher = fetch) {
                 method: "POST",
                 body: { p_offset: offset },
               })
-            : await service(
-                "/rest/v1/" +
-                  table +
-                  "?select=" +
-                  fields[table] +
-                  "&order=" +
-                  (table === "npi_work_members"
-                    ? "work_id,worker_id"
-                    : table === "npi_notification_settings"
-                      ? "scope"
-                      : table === "npi_ruler_claims"
-                        ? "evidence_id"
-                        : "id") +
-                  "&limit=1000&offset=" +
-                  offset,
-              );
+            : table === "npi_profiles"
+              ? await service("/rest/v1/rpc/npi_sheet_people", {
+                  method: "POST",
+                  body: { p_offset: offset },
+                })
+              : await service(
+                  "/rest/v1/" +
+                    table +
+                    "?select=" +
+                    fields[table] +
+                    "&order=" +
+                    (table === "npi_work_members"
+                      ? "work_id,worker_id"
+                      : table === "npi_notification_settings"
+                        ? "scope"
+                        : table === "npi_ruler_claims"
+                          ? "evidence_id"
+                          : "id") +
+                    "&limit=1000&offset=" +
+                    offset,
+                );
         return json({ rows, more: rows.length === 1000 }, 200, allowed);
       }
       const change = body.change;
@@ -593,133 +489,7 @@ export async function handleAdmin(request, env, fetcher = fetch) {
           }).catch(() => logFault("snow_finalize", 503));
       }
     }
-    if (!["create_user", "reset_password"].includes(body.operation))
-      return json({ error: "Unknown operation" }, 400, allowed);
-    const bearer = request.headers.get("authorization");
-    if (!bearer?.startsWith("Bearer "))
-      return json({ error: "Sign in required" }, 401, allowed);
-    const verified = await fetcher(env.SUPABASE_URL + "/auth/v1/user", {
-      headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: bearer },
-      signal: AbortSignal.timeout(25000),
-    });
-    if (!verified.ok) return json({ error: "Invalid session" }, 401, allowed);
-    const account = await verified.json();
-    if (!uuid(account.id))
-      return json({ error: "Invalid identity" }, 401, allowed);
-    const [profile] = await service(
-      "/rest/v1/npi_profiles?id=eq." +
-        account.id +
-        "&active=eq.true&select=role,company_id",
-    );
-    if (!profile || !["npi", "sub"].includes(profile.role))
-      return json({ error: "Administrator required" }, 403, allowed);
-    if (profile.role === "sub") {
-      const activeCompany = await service(
-        "/rest/v1/npi_companies?id=eq." +
-          profile.company_id +
-          "&active=eq.true&select=id",
-      );
-      if (!activeCompany.length)
-        return json({ error: "Active company required" }, 403, allowed);
-    }
-    if (body.operation === "reset_password") {
-      if (
-        !uuid(body.id) ||
-        typeof body.password !== "string" ||
-        body.password.length < 12 ||
-        new TextEncoder().encode(body.password).length > 72
-      )
-        return json(
-          { error: "Choose an account and a 12–72 character password" },
-          400,
-          allowed,
-        );
-      const [target] = await service(
-        "/rest/v1/npi_profiles?id=eq." + body.id + "&select=id,role,company_id",
-      );
-      if (
-        !target ||
-        target.role === "npi" ||
-        (profile.role === "sub" &&
-          (target.role !== "worker" ||
-            target.company_id !== profile.company_id))
-      )
-        return json({ error: "Account access denied" }, 403, allowed);
-      await service("/auth/v1/admin/users/" + target.id, {
-        method: "PUT",
-        body: { password: body.password },
-      });
-      await service("/rest/v1/npi_audit", {
-        method: "POST",
-        body: {
-          actor_id: account.id,
-          action: "reset_password",
-          record_id: target.id,
-        },
-      });
-      return json({ id: target.id }, 200, allowed);
-    }
-    if (
-      !/^[a-z0-9][a-z0-9._-]{2,49}$/.test(body.username || "") ||
-      typeof body.password !== "string" ||
-      body.password.length < 12 ||
-      new TextEncoder().encode(body.password).length > 72 ||
-      typeof body.display_name !== "string" ||
-      body.display_name.trim().length < 1 ||
-      body.display_name.length > 150 ||
-      !["sub", "worker"].includes(body.role) ||
-      !uuid(body.company_id)
-    )
-      return json(
-        {
-          error:
-            "Check username, name, company, role and password (12–72 characters)",
-        },
-        400,
-        allowed,
-      );
-    if (
-      profile.role === "sub" &&
-      (body.role !== "worker" || body.company_id !== profile.company_id)
-    )
-      return json(
-        { error: "Company administrators can create only their own workers" },
-        403,
-        allowed,
-      );
-    const companies = await service(
-      "/rest/v1/npi_companies?id=eq." +
-        body.company_id +
-        "&active=eq.true&select=id",
-    );
-    if (!companies.length)
-      return json({ error: "Choose an active company" }, 400, allowed);
-    const created = await service("/auth/v1/admin/users", {
-      method: "POST",
-      body: {
-        email: body.username + "@users.npi6030.com",
-        password: body.password,
-        email_confirm: true,
-        user_metadata: { display_name: body.display_name },
-      },
-    });
-    try {
-      await service("/rest/v1/npi_profiles", {
-        method: "POST",
-        body: {
-          id: created.id,
-          username: body.username,
-          display_name: body.display_name.trim(),
-          role: body.role,
-          company_id: body.company_id,
-          active: true,
-        },
-      });
-    } catch {
-      await service("/auth/v1/admin/users/" + created.id, { method: "DELETE" });
-      throw Error("Account profile could not be created");
-    }
-    return json({ id: created.id, username: body.username }, 200, allowed);
+    return json({ error: "Unknown operation" }, 400, allowed);
   } catch (error) {
     const status =
       error.status >= 400 && error.status < 500 ? error.status : 503;

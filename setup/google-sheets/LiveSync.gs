@@ -1,7 +1,7 @@
-/** NPI Operations v3.1.0: seven visible management tabs; secrets remain in Script Properties. */
+/** NPI Operations v3.2.0: seven visible management tabs; secrets remain in Script Properties. */
 const NPI_LIVE = {
   spreadsheetId: "1FJkmwHbZaNLwT4awsSshJpysi95dwBtOOKadig_Ibz8",
-  endpoint: "https://fyfjsqhnxcktjdihcaks.supabase.co/functions/v1/npi-admin",
+  endpoint: "https://fyfjsqhnxcktjdihcaks.supabase.co/functions/v1/swift-processor",
   publishableKey: "sb_publishable_FmSUiw7lQNNPq3Wc--7EUA_yDG5vFXw",
 };
 const NPI_GROUPS = {
@@ -22,6 +22,7 @@ const NPI_GROUPS = {
     "npi_tasks",
     "npi_service_items",
     "npi_notification_settings",
+    "npi_sync_status",
   ],
   Issues: ["npi_issues", "npi_issue_comments"],
   "Evidence & history": [
@@ -53,6 +54,7 @@ const NPI_RECORD_LABELS = {
   npi_issues: "Issue",
   npi_issue_comments: "Issue comment",
   npi_evidence: "Evidence file",
+  npi_sync_status: "Workbook sync status",
   npi_exception_events: "Evidence exception",
   npi_ruler_claims: "Ruler photo claim",
   npi_work_history: "Work history",
@@ -276,6 +278,7 @@ function npiPullLive() {
   const ctx = npiLiveAccess_(),
     lock = LockService.getDocumentLock();
   if (!lock.tryLock(30000)) throw Error("Another sync is running.");
+  let fetchStarted=false;
   try {
     if (npiEdits_(ctx).some((e) => !ctx.props.getProperty(e.key + "_sent")))
       throw Error("Submit unsent edits first. No edits were overwritten.");
@@ -291,6 +294,7 @@ function npiPullLive() {
         );
     }
     const fetched = {};
+    fetchStarted=true;
     for (const tables of Object.values(NPI_GROUPS))
       for (const table of tables) {
         let rows = [],
@@ -475,8 +479,13 @@ function npiPullLive() {
       .getRange(1, 1, 1, 2)
       .setBackground("#102c50")
       .setFontColor("white");
+    npiLiveCall_(ctx,{operation:"sheet_sync_status",ok:true});
     ctx.props.setProperty("NPI_LAST_SYNC", new Date().toISOString());
+    ctx.props.setProperty("NPI_LAST_SYNC_VERSION","3.2.0");
     ctx.book.toast("Seven management tabs refreshed.", "NPI Operations");
+  } catch(error){
+    if(fetchStarted)try{npiLiveCall_(ctx,{operation:"sheet_sync_status",ok:false});}catch{}
+    throw error;
   } finally {
     lock.releaseLock();
   }
@@ -527,8 +536,9 @@ function npiHideLegacyTabs() {
   const ctx = npiLiveAccess_();
   if (!ctx.book.getSheetByName("Overview"))
     throw Error("Refresh the compact workbook first.");
+  if(ctx.props.getProperty("NPI_LAST_SYNC_VERSION")!=="3.2.0")throw Error("Refresh the seven management tabs successfully before hiding legacy tabs.");
   const keep = ["Overview", ...Object.keys(NPI_GROUPS)];
   for (const sheet of ctx.book.getSheets())
-    if (!keep.includes(sheet.getName())) sheet.hideSheet();
+    if (!keep.includes(sheet.getName()) && (/^Live_|_Backup|^NPI_/i.test(sheet.getName()) || ["Guide","Sites","Tasks","Companies","Customer_Rates","Subcontractor_Rates","Work_Orders","Hour_Reviews","Document_Lines","Documents","Sync_Changes","Audit"].includes(sheet.getName()))) sheet.hideSheet();
   ctx.book.toast("Legacy sync tabs hidden; no data deleted.", "NPI Operations");
 }
