@@ -1,3 +1,5 @@
+import { handleAdmin } from "../supabase/functions/npi-admin/handler.js";
+import vm from "node:vm";
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { PGlite } from "@electric-sql/pglite";
@@ -497,4 +499,65 @@ test("digest runs once per opted-in scope and day, including repeated dispatcher
   ).rows[0].n;
   assert.equal(count, hour >= 7 ? 1 : 0);
   assert.equal(Boolean(r.d), hour >= 7);
+});
+
+test("all workbook table exports select and sort against the actual migrated schema", async () => {
+  await db.exec("reset role");
+  const source = await readFile("setup/google-sheets/LiveSync.gs", "utf8");
+  const tables = vm.runInNewContext(
+    source + ";Object.values(NPI_GROUPS).flat()",
+    {},
+  );
+  const token = "s".repeat(48),
+    seen = [];
+  for (const table of tables) {
+    const result = await handleAdmin(
+      new Request("https://edge.test", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-npi-sheet-token": token,
+        },
+        body: JSON.stringify({
+          operation: "sheet_export",
+          spreadsheetId: "test-workbook",
+          table,
+          offset: 0,
+        }),
+      }),
+      {
+        SUPABASE_URL: "https://example.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "server-test-only",
+        NPI_SHEETS_TOKEN: token,
+        NPI_SHEETS_ID: "test-workbook",
+      },
+      async (url, opts) => {
+        const u = new URL(url);
+        if (u.pathname.endsWith("/rpc/npi_sheet_hour_reviews"))
+          return Response.json([]);
+        assert.match(u.pathname, /^\/rest\/v1\/npi_[a-z_]+$/);
+        const name = u.pathname.split("/").at(-1),
+          select = u.searchParams.get("select"),
+          order = u.searchParams.get("order");
+        assert.match(select, /^[a-z_,]+$/);
+        assert.match(order, /^[a-z_,]+$/);
+        const rows = (
+          await db.query(
+            `select ${select} from ${name} order by ${order} limit 1000`,
+          )
+        ).rows;
+        seen.push(name);
+        return Response.json(rows);
+      },
+    );
+    assert.equal(
+      result.status,
+      200,
+      table + ": " + (await result.clone().text()),
+    );
+    const data = await result.json();
+    assert.ok(Array.isArray(data.rows));
+  }
+  assert.ok(seen.includes("npi_ruler_claims"));
+  assert.equal(seen.length, tables.length - 1);
 });

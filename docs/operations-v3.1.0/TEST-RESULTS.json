@@ -3,7 +3,7 @@
   "date": "2026-11-20 America/Chicago",
   "scope": "Local isolated SQL and intercepted browser providers; no remote acceptance",
   "unit_api_database": {
-    "passed": 90,
+    "passed": 91,
     "failed": 0,
     "command": "npm test"
   },
@@ -31,10 +31,15 @@
     "passed": 90,
     "failed": 0,
     "command": "npm test from extracted source/",
-    "note": "Source dependencies were resolved using the same locked local node_modules; an entirely fresh remote npm install is not claimed."
+    "note": "Original extracted package passed 90 tests; current repository suite passes 91 with export-schema regression."
   },
   "dependency_audit": {
     "known_vulnerabilities": 0,
     "scope": "npm audit, production and development dependencies"
+  },
+  "spreadsheet_export_correction": {
+    "date": "2026-11-23 America/Chicago",
+    "result": "All workbook table exports select and sort against the migrated schema",
+    "fix": "npi_ruler_claims uses evidence_id instead of id"
   }
 }

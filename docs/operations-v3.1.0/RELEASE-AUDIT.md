@@ -4,7 +4,7 @@ Local release checks use the Product Design screenshot audit framework, the Fron
 
 ## Results
 
-90 unit/API/database tests pass. SQL migrations 001/002/004/005/006/007 execute in isolated PGlite tests, including explicit evidence exceptions, camera-only ruler records, service reuse rejection, zero-up snow coverage, below-threshold review, successful-call quota refunds, expiry, literal search, first-check-in service dates, overnight DST elapsed time and daily digest deduplication. Apps Script VM tests cover HTTP/non-JSON errors and ownerless workbook rejection. Edge tests include canonical UUID rejection and invitation throttling. Browser tests use intercepted fictional cloud responses, actual DOM interaction and test camera/GPS.
+91 unit/API/database tests pass. SQL migrations 001/002/004/005/006/007 execute in isolated PGlite tests, including explicit evidence exceptions, camera-only ruler records, service reuse rejection, zero-up snow coverage, below-threshold review, successful-call quota refunds, expiry, literal search, first-check-in service dates, overnight DST elapsed time and daily digest deduplication. Apps Script VM tests cover HTTP/non-JSON errors and ownerless workbook rejection. Edge tests include canonical UUID rejection and invitation throttling. Browser tests use intercepted fictional cloud responses, actual DOM interaction and test camera/GPS.
 
 The full browser suite passes 154 desktop/mobile cases. Build and formatter pass. Strict static scan of the active public/live frontend has zero findings. Old prototype source is included only under source/ so the complete regression suite is reproducible; it is not deployed. All 13 current screenshot states have zero automatically detected axe violations; incomplete/manual rules remain. This is not proof of complete WCAG compliance. Sign-in Lighthouse scores: performance 87, accessibility 100, best practices 100, SEO 100. The display-sized transparent logo reduced startup image cost; original artwork is retained.
 
@@ -45,3 +45,7 @@ Automatic ruler reading accuracy and GPS honesty are not established by mocks. D
 ## Videos
 
 Three new recordings use the real frontend and intercepted fictional services. GPS/camera are simulated and labelled. The worker video demonstrates reload recovery with actual pending local photo files. Jenny Dioco is a synthetic English female voice (Great Britain), not an Australian voice or a human presenter. Videos include headings, burned-in captions, VTT captions and written instructions. Technical codec, audio levels and audio/video sync are verified; independent human narration certification is not claimed.
+
+## November 23 spreadsheet export correction
+
+The supplied ruler-claim exporter incorrectly ordered by id instead of evidence_id. This produced a PostgREST HTTP 400 during refresh. The corrected function uses the actual key. A new regression executes the selected columns and ordering for every workbook table against the migrated PGlite schema. No migration or secret change is required. Function URL slugs can differ from Supabase display names; frontend adminFunction and Sheets endpoint must match the actual URL.

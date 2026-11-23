@@ -223,7 +223,7 @@ export class LiveAPI {
     });
   }
   invitation(operation, body) {
-    return this.request("/functions/v1/npi-admin", {
+    return this.request("/functions/v1/" + config.adminFunction, {
       method: "POST",
       authenticated: false,
       body: { operation, ...body },
@@ -242,13 +242,13 @@ export class LiveAPI {
     });
   }
   resetPassword(id, password) {
-    return this.request("/functions/v1/npi-admin", {
+    return this.request("/functions/v1/" + config.adminFunction, {
       method: "POST",
       body: { operation: "reset_password", id, password },
     });
   }
   staff(body) {
-    return this.request("/functions/v1/npi-admin", {
+    return this.request("/functions/v1/" + config.adminFunction, {
       method: "POST",
       body: { operation: "create_user", ...body },
     });

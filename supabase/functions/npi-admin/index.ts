@@ -378,7 +378,9 @@ export async function handleAdmin(request, env, fetcher = fetch) {
                     ? "work_id,worker_id"
                     : table === "npi_notification_settings"
                       ? "scope"
-                      : "id") +
+                      : table === "npi_ruler_claims"
+                        ? "evidence_id"
+                        : "id") +
                   "&limit=1000&offset=" +
                   offset,
               );
